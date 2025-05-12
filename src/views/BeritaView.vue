@@ -1,0 +1,73 @@
+<!-- src/views/BeritaView.vue -->
+<template>
+  <Navbar />
+  <section class="py-5 container">
+    <Breadcump title="Berita" :title_detil="['berita']" />
+    <div class="row g-4" v-if="beritaList.length">
+      <div class="col-md-6 col-lg-4" v-for="(item, index) in beritaList" :key="index">
+        <div class="card h-100 shadow-sm border-0">
+          <img :src="item.urlToImage || '/assets/images/default-news.jpg'" class="card-img-top rounded"
+            :alt="item.title" />
+          <div class="card-body">
+            <h6 class="card-title fw-bold">
+
+              <router-link :to="`/berita/${index}`"
+                class="text-dark fw-semibold text-decoration-none small d-block text-start"
+                style="color:green;text-decoration:none;">
+                {{ item.title }}
+              </router-link>
+
+            </h6>
+            <p class="card-text small text-muted mb-2">
+              {{ item.description?.length > 120 ? item.description.slice(0, 120) + '...' : item.description }}
+            </p>
+          </div>
+          <div
+            class="card-footer bg-white border-0 d-flex flex-wrap justify-content-between small text-muted px-3 pb-3">
+            <span><i class="bi bi-calendar-event"></i> {{ item.publishedAt }}</span>
+            <span><i class="bi bi-person-circle"></i> {{ item.author?.length > 20 ? item.author.slice(0, 20) + '...' :
+              item.author }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Kontak />
+  <Footer />
+</template>
+
+<script setup>
+
+import Navbar from '../components/Nav.vue'
+import Kontak from '../components/KontakSection.vue'
+import Footer from '../components/Footer.vue'
+import Breadcump from '../components/Breadc.vue'
+import { ref, onMounted } from 'vue'
+
+const beritaList = ref([])
+
+const fetchBerita = async () => {
+  const res = await fetch('https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=b66128bed1054877a21ee66ed26fd934')
+  const data = await res.json()
+  beritaList.value = data.articles || []
+}
+
+onMounted(fetchBerita)
+</script>
+
+<style scoped>
+.card-title {
+  font-size: 0.95rem;
+}
+
+.card-footer i {
+  margin-right: 4px;
+}
+
+@media (min-width: 992px) {
+  .card-img-top {
+    height: 180px;
+  }
+}
+</style>
