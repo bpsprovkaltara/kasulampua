@@ -10,6 +10,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import {API_ENDPOINTS} from '../config/api'
+
 
 import Navbar from '../components/Nav.vue'
 import Header from '../components/Head.vue'
@@ -79,16 +81,46 @@ const chunkedImages = computed(() => {
   return chunks
 })
 
+
+
+function urlImage(image){
+  if(image){
+    return API_ENDPOINTS.BERITA_IMAGE+'/'+image
+  }else{
+    return false
+  }
+}
+
+
 const berita = reactive({
-  headline_image: '/assets/images/headline_image.png',
-  judul_headline: 'Kepala BPS Provinsi Kalimantan Selatan',
-  ringkasan_headline:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum...',
+  headline_image: '',
+  judul_headline: '',
+  ringkasan_headline: '',
   href: '#',
   text: 'Baca selengkapnya',
   link_lainnya: '/berita',
-  text_lainnya: '(Lihat lainnya)',
+  text_lainnya: 'Berita lainnya',
 })
+
+const fetchHeadlineBerita = async () => {
+
+  try {
+    const res = await fetch(API_ENDPOINTS.BERITA+'?type=headline_utama')
+    const data = await res.json()
+
+    if (res.ok && data && data.length > 0) {
+      const item = data[0]
+      berita.headline_image = item.gambar
+        ? `${API_ENDPOINTS.BERITA_IMAGE}/${item.gambar}`
+        : '/assets/images/headline_image.png'
+      berita.judul_headline = item.judul
+      berita.ringkasan_headline = item.isi?.substring(0, 500) + '...'
+      berita.href = `/berita/detail/${item.slug}`
+    }
+  } catch (err) {
+    console.error('Gagal memuat headline:', err)
+  }
+}
 
 const data_section = reactive({
   description:
@@ -103,6 +135,7 @@ const dataset = ref([
 ])
 
 onMounted(() => {
+  fetchHeadlineBerita()
   updateItemsPerSlide()
   window.addEventListener('resize', updateItemsPerSlide)
 })

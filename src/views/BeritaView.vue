@@ -6,26 +6,26 @@
     <div class="row g-4" v-if="beritaList.length">
       <div class="col-md-6 col-lg-4" v-for="(item, index) in beritaList" :key="index">
         <div class="card h-100 shadow-sm border-0">
-          <img :src="item.urlToImage || '/assets/images/default-news.jpg'" class="card-img-top rounded"
-            :alt="item.title" />
+          <img :src="urlImage(item.gambar) || '/assets/images/default-news.jpg'" class="card-img-top rounded"
+            :alt="item.judul" />
           <div class="card-body">
             <h6 class="card-title fw-bold">
 
               <router-link :to="`/berita/${index}`"
                 class="text-dark fw-semibold text-decoration-none small d-block text-start"
                 style="color:green;text-decoration:none;">
-                {{ item.title }}
+                {{ item.judul }}
               </router-link>
 
             </h6>
             <p class="card-text small text-muted mb-2">
-              {{ item.description?.length > 120 ? item.description.slice(0, 120) + '...' : item.description }}
+              {{ item.isi?.length > 120 ? item.isi.slice(0, 120) + '...' : item.isi }}
             </p>
           </div>
           <div
             class="card-footer bg-white border-0 d-flex flex-wrap justify-content-between small text-muted px-3 pb-3">
-            <span><i class="bi bi-calendar-event"></i> {{ item.publishedAt }}</span>
-            <span><i class="bi bi-person-circle"></i> {{ item.author?.length > 20 ? item.author.slice(0, 20) + '...' :
+            <span><i class="bi bi-calendar-event"></i> {{ item.tanggal_diperbarui }}</span>
+            <span><i class="bi bi-person-circle"></i> {{ item.penulis?.length > 20 ? item.penulis.slice(0, 20) + '...' :
               item.author }}</span>
           </div>
         </div>
@@ -43,14 +43,23 @@ import Navbar from '../components/Nav.vue'
 import Kontak from '../components/KontakSection.vue'
 import Footer from '../components/Footer.vue'
 import Breadcump from '../components/Breadc.vue'
+import {API_ENDPOINTS} from '../config/api'
 import { ref, onMounted } from 'vue'
 
 const beritaList = ref([])
 
 const fetchBerita = async () => {
-  const res = await fetch('https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=b66128bed1054877a21ee66ed26fd934')
+  const res = await fetch(API_ENDPOINTS.BERITA)
   const data = await res.json()
-  beritaList.value = data.articles || []
+  beritaList.value = data || []
+}
+
+function urlImage(image){
+  if(image){
+    return API_ENDPOINTS.BERITA_IMAGE+'/'+image
+  }else{
+    return false
+  }
 }
 
 onMounted(fetchBerita)
