@@ -10,8 +10,26 @@ body {
   z-index: 10;
 }
 
-.navbar.scrolled {
+.bg-default {
   background: #dff9df;
+}
+
+.bg-insight {
+  background: #E1E4CF;
+}
+
+
+.scrolled-home {
+  background: #dff9df;
+}
+
+.scrolled-regional_insight{
+  background: #E1E4CF;
+}
+
+.scrolled-regional_insight-detil{
+  background: #E1E4CF;
+
 }
 
 .navbar .nav-link {
@@ -41,6 +59,16 @@ body {
   margin-bottom: 125px;
   position: relative;
   height: 700px;
+}
+
+.header_insight {
+  background:
+    linear-gradient(rgba(225, 228, 207, 0.6),rgba(225, 228, 207, 0.9)),
+    url('../images/bg_header_insight.png') no-repeat center center/cover;
+  text-align: center;
+  padding-top: 80px;
+  padding-bottom: 50px;
+  position: relative;
 }
 
 .header h1 {

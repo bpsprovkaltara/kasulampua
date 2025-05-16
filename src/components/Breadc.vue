@@ -1,7 +1,6 @@
 <template>
-  <section class="bg-light border-bottom py-3 mb-4 mt-4">
+  <section class="border-bottom py-3 mb-4 mt-4">
     <div class="container d-flex justify-content-between align-items-center flex-wrap">
-      <h5 class="fw-bold text-dark mb-0">{{ title }}</h5>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
           <li class="breadcrumb-item">
@@ -10,15 +9,14 @@
             </a>
           </li>
 
-          <li v-for="(item, index) in title_detil" :key="index"
-            :class="['breadcrumb-item', { active: index === title_detil.length - 1 }]"
-            :aria-current="index === title_detil.length - 1 ? 'page' : null">
-            <template v-if="index !== title_detil.length - 1">
-              <a href="#" class="text-dark text-decoration-none">{{ item }}</a>
-            </template>
-            <template v-else>
-              {{ item.length > 30 ? item.slice(0, 30) + '...' : item }}
-            </template>
+          <li v-for="(item, index) in title_detil.parent" :key="index" class="breadcrumb-item">
+            <a :href="item.path" class="text-dark text-decoration-none">
+              {{ item.label }}
+            </a>
+          </li>
+
+          <li class="breadcrumb-item active" aria-current="page">
+            {{ title_detil.title.length > 30 ? title_detil.title.slice(0, 30) + '...' : title_detil.title }}
           </li>
         </ol>
       </nav>
@@ -28,24 +26,22 @@
 
 <script setup>
 defineProps({
-  title: String,
   title_detil: {
-    type: Array,
-    default: () => []
+    type: Object,
+    default: () => ({
+      title: '',
+      parent: []
+    })
   }
 })
 </script>
 
 <style scoped>
-.bg-light {
-  background-color: #ffffff !important;
-}
-
 .text-orange {
   color: #f26522;
 }
 
-.breadcrumb-item+.breadcrumb-item::before {
+.breadcrumb-item + .breadcrumb-item::before {
   color: #aaa;
 }
 </style>

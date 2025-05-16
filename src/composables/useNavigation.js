@@ -22,9 +22,9 @@ export function useNavigation() {
   const navigationLinks = [
     { text: 'Beranda', href: '/' },
     { text: 'Pusat Informasi', href: 'https://info-kasulampua.vercel.app/' },
-    { text: 'Regional Insight', href: '#' },
+    { text: 'Regional Insight', href: '/regional_insight' },
     { text: 'Data', href: '#' },
-    { text: 'Tentang', href: '#' },
+    { text: 'Tentang', href: '/about' },
   ]
 
   return { isScrolledNav, navigation, navigationLinks }

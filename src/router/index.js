@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import BeritaView from '@/views/BeritaView.vue'
-import DetilBerita from '@/views/DetilBerita.vue'
+import DetilBerita from '@/views/BeritaDetil.vue'
+import RegionalInsight from '@/views/RegionalInsight.vue'
+import About from '@/views/About.vue'
+import RegionalInsightDetil from '@/views/RegionalInsightDetil.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +23,21 @@ const router = createRouter({
       path: '/berita/:id',
       name: 'berita-detail',
       component: DetilBerita,
+    },
+    {
+      path: '/regional_insight',
+      name: 'regional_insight',
+      component: RegionalInsight,
+    },
+    {
+      path: '/regional_insight/:id',
+      name: 'regional_insight-detil',
+      component: RegionalInsightDetil,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: About,
     },
   ],
 })

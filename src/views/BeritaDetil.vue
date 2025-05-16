@@ -1,23 +1,22 @@
 <template>
-  <Navbar />
+  <Navbar background_class="bg-default" />
 
 
   <section class="container py-5">
-    <PageHeader title="Berita" :title_detil="['berita', news.title]" />
+    <PageHeader title="Berita" :title_detil="['berita', news.judul]" />
     <div class="row">
       <div class="col-lg-8">
-        <img :src="news.urlToImage" alt="Gambar berita" class="img-fluid rounded mb-4"
+        <img :src="urlImage(news.gambar)" alt="Gambar berita" class="img-fluid rounded mb-4"
           style="max-height: 400px; object-fit: cover; width: 100%;" />
 
-        <h3 class="fw-bold mb-3">{{ news.title }}</h3>
+        <h3 class="fw-bold mb-3">{{ news.judul }}</h3>
 
         <div class="text-muted small mb-4">
-          <strong>{{ news.location }}</strong>
-          <span class="ms-2"><i class="bi bi-calendar-event text-orange me-1 "></i>{{ news.publishedAt }}</span>
+          <span class="ms-2"><i class="bi bi-calendar-event text-orange me-1 "></i>{{ news.tanggal_dibuat }}</span>
         </div>
 
         <p class="text-justify">
-          {{ news.content }}
+          {{ news.isi }}
         </p>
       </div>
 
@@ -40,14 +39,14 @@
             <h6 class="fw-bold mb-3">Berita Terkini</h6>
             <div class="d-flex align-items-center flex-sm-nowrap flex-wrap gap-24 mb-4"
               v-for="(item, index) in beritaList" :key="index">
-              <img :src="item.urlToImage" class="me-3 rounded" style="width: 80px; height: 100px; object-fit: cover" />
+              <img :src="urlImage(item.gambar)" class="me-3 rounded" style="width: 80px; height: 100px; object-fit: cover" />
               <div class="text-start">
                 <router-link :to="`/berita/${index}`"
                   class="text-dark fw-semibold text-decoration-none small d-block text-start">
-                  {{ item.title.length > 120 ? item.title.slice(0, 120) + '…' : item.title }}
+                  {{ item.judul.length > 120 ? item.judul.slice(0, 120) + '…' : item.judul }}
                 </router-link>
                 <small class="text-muted">
-                  <i class="bi bi-calendar-event text-orange me-1 "></i>{{ item.publishedAt }}
+                  <i class="bi bi-calendar-event text-orange me-1 "></i>{{ item.tanggal_dibuat }}
                 </small>
               </div>
             </div>
@@ -70,21 +69,22 @@ import PageHeader from '../components/Breadc.vue'
 import ContactSection from '../components/KontakSection.vue'
 import Footer from '../components/Footer.vue'
 import Navbar from '../components/Nav.vue'
+import {API_ENDPOINTS} from '../config/api'
 
 const beritaList = ref([])
 const route = useRoute()
 const search = ref('')
 const news = ref({
-  title: '',
-  urlToImage: '',
-  publishedAt: '',
-  content: ''
+  judul: '',
+  gambar: '',
+  tanggal_dibuat: '',
+  isi: ''
 })
 
 const fetchBerita = async () => {
-  const res = await fetch('https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=b66128bed1054877a21ee66ed26fd934')
+  const res = await fetch(API_ENDPOINTS.BERITA)
   const data = await res.json()
-  beritaList.value = data.articles || []
+  beritaList.value = data || []
   setNews()
 
 }
@@ -107,6 +107,14 @@ const formatDate = (raw) => {
     month: 'long',
     year: 'numeric'
   })
+}
+
+function urlImage(image){
+  if(image){
+    return API_ENDPOINTS.BERITA_IMAGE+'/'+image
+  }else{
+    return false
+  }
 }
 
 onMounted(fetchBerita)
