@@ -15,7 +15,7 @@
       <div class="card-body">
         <h5 class="card-title fw-semibold mt-2 text-start">
 
-          <router-link :to="`/regional_insight/${id}`">{{ title }}</router-link>
+          <router-link :to="`/regional_insight/${id}`" class="link-ui">{{ title }}</router-link>
 
         </h5>
 
