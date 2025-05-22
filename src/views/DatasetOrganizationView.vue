@@ -31,6 +31,7 @@ const router = useRouter()
 
 const organizationId = ref(route.query.organization_id || '')
 const organizationTitle = ref('')
+const organizationName = ref('')
 const datasets = ref([])
 const filteredDatasets = ref([])
 const search = ref('')
@@ -45,21 +46,15 @@ const fetchOrganizationDatasets = async () => {
   if (!organizationId.value) return
 
   try {
-    const res = await fetch(`http://localhost:3500/ckan/organization-packages/${organizationId.value}?include=true`)
+    const res = await fetch(`http://localhost:3500/ckan/organization-packages/${organizationId.value}?page=${currentPage.value}&rows=${limit}`)
     const data = await res.json()
-    const start = offset.value
-    const end = offset.value + limit
 
-    organizationTitle.value = data.display_name || ''
-    const fullList = data.packages || []
+    organizationTitle.value = data.organization.display_name || ''
+    organizationName.value = data.organization.name
 
-    total.value = data.package_count
+    total.value = data.total
 
-    datasets.value = fullList.slice(start, end).map(ds => ({
-      ...ds,
-      views: Math.floor(Math.random() * 100)
-    }))
-    filteredDatasets.value = datasets.value
+    filteredDatasets.value = data.datasets
   } catch (err) {
     console.error("Gagal ambil data grup:", err)
   }
@@ -67,23 +62,36 @@ const fetchOrganizationDatasets = async () => {
 
 const applySearch = () => {
   if (!search.value) {
-    filteredDatasets.value = datasets.value
+    offset.value =0
+    fetchOrganizationDatasets()
   } else {
-    filteredDatasets.value = datasets.value.filter(ds =>
-      ds.title.toLowerCase().includes(search.value.toLowerCase())
-    )
+    offset.value =0
+    fetchDataFiltered()
   }
+}
+
+//GET /ckan/datasets-search?org=bps-kalsel&keyword=transportasi&rows=10&offset=0
+const fetchDataFiltered = async () => {
+  const res = await fetch(`http://localhost:3500/ckan/datasets-search?org=${organizationName.value}&rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
+  const data = await res.json()
+  datasets.value = data.result.results
+  filteredDatasets.value = data.result.results
+  total.value = data.result.count
 }
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     offset.value = (page - 1) * limit
-    fetchOrganizationDatasets()
+    fetchDataFiltered()
   }
 }
 
 const organizationSelected = (newOrgId) => {
   router.replace({ path: '/dataset', query: { organization_id: newOrgId } })
+  organizationId.value = newOrgId
+  offset.value = 0
+  fetchOrganizationDatasets()
+
 }
 
 watch(() => route.query.group_id, (newVal) => {

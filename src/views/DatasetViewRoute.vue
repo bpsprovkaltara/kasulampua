@@ -18,9 +18,8 @@ const componentToShow = computed(() => {
 })
 
 const title_detail = {
-  title: '......',
+  title: 'Dataset',
   parent: [
-    { label: 'Dataset', path: '/dataset' },
   ]
 }
 </script>

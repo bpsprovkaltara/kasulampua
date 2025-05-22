@@ -34,15 +34,19 @@
           </div>
         </div>
         <div class="text-end">
-          <span v-if="dataset.resources?.length" class="badge bg-success">
-            <a :href="dataset.resources[0].url" target="_blank" class="text-white text-decoration-none">
-              ⬇ Download
-            </a>
-          </span>
-          <span v-else class="badge bg-secondary">
-            No File
-          </span>
-        </div>
+            <!-- <span v-if="dataset.resources?.length" class="badge bg-success me-2">
+              <a :href="dataset.resources[0].url" target="_blank" class="text-white text-decoration-none">
+                ⬇ Download
+              </a>
+            </span> -->
+
+            <router-link
+              :to="`/dataset/${dataset.id}`"
+              class="badge bg-primary text-white text-decoration-none"
+            >
+              🔍 Lihat Detail
+            </router-link>
+          </div>
       </div>
     </div>
   </div>

@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="row mt-4">
       <div class="col-md-2 border-end">
-        <DatasetSidebar @groupSelected="redirectToGroup" @organizationSelected="handleOrg" />
+        <DatasetSidebar @groupSelected="redirectToGroup"  />
 
       </div>
 
@@ -31,6 +31,7 @@ const router = useRouter()
 
 const groupId = ref(route.query.group_id || '')
 const groupTitle = ref('')
+const groupName = ref('')
 const datasets = ref([])
 const filteredDatasets = ref([])
 const search = ref('')
@@ -45,20 +46,16 @@ const fetchGroupDatasets = async () => {
   if (!groupId.value) return
 
   try {
-    const res = await fetch(`http://localhost:3500/ckan/group/${groupId.value}?include=true`)
+    const res = await fetch(`http://localhost:3500/ckan/group-packages/${groupId.value}?page=${currentPage.value}&rows=${limit}`)
     const data = await res.json()
-    const start = offset.value
-    const end = offset.value + limit
 
-    groupTitle.value = data.display_name || ''
-    const fullList = data.packages || []
+    groupTitle.value = data.group.display_name || ''
+    groupName.value = data.group.name || ''
 
-    total.value = fullList.length
-    datasets.value = fullList.slice(start, end).map(ds => ({
-      ...ds,
-      views: Math.floor(Math.random() * 100)
-    }))
-    filteredDatasets.value = datasets.value
+
+    total.value = data.total
+
+    filteredDatasets.value = data.datasets
   } catch (err) {
     console.error("Gagal ambil data grup:", err)
   }
@@ -66,23 +63,35 @@ const fetchGroupDatasets = async () => {
 
 const applySearch = () => {
   if (!search.value) {
-    filteredDatasets.value = datasets.value
+    offset.value =0
+    fetchGroupDatasets()
   } else {
-    filteredDatasets.value = datasets.value.filter(ds =>
-      ds.title.toLowerCase().includes(search.value.toLowerCase())
-    )
+    offset.value =0
+    fetchDataFiltered()
   }
+}
+
+//GET /ckan/datasets-search?org=bps-kalsel&keyword=transportasi&rows=10&offset=0
+const fetchDataFiltered = async () => {
+  const res = await fetch(`http://localhost:3500/ckan/datasets-search?group=${groupName.value}&rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
+  const data = await res.json()
+  datasets.value = data.result.results
+  filteredDatasets.value = data.result.results
+  total.value = data.result.count
 }
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     offset.value = (page - 1) * limit
-    fetchGroupDatasets()
+    fetchDataFiltered()
   }
 }
 
 const redirectToGroup = (newGroupId) => {
   router.replace({ path: '/dataset', query: { group_id: newGroupId } })
+  groupId.value = newGroupId
+  offset.value = 0
+  fetchGroupDatasets()
 }
 
 watch(() => route.query.group_id, (newVal) => {
