@@ -4,68 +4,100 @@
   <div class="header_insight">
     <PageHeader :title_detil="title_detail" />
 
-
     <div class="py-5">
       <div class="container">
-
         <h3 class="fw-semibold text-center mb-3">
-          {{ title }}
+          {{ state.insight?.judul || 'Memuat...' }}
         </h3>
 
-        <p class="text-center text-muted mx-auto mb-4" style="max-width: 800px;">
-          {{ description }}
+        <p class="mb-4 text-start">
+          {{ state.insight?.deskripsi || 'Insight tidak tersedia.' }}
         </p>
 
-        <div class="d-flex flex-wrap justify-content-between align-items-center small mb-4 px-4 py-2 rounded shadow-sm"
+        <div v-if="state.insight"
+          class="d-flex flex-wrap justify-content-between align-items-center small mb-4 px-4 py-2 rounded shadow-sm"
           style="background-color: rgba(255, 255, 255, 0.7);">
-
           <div class="d-flex flex-wrap gap-3">
             <div>
-              <i class="bi bi-calendar-event me-1"></i> {{ date }}
+              <i class="bi bi-calendar-event me-1"></i> {{ formatDate(state.insight.tanggal_dibuat) }}
             </div>
             <div>
-              <i class="bi bi-person me-1"></i> {{ author }}
+              <i class="bi bi-person me-1"></i> {{ state.insight.nama_author }}
             </div>
             <div>
-              <i class="bi bi-eye me-1"></i> {{ views }}
+              <i class="bi bi-eye me-1"></i> {{ Number(state.insight?.views ?? 0) + 1 }}
             </div>
           </div>
           <div>
-            <span>Last Modified: {{ lastModified }}</span>
+            <span>Last Modified: {{ formatDate(state.insight.tanggal_diperbarui) }}</span>
           </div>
         </div>
 
-        <div class="bg-white rounded shadow-sm p-3" style="max-width: 100%; overflow: hidden;">
-          <iframe frameborder="0" allowtransparency="true" allowfullscreen="true" title="Data Visualization" marginheight="0" marginwidth="0" scrolling="no"
-           style="display: block; width: 100%;; height: 2927px; visibility: visible;"
-           :src="url_visualisasi"></iframe>
+        <div v-if="state.insight" class="bg-white rounded shadow-sm p-3 " style="aspect-ratio: 1 / 2.45; width: 100%; max-width: 1070px; margin: auto;">
+          <iframe frameborder="0" allowtransparency="true" allowfullscreen="true" title="Data Visualization"
+          marginheight="0" marginwidth="0" scrolling="no" style="width: 100%; height: 100%; border: none;"
+            :src="state.insight.link" ></iframe>
         </div>
       </div>
     </div>
+
+    <div class="container" v-if="state.insight">
+      <InsightDetailBox :id="state.insight.id" :topic="state.insight.topik" :regional="state.insight.region"
+        :wilayah="state.insight.wilayah" :relatedDatasets="state.dataset || []" />
+    </div>
   </div>
+
   <Kontak />
   <Footer />
 </template>
 
 <script setup>
-import Navbar from '../components/Nav.vue'
+import { onMounted, reactive } from 'vue'
+import { useRoute } from 'vue-router'
+import Navbar from '../components/NavSection.vue'
 import Footer from '../components/Footer.vue'
 import Kontak from '../components/KontakSection.vue'
-import PageHeader from '../components/Breadc.vue'
+import PageHeader from '../components/BreadcSection.vue'
+import InsightDetailBox from '../components/InsightDetail.vue'
+import { API_ENDPOINTS } from '@/config/api'
+import { formatDate } from '@/utils/dates'
+
+const route = useRoute()
 
 const title_detail = {
-    title: 'Kemiskinan Regional Kalimantan dari Sisi Ketenaga Kerjaaan',
-    parent: [
-      { label: 'Regional Insight', path: '/regional_insight' },
-    ]
-  }
+  title: 'Kemiskinan Regional Kalimantan dari Sisi Ketenaga Kerjaaan',
+  parent: [
+    { label: 'Regional Insight', path: '/regional_insight' },
+  ]
+}
 
-  const title = 'Kemiskinan Regional Kalimantan dari Sisi Ketenaga Kerjaaan'
-const description =
-  'Visualisasi ini menyajikan hubungan antara tingkat kemiskinan dan indikator ketenagakerjaan di lima provinsi wilayah Kalimantan: Kalimantan Barat, Kalimantan Tengah, Kalimantan Selatan, Kalimantan Timur, dan Kalimantan Utara. Data ditampilkan dalam bentuk grafik kombinasi (bar & line), peta tematik, dan diagram donat.'
-const date = '11 Juni 2025'
-const author = 'John Doe'
-const views = '1.011'
-const lastModified = '11/06/2025 12:00'
-const url_visualisasi = 'https://public.tableau.com/views/ANGKAKEKERASANANAKJAWABARATMENINGKATNASIBGENERASIEMASTERANCAM/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:size=1068,1&:embed=y&:showVizHome=n&:bootstrapWhenNotified=y&:tabs=n&:toolbar=n&:apiID=host0#navType=0&navSrc=Parse'
+const state = reactive({
+  insight: null,
+  dataset: []
+})
+
+const fetchInsight = async () => {
+  try {
+    const res = await fetch(API_ENDPOINTS.INSIGHT_DETAIL(route.params.id))
+    const data = await res.json()
+    state.insight = data
+  } catch (error) {
+    console.error('Gagal memuat insight:', error)
+  }
+}
+
+const fetchRelatedDatasets = async () => {
+  try {
+    const res = await fetch(`${API_ENDPOINTS.INSIGHT}/${route.params.id}/related-datasets`)
+    const data = await res.json()
+    state.dataset = data
+  } catch (error) {
+    console.error('Gagal memuat related datasets:', error)
+  }
+}
+
+onMounted(() => {
+  fetchInsight()
+  fetchRelatedDatasets()
+})
 </script>

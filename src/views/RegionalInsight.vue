@@ -9,12 +9,12 @@
         </p>
       </div>
 
-      <RegionalFilter />
+      <RegionalFilter @filter-changed="applyFilter" />
 
       <div class="row">
-        <RegionalCard v-for="(item, i) in insights" :id="item.id" :key="i" :image="item.image" :region="item.region"
-          :badgeColor="item.badgeColor" :title="item.title" :date="item.date" :author="item.author"
-          :location="item.location" />
+        <RegionalCard v-for="(item, i) in insights" :id="item.id" :key="i" :image="item.gambar" :region="item.region"
+          :badgeColor="item.badge" :title="item.judul" :date="item.tanggal_dibuat" :author="item.nama_author"
+          :location="item.wilayah" />
       </div>
     </div>
   </div>
@@ -23,94 +23,39 @@
   <Footer />
 </template>
 <script setup>
-import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { onMounted, ref } from 'vue'
 import RegionalFilter from '../components/RegionalFilter.vue'
 import RegionalCard from '../components/RegionalCard.vue'
-import Navbar from '../components/Nav.vue'
+import Navbar from '../components/NavSection.vue'
 import Footer from '../components/Footer.vue'
 import Kontak from '../components/KontakSection.vue'
+import {API_ENDPOINTS} from '../config/api'
 
 
-const insights = ref([
-  {
-    id:1,
-    image: 'https://placehold.co/400x200?text=Kalimantan',
-    region: 'Kalimantan',
-    badgeColor: 'success',
-    title: 'Kemiskinan Regional Kalimantan dari Sisi Ketenagakerjaan',
-    date: '10 Juni 2025',
-    author: 'John Doe',
-    location: 'Kalimantan Timur'
-  },
-  {
-    id:2,
-    image: 'https://placehold.co/400x200?text=Sulawesi',
-    region: 'Sulawesi',
-    badgeColor: 'danger',
-    title: 'Hilirisasi Industri Pendorong Perekonomian Sulawesi',
-    date: '04 Juni 2025',
-    author: 'John Doe',
-    location: 'Sulawesi Tengah'
-  },
-  {
-    id:3,
-    image: 'https://placehold.co/400x200?text=Maluku',
-    region: 'Maluku',
-    badgeColor: 'info',
-    title: 'Pariwisata Sebagai Alternatif Perekonomian Maluku',
-    date: '09 Juni 2025',
-    author: 'John Doe',
-    location: 'Maluku Utara'
-  },
-  {
-    id:4,
-    image: 'https://placehold.co/400x200?text=Papua',
-    region: 'Papua',
-    badgeColor: 'warning',
-    title: 'Food Estate dan tantangan logistik di Papua',
-    date: '08 Juni 2025',
-    author: 'John Doe',
-    location: 'Papua'
-  },
-  {
-    id:5,
-    image: 'https://placehold.co/400x200?text=Kalimantan',
-    region: 'Kalimantan',
-    badgeColor: 'success',
-    title: 'Kemiskinan Regional Kalimantan dari Sisi Ketenagakerjaan',
-    date: '10 Juni 2025',
-    author: 'John Doe',
-    location: 'Kalimantan Timur'
-  },
-  {
-    id:6,
-    image: 'https://placehold.co/400x200?text=Sulawesi',
-    region: 'Sulawesi',
-    badgeColor: 'danger',
-    title: 'Hilirisasi Industri Pendorong Perekonomian Sulawesi',
-    date: '04 Juni 2025',
-    author: 'John Doe',
-    location: 'Sulawesi Tengah'
-  },
-  {
-    id:7,
-    image: 'https://placehold.co/400x200?text=Maluku',
-    region: 'Maluku',
-    badgeColor: 'info',
-    title: 'Pariwisata Sebagai Alternatif Perekonomian Maluku',
-    date: '09 Juni 2025',
-    author: 'John Doe',
-    location: 'Maluku Utara'
-  },
-  {
-    id:8,
-    image: 'https://placehold.co/400x200?text=Papua',
-    region: 'Papua',
-    badgeColor: 'warning',
-    title: 'Food Estate dan tantangan logistik di Papua',
-    date: '08 Juni 2025',
-    author: 'John Doe',
-    location: 'Papua'
+const insights = ref([])
+const route = useRoute()
+
+const fetchInsight = async (filter = {}) => {
+  const query = new URLSearchParams(filter).toString()
+  const res = await fetch(`${API_ENDPOINTS.INSIGHT}?${query}`)
+  const data = await res.json()
+  insights.value = data || []
+}
+
+const applyFilter = (filter) => {
+  console.log('Filter diterapkan:', filter)
+  fetchInsight(filter)
+}
+
+onMounted(() => {
+  const initialFilter = {}
+
+  if (route.query.region) {
+    initialFilter.region = route.query.region
+
   }
-])
+  fetchInsight(initialFilter)
+})
+
 </script>

@@ -3,7 +3,7 @@
 
 
   <section class="container py-5">
-    <PageHeader title="Berita" :title_detil="['berita', news.judul]" />
+    <PageHeader :title_detil="title_detail" />
     <div class="row">
       <div class="col-lg-8">
         <img :src="urlImage(news.gambar)" alt="Gambar berita" class="img-fluid rounded mb-4"
@@ -57,18 +57,19 @@
   </section>
 
   <ContactSection />
+  <Footer/>
 </template>
 
 
 
 <script setup>
 import { useRoute } from 'vue-router'
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted,  watch } from 'vue'
 
-import PageHeader from '../components/Breadc.vue'
+import PageHeader from '../components/BreadcSection.vue'
 import ContactSection from '../components/KontakSection.vue'
 import Footer from '../components/Footer.vue'
-import Navbar from '../components/Nav.vue'
+import Navbar from '../components/NavSection.vue'
 import {API_ENDPOINTS} from '../config/api'
 
 const beritaList = ref([])
@@ -80,6 +81,13 @@ const news = ref({
   tanggal_dibuat: '',
   isi: ''
 })
+
+const title_detail = {
+  title: 'Kemiskinan Regional Kalimantan dari Sisi Ketenaga Kerjaaan',
+  parent: [
+    { label: 'Berita', path: '/berita' },
+  ]
+}
 
 const fetchBerita = async () => {
   const res = await fetch(API_ENDPOINTS.BERITA)
@@ -100,14 +108,6 @@ const setNews = () => {
   }
 }
 
-const formatDate = (raw) => {
-  const date = new Date(raw)
-  return date.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
-}
 
 function urlImage(image){
   if(image){

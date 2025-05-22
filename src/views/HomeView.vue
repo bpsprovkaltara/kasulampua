@@ -1,7 +1,8 @@
 <template>
   <Navbar />
   <Header :header="header" :link="pusatInformasi" :regions="regional" />
-  <DataRepository :images="images" :itemsPerSlide="itemsPerSlide" />
+  <DataRepository :kategori="kategori" :itemsPerSlide="itemsPerSlide" />
+  <IndikatorStrategis />
   <NewsSection :berita="berita" />
   <DataStory :dataSection="data_section" :dataset="dataset" />
   <Kontak />
@@ -9,20 +10,21 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive,  onMounted, onBeforeUnmount } from 'vue'
 import {API_ENDPOINTS} from '../config/api'
 
 
-import Navbar from '../components/Nav.vue'
-import Header from '../components/Head.vue'
+import Navbar from '../components/NavSection.vue'
+import Header from '../components/HeadSection.vue'
 import DataRepository from '../components/DataRepository.vue'
 import NewsSection from '../components/NewsSection.vue'
 import DataStory from '../components/DataStory.vue'
 import Footer from '../components/Footer.vue'
 import Kontak from '../components/KontakSection.vue'
+import IndikatorStrategis from '@/components/IndikatorStrategis.vue'
 
 
-const pusatInformasi = ref({ href: '#' })
+const pusatInformasi = ref({ href: 'https://info-kasulampua.vercel.app/' })
 
 const header = reactive({
   logo: 'assets/images/logo_instansi.png',
@@ -32,33 +34,25 @@ const header = reactive({
 })
 
 const regional = reactive({
-  kalimantan: { insight: 'https://google.com', icon: '/assets/images/icon_kalimantan.svg' },
-  sulawesi: { insight: 'https://google.com', icon: '/assets/images/icon_sulawesi.svg' },
-  maluku: { insight: 'https://google.com', icon: '/assets/images/icon_maluku.svg' },
-  papua: { insight: 'https://google.com', icon: '/assets/images/icon_papua.svg' },
+  kalimantan: {icon: '/assets/images/icon_kalimantan.svg' },
+  sulawesi: { icon: '/assets/images/icon_sulawesi.svg' },
+  maluku: { icon: '/assets/images/icon_maluku.svg' },
+  papua: { icon: '/assets/images/icon_papua.svg' },
 })
 
 const itemsPerSlide = ref(5)
-const images = ref([
-  {
-    id: 1,
-    src: '/assets/images/data_repo_160.png',
-    title: 'Pertambangan, Manufaktur, Konstruksi',
-  },
-  { id: 2, src: '/assets/images/data_repo_160.png', title: 'Makroekonomi' },
-  { id: 3, src: '/assets/images/data_repo_160.png', title: 'Neraca Ekonomi' },
-  { id: 4, src: '/assets/images/data_repo_160.png', title: 'Bisnis' },
-  { id: 5, src: '/assets/images/data_repo_160.png', title: 'Harga-Harga' },
-  {
-    id: 6,
-    src: '/assets/images/data_repo_160.png',
-    title: 'Pertanian, Kehutanan, Perikanan',
-  },
-  { id: 7, src: '/assets/images/data_repo_160.png', title: 'Inflasi' },
-  { id: 8, src: '/assets/images/data_repo_160.png', title: 'Kependudukan' },
-  { id: 9, src: '/assets/images/data_repo_160.png', title: 'Pariwisata' },
-  { id: 10, src: '/assets/images/data_repo_160.png', title: 'Ekspor-Impor' },
-])
+const kategori = ref([])
+
+const fetchGroups = async () => {
+  try {
+    const res = await fetch('http://localhost:3500/ckan/group_list')
+    const data = await res.json()
+
+     kategori.value = data
+  } catch (error) {
+    console.error('Gagal mengambil data group:', error)
+  }
+}
 
 const updateItemsPerSlide = () => {
   const width = window.innerWidth
@@ -73,23 +67,23 @@ const updateItemsPerSlide = () => {
   }
 }
 
-const chunkedImages = computed(() => {
-  const chunks = []
-  for (let i = 0; i < images.value.length; i += itemsPerSlide.value) {
-    chunks.push(images.value.slice(i, i + itemsPerSlide.value))
-  }
-  return chunks
-})
+// const chunkedImages = computed(() => {
+//   const chunks = []
+//   for (let i = 0; i < images.value.length; i += itemsPerSlide.value) {
+//     chunks.push(images.value.slice(i, i + itemsPerSlide.value))
+//   }
+//   return chunks
+// })
 
 
 
-function urlImage(image){
-  if(image){
-    return API_ENDPOINTS.BERITA_IMAGE+'/'+image
-  }else{
-    return false
-  }
-}
+// function urlImage(image){
+//   if(image){
+//     return API_ENDPOINTS.BERITA_IMAGE+'/'+image
+//   }else{
+//     return false
+//   }
+// }
 
 
 const berita = reactive({
@@ -122,21 +116,47 @@ const fetchHeadlineBerita = async () => {
   }
 }
 
+const dataset = ref([])
+
 const data_section = reactive({
-  description:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum... ',
-  link_lainnya: '#',
+  judul:'',
+  deskripsi: '',
+  link_lainnya: '',
   text_lainnya: '(Baca selengkapnya)',
 })
 
-const dataset = ref([
-  { text: 'Dataset A', href: '#' },
-  { text: 'Dataset B', href: '#' },
-])
+const fetchTopInsight = async () => {
+  try {
+    const res = await fetch(API_ENDPOINTS.INSIGHT_TOP)
+    const top = await res.json()
+
+    data_section.judul = top.judul
+    data_section.deskripsi = top.deskripsi
+    data_section.link_lainnya = `/regional_insight/${top.id}`
+
+    fetchRelatedDatasets(top.id)
+  } catch (err) {
+    console.error('Gagal ambil top insight:', err)
+  }
+}
+
+const fetchRelatedDatasets = async (id) => {
+  try {
+    const res = await fetch(`${API_ENDPOINTS.INSIGHT}/${id}/related-datasets`)
+    const data = await res.json()
+    dataset.value = data
+  } catch (error) {
+    console.error('Gagal memuat related datasets:', error)
+  }
+}
+
+
 
 onMounted(() => {
   fetchHeadlineBerita()
   updateItemsPerSlide()
+  fetchTopInsight()
+  fetchGroups()
   window.addEventListener('resize', updateItemsPerSlide)
 })
 

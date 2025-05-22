@@ -15,7 +15,11 @@
             <div class="card-body">
               <img :src="item.icon" :alt="'icon_' + key" style="height: 232px; width: auto" />
               <h5 class="card-title text-capitalize">{{ key }}</h5>
-              <a :href="item.insight" class="btn" style="color: white; background-color: #02609a">Lihat Insight</a>
+              <router-link :to="{ path: '/regional_insight', query: { region: key } }" class="btn"
+                style="color: white; background-color: #02609a">
+                Lihat Insight
+              </router-link>
+
             </div>
           </div>
         </div>

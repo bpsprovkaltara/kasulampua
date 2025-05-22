@@ -9,12 +9,12 @@
     <div class="container mt-5">
       <div id="multiImageCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
-          <div class="carousel-item" v-for="(group, index) in chunkedImages" :key="index"
+          <div class="carousel-item" v-for="(group, index) in chunkedKategori" :key="index"
             :class="{ active: index === 0 }">
             <div class="d-flex justify-content-center">
-              <div class="image-container mx-2" v-for="image in group" :key="image.id">
-                <img :src="image.src" class="rounded" :alt="image.title" />
-                <div class="image-title fw-bolder text-wrap">{{ image.title }}</div>
+              <div class="image-container mx-2" v-for="kategori in group" :key="kategori.id">
+                <img  :src="kategori.image_url || '/assets/images/data_repo_160.png'" class="rounded" :alt="kategori.title" />
+                 <a :href="`${urlCkan}/group/${kategori.name}`" target="_blank" class="link-ui">{{ kategori.title }}</a>
               </div>
             </div>
           </div>
@@ -31,18 +31,43 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed,onMounted,ref } from 'vue'
+import { API_ENDPOINTS } from '@/config/api'
 
 const props = defineProps({
-  images: Array,
+  kategori: Array,
   itemsPerSlide: Number
 })
 
-const chunkedImages = computed(() => {
+const urlCkan = ref();
+
+const chunkedKategori = computed(() => {
   const chunks = []
-  for (let i = 0; i < props.images.length; i += props.itemsPerSlide) {
-    chunks.push(props.images.slice(i, i + props.itemsPerSlide))
+  for (let i = 0; i < props.kategori.length; i += props.itemsPerSlide) {
+    chunks.push(props.kategori.slice(i, i + props.itemsPerSlide))
   }
   return chunks
+})
+
+const fetchData = async () => {
+  try {
+    const res = await fetch(API_ENDPOINTS.SETELAN + '?set_key=ckan_api_url')
+    const data = await res.json()
+
+    if (Array.isArray(data) && data.length > 0) {
+      const rawUrl = data[0].set_val
+      urlCkan.value = rawUrl.replace(/\/api$/, '')
+    } else {
+      console.warn('Data kosong atau format tidak sesuai')
+    }
+  } catch (err) {
+    console.error('Gagal ambil data setelan:', err)
+  }
+}
+
+
+
+onMounted(() => {
+  fetchData()
 })
 </script>

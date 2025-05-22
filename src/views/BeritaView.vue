@@ -2,7 +2,7 @@
 <template>
   <Navbar />
   <section class="py-5 container">
-    <Breadcump title="Berita" :title_detil="['berita']" />
+    <Breadcump :title_detil="title_detail" />
     <div class="row g-4" v-if="beritaList.length">
       <div class="col-md-6 col-lg-4" v-for="(item, index) in beritaList" :key="index">
         <div class="card h-100 shadow-sm border-0">
@@ -39,10 +39,10 @@
 
 <script setup>
 
-import Navbar from '../components/Nav.vue'
+import Navbar from '../components/NavSection.vue'
 import Kontak from '../components/KontakSection.vue'
 import Footer from '../components/Footer.vue'
-import Breadcump from '../components/Breadc.vue'
+import Breadcump from '../components/BreadcSection.vue'
 import {API_ENDPOINTS} from '../config/api'
 import { ref, onMounted } from 'vue'
 
@@ -61,6 +61,13 @@ function urlImage(image){
     return false
   }
 }
+
+const title_detail = {
+  title: 'Berita',
+  parent: [
+  ]
+}
+
 
 onMounted(fetchBerita)
 </script>
