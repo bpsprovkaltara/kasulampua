@@ -61,12 +61,22 @@
             <div class="fw-bold">{{ resource.name }}</div>
             <small class="text-muted">{{ resource.description }}</small>
           </div>
-          <div class="text-end">
-            <span class="badge bg-secondary mb-2">{{ resource.format }}</span><br />
-            <a :href="resource.url" class="btn btn-sm btn-outline-primary" target="_blank">
-              ⬇ Unduh
-            </a>
+          <div class="d-flex flex-column align-items-end">
+            <span class="badge bg-secondary mb-2">{{ resource.format }}</span>
+            <div class="d-flex gap-2">
+              <a :href="resource.url" class="btn btn-sm btn-outline-primary" target="_blank">
+                ⬇ Unduh
+              </a>
+              <button
+                v-if="['xlsx', 'xls', 'csv'].includes(resource.format.toLowerCase())"
+                class="btn btn-sm btn-outline-success"
+                @click="previewExcel(resource.url)"
+              >
+                👁️ Preview
+              </button>
+            </div>
           </div>
+
         </li>
       </ul>
 
@@ -92,12 +102,29 @@
     <div class="spinner-border text-secondary" role="status"></div>
     <p class="mt-3">Memuat data dataset...</p>
   </div>
+<div v-if="showModal" class="modal-backdrop fade show position-fixed" style="z-index: 1040;"></div>
+
+<div v-if="showModal" class="modal fade show d-block" tabindex="-1" style="z-index: 1050;">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Preview Data Excel</h5>
+        <button type="button" class="btn-close" @click="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <ExcelPreview :fileUrl="fileUrl" :visible="showModal" />
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>
 
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import ExcelPreview from '../components/ExcelPreview.vue'
 
 const route = useRoute()
 const dataset = ref(null)
@@ -122,6 +149,14 @@ const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
+}
+
+const showModal = ref(false)
+const fileUrl = ref('')
+
+const previewExcel = (url) => {
+  fileUrl.value = url
+  showModal.value = true
 }
 
 const formatDate = (dateStr) => {
