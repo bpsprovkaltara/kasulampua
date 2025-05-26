@@ -24,6 +24,7 @@ import DatasetSidebar from '@/components/DatasetSidebar.vue'
 import DatasetFilter from '@/components/DatasetFilter.vue'
 import DatasetCard from '@/components/DatasetCard.vue'
 import Pagination from '@/components/DatasetPagination.vue'
+import { DATAHUB_ENDPOINTS } from '@/config/api'
 
 
 const route = useRoute()
@@ -46,7 +47,7 @@ const fetchGroupDatasets = async () => {
   if (!groupId.value) return
 
   try {
-    const res = await fetch(`http://localhost:3500/ckan/group-packages/${groupId.value}?page=${currentPage.value}&rows=${limit}`)
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_GROUP_PACKAGE}/${groupId.value}?page=${currentPage.value}&rows=${limit}`)
     const data = await res.json()
 
     groupTitle.value = data.group.display_name || ''
@@ -73,7 +74,7 @@ const applySearch = () => {
 
 //GET /ckan/datasets-search?org=bps-kalsel&keyword=transportasi&rows=10&offset=0
 const fetchDataFiltered = async () => {
-  const res = await fetch(`http://localhost:3500/ckan/datasets-search?group=${groupName.value}&rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
+  const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET_SEARCH}?group=${groupName.value}&rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
   const data = await res.json()
   datasets.value = data.result.results
   filteredDatasets.value = data.result.results

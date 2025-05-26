@@ -24,6 +24,7 @@ import DatasetFilter from '@/components/DatasetFilter.vue'
 import DatasetCard from '@/components/DatasetCard.vue'
 import Pagination from '@/components/DatasetPagination.vue'
 import DatasetSidebar from '@/components/DatasetSidebar.vue'
+import { DATAHUB_ENDPOINTS } from '@/config/api'
 const router = useRouter()
 const route = useRoute()
 const datasets = ref([])
@@ -37,7 +38,7 @@ const currentPage = computed(() => Math.floor(offset.value / limit) + 1)
 const totalPages = computed(() => Math.ceil(totalCount.value / limit))
 
 const fetchData = async () => {
-  const res = await fetch(`http://localhost:3500/ckan/datasets?limit=${limit}&offset=${offset.value}`)
+  const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET}?limit=${limit}&offset=${offset.value}`)
   const data = await res.json()
   datasets.value = data.result
   filteredDatasets.value = data.result
@@ -60,7 +61,7 @@ const applySearch = () => {
 }
 
 const fetchDataFiltered = async () => {
-  const res = await fetch(`http://localhost:3500/ckan/datasets-search?rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
+  const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET_SEARCH}?rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
   const data = await res.json()
   datasets.value = data.result.results
   filteredDatasets.value = data.result.results

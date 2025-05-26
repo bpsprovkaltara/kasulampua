@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const DATAHUB_BASE_URL = import.meta.env.VITE_DATAHUB_BASE_URL
+
+
 
 export const API_ENDPOINTS = {
   BASE_URL: `${API_BASE_URL}`,
@@ -21,4 +24,18 @@ export const API_ENDPOINTS = {
 
   DATASET_KATEGORI: `${API_BASE_URL}/api/dataset-kategori`,
   LISTDATASET: `${API_BASE_URL}/api/dataset-list`,
+}
+
+
+export const DATAHUB_ENDPOINTS = {
+  BASE_URL: `${DATAHUB_BASE_URL}`,
+  CKAN_DATASET: `${DATAHUB_BASE_URL}/ckan/datasets`,
+  CKAN_DATASET_SHOW: `${DATAHUB_BASE_URL}/ckan/datasets-show`,
+  CKAN_GROUP: `${DATAHUB_BASE_URL}/ckan/group`,
+  CKAN_GROUP_PACKAGE: `${DATAHUB_BASE_URL}/ckan/group-packages`,
+  CKAN_DATASET_SEARCH: `${DATAHUB_BASE_URL}/ckan/datasets-search`,
+  CKAN_ORGANIZATION_PACKAGE: `${DATAHUB_BASE_URL}/ckan/organization-packages`,
+  CKAN_GROUP_LIST: `${DATAHUB_BASE_URL}/ckan/group_list`,
+  CKAN_ORGANIZATION_LIST: `${DATAHUB_BASE_URL}/ckan/organization_list`,
+  CKAN_URL_PROXY: `${DATAHUB_BASE_URL}/ckan/proxy-excel`
 }

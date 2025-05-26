@@ -124,6 +124,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import ExcelPreview from '../components/ExcelPreview.vue'
+import { DATAHUB_ENDPOINTS } from '@/config/api'
 
 const route = useRoute()
 const dataset = ref(null)
@@ -169,7 +170,7 @@ const formatDate = (dateStr) => {
 
 const fetchDataset = async (id) => {
   try {
-    const res = await fetch(`http://localhost:3500/ckan/datasets-show/${id}`)
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET_SHOW}/${id}`)
     const data = await res.json()
     dataset.value = data.result
     emit('setTitle', dataset.value.title)

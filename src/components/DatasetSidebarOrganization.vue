@@ -10,12 +10,13 @@
 </template>
 
 <script setup>
+import { DATAHUB_ENDPOINTS } from '@/config/api'
 import { ref, onMounted } from 'vue'
 
 const organization = ref([])
 
 onMounted(async () => {
-  const res = await fetch('http://localhost:3500/ckan/organization_list')
+  const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_ORGANIZATION_LIST}`)
   const data = await res.json()
   organization.value = data.map(organization => ({ id: organization.id, name: organization.title }))
 })

@@ -70,6 +70,7 @@
 </template>
 
 <script setup>
+import { DATAHUB_ENDPOINTS } from '@/config/api'
 import { ref, onMounted, computed } from 'vue'
 
 
@@ -80,12 +81,9 @@ const offset = ref(0)
 const limit = 10
 const totalCount = ref(1000)
 
-
-const API_URL = 'http://localhost:3500/ckan/datasets'
-
 const fetchData = async () => {
   try {
-    const url = `${API_URL}?limit=${limit}&offset=${offset.value}`
+    const url = `${DATAHUB_ENDPOINTS.CKAN_DATASET}?limit=${limit}&offset=${offset.value}`
     const res = await fetch(url)
     const data = await res.json()
 
@@ -164,7 +162,7 @@ const topics = ref([])
 
 const fetchGroups = async () => {
   try {
-    const res = await fetch('http://localhost:3500/ckan/group_list')
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_GROUP_LIST}`)
     const data = await res.json()
 
     topics.value = data.map(group => ({
@@ -181,7 +179,7 @@ const selectedGroup = ref(null)
 const selectGroup = async (groupId) => {
   selectedGroup.value = groupId
   try {
-    const res = await fetch(`http://localhost:3000/ckan/group/${groupId}?include=true`)
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_GROUP}/${groupId}?include=true`)
     const data = await res.json()
 
     datasets.value = data.packages.map(ds => ({

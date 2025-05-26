@@ -21,6 +21,7 @@
 </template>
 
 <script setup>
+import { DATAHUB_ENDPOINTS } from '@/config/api'
 import { ref, watch, onMounted } from 'vue'
 import * as XLSX from 'xlsx'
 
@@ -41,7 +42,7 @@ const loadExcel = async () => {
 
   try {
     const res = await fetch(
-      'http://localhost:3500/ckan/proxy-excel?url=' + encodeURIComponent(props.fileUrl)
+      `${DATAHUB_ENDPOINTS.CKAN_URL_PROXY}?url=` + encodeURIComponent(props.fileUrl)
     )
 
     if (!res.ok) throw new Error('Gagal mengambil file dari server proxy')

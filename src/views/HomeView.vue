@@ -11,7 +11,7 @@
 
 <script setup>
 import { ref, reactive,  onMounted, onBeforeUnmount } from 'vue'
-import {API_ENDPOINTS} from '../config/api'
+import {API_ENDPOINTS, DATAHUB_ENDPOINTS} from '../config/api'
 
 
 import Navbar from '../components/NavSection.vue'
@@ -24,7 +24,7 @@ import Kontak from '../components/KontakSection.vue'
 import IndikatorStrategis from '@/components/IndikatorStrategis.vue'
 
 
-const pusatInformasi = ref({ href: 'https://info-kasulampua.vercel.app/' })
+const pusatInformasi = ref({ href: 'https://info.kasulampua.id/' })
 
 const header = reactive({
   logo: 'assets/images/logo_instansi.png',
@@ -44,7 +44,7 @@ const kategori = ref([])
 
 const fetchGroups = async () => {
   try {
-    const res = await fetch('http://localhost:3500/ckan/organization_list')
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_ORGANIZATION_LIST}`)
     const data = await res.json()
 
      kategori.value = data
