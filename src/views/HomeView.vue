@@ -19,7 +19,7 @@ import Header from '../components/HeadSection.vue'
 import DataRepository from '../components/DataRepository.vue'
 import NewsSection from '../components/NewsSection.vue'
 import DataStory from '../components/DataStory.vue'
-import Footer from '../components/Footer.vue'
+import Footer from '../components/FooterSection.vue'
 import Kontak from '../components/KontakSection.vue'
 import IndikatorStrategis from '@/components/IndikatorStrategis.vue'
 
@@ -29,8 +29,7 @@ const pusatInformasi = ref({ href: 'https://info-kasulampua.vercel.app/' })
 const header = reactive({
   logo: 'assets/images/logo_instansi.png',
   title: 'Kasulampua',
-  description:
-    'Konsultasi Regional Kalimantan, Sulawesi, Maluku, dan Papua (Kasulampua) merupakan forum bertukar pengetahuan tentang permasalahan dan pembangunan ekonomi di wilayah Kasulampua yang diinisiasi oleh Badan Pusat Statistik, Bappeda, dan Bank Indonesia.',
+  description:''
 })
 
 const regional = reactive({
@@ -45,7 +44,7 @@ const kategori = ref([])
 
 const fetchGroups = async () => {
   try {
-    const res = await fetch('http://localhost:3500/ckan/group_list')
+    const res = await fetch('http://localhost:3500/ckan/organization_list')
     const data = await res.json()
 
      kategori.value = data

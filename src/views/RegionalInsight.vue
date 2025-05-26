@@ -28,7 +28,7 @@ import { onMounted, ref } from 'vue'
 import RegionalFilter from '../components/RegionalFilter.vue'
 import RegionalCard from '../components/RegionalCard.vue'
 import Navbar from '../components/NavSection.vue'
-import Footer from '../components/Footer.vue'
+import Footer from '../components/FooterSection.vue'
 import Kontak from '../components/KontakSection.vue'
 import {API_ENDPOINTS} from '../config/api'
 

@@ -51,7 +51,6 @@
     </div>
 
 
-    <!-- 📁 File Tersedia -->
     <div v-if="dataset.resources?.length" class="mb-4">
       <h4 class="fw-bold mb-3">📁 File Tersedia</h4>
       <ul class="list-group mb-3">
@@ -131,7 +130,7 @@ const dataset = ref(null)
 
 const currentPage = ref(1)
 const itemsPerPage = 10
-const emit = defineEmits(['setTitle'])
+const emit = defineEmits(['setTitle','setOrganizationName'])
 
 const paginatedResources = computed(() => {
   if (!dataset.value?.resources) return []
@@ -174,6 +173,8 @@ const fetchDataset = async (id) => {
     const data = await res.json()
     dataset.value = data.result
     emit('setTitle', dataset.value.title)
+    emit('setOrganizationName', dataset.value.organization?.title)
+
 
   } catch (err) {
     console.error("Gagal mengambil dataset:", err)

@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="margin-top: 200px;">
+  <div class="container" style="margin-top: 300px;">
     <h2 class="section-title" style="color: #168418">Regional Data Repository</h2>
     <p class="text-center col-md-8 offset-md-2 text-wrap" style="color: #185c77">
       Data repositori yang terintegrasi secara machine-to-machine dengan memanfaatkan
@@ -13,8 +13,10 @@
             :class="{ active: index === 0 }">
             <div class="d-flex justify-content-center">
               <div class="image-container mx-2" v-for="kategori in group" :key="kategori.id">
-                <img  :src="kategori.image_url || '/assets/images/data_repo_160.png'" class="rounded" :alt="kategori.title" />
-                 <a :href="`${urlCkan}/group/${kategori.name}`" target="_blank" class="link-ui">{{ kategori.title }}</a>
+                 <a :href="`/dataset?organization_id=${kategori.id}`" target="_blank" class="link-ui">
+                <img  :src="kategori.image_display_url || '/assets/images/data_repo_160.png'" class="rounded" :alt="kategori.title" />
+
+                  {{ kategori.title }}</a>
               </div>
             </div>
           </div>

@@ -68,7 +68,7 @@ import { ref, onMounted,  watch } from 'vue'
 
 import PageHeader from '../components/BreadcSection.vue'
 import ContactSection from '../components/KontakSection.vue'
-import Footer from '../components/Footer.vue'
+import Footer from '../components/FooterSection.vue'
 import Navbar from '../components/NavSection.vue'
 import {API_ENDPOINTS} from '../config/api'
 

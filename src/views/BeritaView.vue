@@ -41,7 +41,7 @@
 
 import Navbar from '../components/NavSection.vue'
 import Kontak from '../components/KontakSection.vue'
-import Footer from '../components/Footer.vue'
+import Footer from '../components/FooterSection.vue'
 import Breadcump from '../components/BreadcSection.vue'
 import {API_ENDPOINTS} from '../config/api'
 import { ref, onMounted } from 'vue'

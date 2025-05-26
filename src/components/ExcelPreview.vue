@@ -54,7 +54,7 @@ const loadExcel = async () => {
     const sheet = workbook.Sheets[sheetName]
 
     const jsonData = XLSX.utils.sheet_to_json(sheet)
-    excelData.value = jsonData.slice(0, 20) // hanya tampilkan 20 baris pertama
+    excelData.value = jsonData.slice(0, 20)
     excelHeaders.value = Object.keys(jsonData[0] || {})
   } catch (err) {
     error.value = 'Gagal memuat file Excel: ' + err.message

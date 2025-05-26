@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-// Tidak ada props atau logic untuk saat ini
+
 </script>
 
 <style scoped>

@@ -11,7 +11,7 @@
 
         <DatasetFilter v-model:search="search" @search="applySearch" class="mb-4"/>
         <DatasetCard :datasets="filteredDatasets" />
-        <Pagination :currentPage="currentPage" :totalPages="totalPages" @pageChanged="goToPage" />
+        <Pagination :currentPage="currentPage" :totalPages="totalPages" @pageChanged="goToPage"  class="mt-2"/>
       </div>
     </div>
   </div>
@@ -82,7 +82,16 @@ const fetchDataFiltered = async () => {
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     offset.value = (page - 1) * limit
+
     fetchDataFiltered()
+
+    router.replace({
+      path: route.path,
+      query: {
+        ...route.query,
+        page: page
+      }
+    })
   }
 }
 
@@ -94,13 +103,27 @@ const organizationSelected = (newOrgId) => {
 
 }
 
+const setPage = () => {
+  const page = parseInt(route.query.page)
+  if (page > 1) {
+    const waitUntilReady = setInterval(() => {
+      if (totalPages.value > 0) {
+        clearInterval(waitUntilReady)
+        goToPage(page)
+      }
+    }, 100)
+  }
+}
+
+
 watch(() => route.query.group_id, (newVal) => {
   organizationId.value = newVal
   offset.value = 0
   fetchOrganizationDatasets()
 })
 
-onMounted(() => {
-  fetchOrganizationDatasets()
+onMounted(async () => {
+  await fetchOrganizationDatasets()
+  setPage()
 })
 </script>

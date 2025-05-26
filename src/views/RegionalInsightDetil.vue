@@ -55,7 +55,7 @@
 import { onMounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
-import Footer from '../components/Footer.vue'
+import Footer from '../components/FooterSection.vue'
 import Kontak from '../components/KontakSection.vue'
 import PageHeader from '../components/BreadcSection.vue'
 import InsightDetailBox from '../components/InsightDetail.vue'

@@ -10,7 +10,7 @@
       <div class="col-md-10">
         <DatasetFilter v-model:search="search" @search="applySearch" class="mb-4" />
         <DatasetCard :datasets="filteredDatasets" />
-        <Pagination :currentPage="currentPage" :totalPages="totalPages" @pageChanged="goToPage" />
+        <Pagination :currentPage="currentPage" :totalPages="totalPages" @pageChanged="goToPage" class="mt-2"/>
       </div>
     </div>
   </div>
@@ -18,14 +18,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter,useRoute} from 'vue-router'
 
 import DatasetFilter from '@/components/DatasetFilter.vue'
 import DatasetCard from '@/components/DatasetCard.vue'
 import Pagination from '@/components/DatasetPagination.vue'
 import DatasetSidebar from '@/components/DatasetSidebar.vue'
 const router = useRouter()
-
+const route = useRoute()
 const datasets = ref([])
 const filteredDatasets = ref([])
 const search = ref('')
@@ -74,6 +74,26 @@ const goToPage = (page) => {
   } else {
     fetchDataFiltered()
   }
+
+  router.replace({
+      path: route.path,
+      query: {
+        ...route.query,
+        page: page
+      }
+    })
+}
+
+const setPage = () => {
+  const page = parseInt(route.query.page)
+  if (page > 1) {
+    const waitUntilReady = setInterval(() => {
+      if (totalPages.value > 0) {
+        clearInterval(waitUntilReady)
+        goToPage(page)
+      }
+    }, 100)
+  }
 }
 
 const redirectToGroup = (groupId) => {
@@ -84,5 +104,8 @@ const redirectToOrg = (orgId) => {
   router.replace({ path: '/dataset', query: { organization_id: orgId } })
 }
 
-onMounted(fetchData)
+onMounted(async ()=>{
+  await fetchData()
+  setPage()
+})
 </script>

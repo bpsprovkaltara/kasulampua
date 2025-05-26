@@ -18,7 +18,7 @@
 
 <script setup>
 import Navbar from '../components/NavSection.vue'
-import Footer from '../components/Footer.vue'
+import Footer from '../components/FooterSection.vue'
 import Kontak from '../components/KontakSection.vue'
 import Breadcump from '../components/BreadcSection.vue'
 
