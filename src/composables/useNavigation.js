@@ -25,7 +25,7 @@ export function useNavigation() {
 
   const navigationLinks = computed(() => [
     { text: 'Beranda', href: '/' },
-    { text: 'Pusat Informasi', href: 'https://info-kasulampua.vercel.app/' },
+    { text: 'Pusat Informasi', href: 'https://info.kasulampua.id' },
     { text: 'Regional Insight', href: '/regional_insight' },
     { text: 'Data', href: '/dataset' },
     { text: 'Tentang', href: '/about' },
