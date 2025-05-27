@@ -33,10 +33,12 @@
           </div>
         </div>
 
-        <div v-if="state.insight" class="bg-white rounded shadow-sm p-3 " style="aspect-ratio: 1 / 2.45; width: 100%; max-width: 1070px; margin: auto;">
+        <div class="tableau-wrapper overflow-auto">
+          <div v-if="state.insight" class="bg-white rounded shadow-sm p-3 " style="aspect-ratio: 1 / 2.45; width: 100%; max-width: 1070px; margin: auto;">
           <iframe frameborder="0" allowtransparency="true" allowfullscreen="true" title="Data Visualization"
           marginheight="0" marginwidth="0" scrolling="no" style="width: 100%; height: 100%; border: none;"
             :src="state.insight.link" ></iframe>
+        </div>
         </div>
       </div>
     </div>
