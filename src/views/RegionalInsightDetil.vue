@@ -1,7 +1,7 @@
 <template>
   <Navbar />
 
-  <div class="header_insight">
+  <div class="header_insight mt-5 mt-md-0">
     <PageHeader :title_detil="title_detail" />
 
     <div class="py-5">

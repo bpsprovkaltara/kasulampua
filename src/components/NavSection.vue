@@ -41,7 +41,7 @@ const scrolledClass = computed(() => {
 
 <template>
   <nav :class="['navbar navbar-expand-lg navbar-light', customNavClass,scrolledClass]">
-    <div class="container">
+    <div class="container nav-mobile">
       <a class="navbar-brand img-nav  mb-2 mt-3" href="#"><img :src="navigation.logo" alt="Logo"
           style="height: 90px;" /></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

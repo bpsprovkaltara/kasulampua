@@ -1,6 +1,6 @@
 <template>
   <Navbar />
-  <section class="py-5 container">
+  <section class="py-5 container mt-5 mt-md-0">
     <PageHeader :title_detil="title_detail" />
   <DatasetDetail @setTitle="datasetTitle = $event" @setOrganizationName="organizationTitle = $event"/>
 

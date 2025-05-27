@@ -2,7 +2,7 @@
   <Navbar background_class="bg-default" />
 
 
-  <section class="container py-5">
+  <section class="container py-5 mt-5 mt-md-0">
     <PageHeader :title_detil="title_detail" />
     <div class="row">
       <div class="col-lg-8">

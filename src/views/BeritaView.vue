@@ -1,7 +1,7 @@
 <!-- src/views/BeritaView.vue -->
 <template>
   <Navbar />
-  <section class="py-5 container">
+  <section class="py-5 container mt-5 mt-md-0">
     <Breadcump :title_detil="title_detail" />
     <div class="row g-4" v-if="beritaList.length">
       <div class="col-md-6 col-lg-4" v-for="(item, index) in beritaList" :key="index">

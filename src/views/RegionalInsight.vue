@@ -1,7 +1,7 @@
 <template>
   <Navbar />
   <div class="header_insight">
-    <div class="container">
+    <div class="container mt-5 mt-md-0">
       <div class="text-center">
         <h1 class="fw-bold">REGIONAL <em>INSIGHT</em></h1>
         <p class="text-muted">

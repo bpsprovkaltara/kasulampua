@@ -202,6 +202,34 @@ footer {
 
 
 @media screen and (max-width: 960px) {
+
+
+  .scrolled-home {
+    background: #dff9df !important;
+  }
+
+  .scrolled-dataset,
+  .scrolled-about{
+    background: #dff9df !important;
+  }
+
+  .scrolled-regional_insight{
+    background: #E1E4CF !important;
+  }
+
+  .scrolled-regional_insight-detil{
+    background: #E1E4CF !important;
+
+  }
+
+  .bg-default {
+    background: #dff9df;
+  }
+
+  .bg-insight {
+    background: #E1E4CF;
+  }
+
   .header {
     background:
       linear-gradient(rgba(185, 222, 185, 0.6), rgba(185, 222, 185, 0.9)),
@@ -211,6 +239,14 @@ footer {
     padding-bottom: 50px;
     margin-bottom: 50px;
     height: auto;
+  }
+
+  .nav-mobile{
+    height: 100px;
+  }
+
+  .container-sm{
+    height: 80px;
   }
 
   .section-title {
