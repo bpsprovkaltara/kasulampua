@@ -108,7 +108,7 @@ const fetchHeadlineBerita = async () => {
         : '/assets/images/headline_image.png'
       berita.judul_headline = item.judul
       berita.ringkasan_headline = item.isi?.substring(0, 500) + '...'
-      berita.href = `/berita/detail/${item.slug}`
+      berita.href = `/berita/${item.slug}`
     }
   } catch (err) {
     console.error('Gagal memuat headline:', err)

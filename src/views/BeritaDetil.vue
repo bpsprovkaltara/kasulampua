@@ -41,7 +41,7 @@
               v-for="(item, index) in beritaList" :key="index">
               <img :src="urlImage(item.gambar)" class="me-3 rounded" style="width: 80px; height: 100px; object-fit: cover" />
               <div class="text-start">
-                <router-link :to="`/berita/${index}`"
+                <router-link :to="`/berita/${item.slug}`"
                   class="text-dark fw-semibold text-decoration-none small d-block text-start">
                   {{ item.judul.length > 120 ? item.judul.slice(0, 120) + '…' : item.judul }}
                 </router-link>
@@ -97,9 +97,16 @@ const fetchBerita = async () => {
 
 }
 
+const fetchBeritaSlug = async () => {
+  const res = await fetch(API_ENDPOINTS.BERITA_SLUG+'/'+route.params.id)
+  const data = await res.json()
+  news.value = data || []
+}
+
+
 const setNews = () => {
-  const id = parseInt(route.params.id)
-  news.value = beritaList.value[id] || {
+  const id = route.params.id
+  news.value = cariBeritaBySlug(id) || {
     title: 'Berita tidak ditemukan',
     urlToImage: '',
     publishedAt: '',
@@ -109,6 +116,10 @@ const setNews = () => {
 }
 
 
+const cariBeritaBySlug = (slug) => {
+  return beritaList.value.find(item => item.slug === slug)
+}
+
 function urlImage(image){
   if(image){
     return API_ENDPOINTS.BERITA_IMAGE+'/'+image
@@ -117,7 +128,10 @@ function urlImage(image){
   }
 }
 
-onMounted(fetchBerita)
+onMounted(()=>{
+  fetchBerita(),
+  fetchBeritaSlug()
+})
 
 watch(() => route.params.id, () => {
   setNews()

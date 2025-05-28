@@ -11,7 +11,7 @@
           <div class="card-body">
             <h6 class="card-title fw-bold">
 
-              <router-link :to="`/berita/${index}`"
+              <router-link :to="`/berita/${item.slug}`"
                 class="text-dark fw-semibold text-decoration-none small d-block text-start"
                 style="color:green;text-decoration:none;">
                 {{ item.judul }}

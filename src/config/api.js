@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
 
   // CRUD Berita
   BERITA: `${API_BASE_URL}/api/berita`,
+  BERITA_SLUG: `${API_BASE_URL}/api/berita/slug`,
   BERITA_DETAIL: (id) => `${API_BASE_URL}/api/berita/${id}`,
   BERITA_IMAGE:`${API_BASE_URL}/uploads/berita`,
 
