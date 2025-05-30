@@ -26,10 +26,19 @@
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body">
             <h6 class="fw-bold mb-3">Cari Berita</h6>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Searching..." v-model="search" />
-              <button class="btn btn-success"><i class="bi bi-search"></i></button>
-            </div>
+            <form @submit.prevent="handleSearch">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Searching..."
+                  v-model="search"
+                />
+                <button class="btn btn-success" type="submit">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -63,7 +72,7 @@
 
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted,  watch } from 'vue'
 
 import PageHeader from '../components/BreadcSection.vue'
@@ -74,6 +83,7 @@ import {API_ENDPOINTS} from '../config/api'
 
 const beritaList = ref([])
 const route = useRoute()
+const router = useRouter()
 const search = ref('')
 const news = ref({
   judul: '',
@@ -112,6 +122,13 @@ const setNews = () => {
     publishedAt: '',
     description: '',
     content: ''
+  }
+}
+
+
+const handleSearch = () => {
+  if (search.value.trim()) {
+    router.push({ path: '/berita', query: { q: search.value } })
   }
 }
 

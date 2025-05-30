@@ -45,11 +45,16 @@ import Footer from '../components/FooterSection.vue'
 import Breadcump from '../components/BreadcSection.vue'
 import {API_ENDPOINTS} from '../config/api'
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 const beritaList = ref([])
 
-const fetchBerita = async () => {
-  const res = await fetch(API_ENDPOINTS.BERITA)
+const route = useRoute()
+
+
+const fetchBerita = async (filter) => {
+  const query = new URLSearchParams(filter).toString()
+  const res = await fetch(`${API_ENDPOINTS.BERITA}?${query}`)
   const data = await res.json()
   beritaList.value = data || []
 }
@@ -69,7 +74,15 @@ const title_detail = {
 }
 
 
-onMounted(fetchBerita)
+onMounted(()=>{
+  const initialFilter = {}
+
+  if (route.query.q) {
+    initialFilter.keyword = route.query.q
+
+  }
+  fetchBerita(initialFilter)
+})
 </script>
 
 <style scoped>
