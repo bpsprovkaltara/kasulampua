@@ -90,7 +90,7 @@ const title_detail = {
 }
 
 const fetchBerita = async () => {
-  const res = await fetch(API_ENDPOINTS.BERITA)
+  const res = await fetch(API_ENDPOINTS.BERITA_TERKINI)
   const data = await res.json()
   beritaList.value = data || []
   setNews()
@@ -98,7 +98,7 @@ const fetchBerita = async () => {
 }
 
 const fetchBeritaSlug = async () => {
-  const res = await fetch(API_ENDPOINTS.BERITA_SLUG+'/'+route.params.id)
+  const res = await fetch(API_ENDPOINTS.BERITA_SLUG(route.params.id))
   const data = await res.json()
   news.value = data || []
 }

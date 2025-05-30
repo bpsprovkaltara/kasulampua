@@ -8,12 +8,15 @@ export const API_ENDPOINTS = {
 
   // CRUD Berita
   BERITA: `${API_BASE_URL}/api/berita`,
-  BERITA_SLUG: `${API_BASE_URL}/api/berita/slug`,
+  BERITA_SLUG: ($slug) => `${API_BASE_URL}/api/berita/slug/${$slug}`,
   BERITA_DETAIL: (id) => `${API_BASE_URL}/api/berita/${id}`,
   BERITA_IMAGE:`${API_BASE_URL}/uploads/berita`,
+  BERITA_TERKINI:`${API_BASE_URL}/api/berita/newBerita`,
+
 
   // CRUD Insight
   INSIGHT: `${API_BASE_URL}/api/insight`,
+  INSIGHT_SLUG:  ($slug) => `${API_BASE_URL}/api/insight/slug/${$slug}`,
   INSIGHT_DETAIL: (id) => `${API_BASE_URL}/api/insight/${id}`,
   INSIGHT_IMAGE:`${API_BASE_URL}/uploads/insight`,
   INSIGHT_TOP:`${API_BASE_URL}/api/insight/topInsight`,

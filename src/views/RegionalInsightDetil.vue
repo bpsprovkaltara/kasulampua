@@ -80,7 +80,7 @@ const state = reactive({
 
 const fetchInsight = async () => {
   try {
-    const res = await fetch(API_ENDPOINTS.INSIGHT_DETAIL(route.params.id))
+    const res = await fetch(API_ENDPOINTS.INSIGHT_SLUG(route.params.id))
     const data = await res.json()
     state.insight = data
   } catch (error) {

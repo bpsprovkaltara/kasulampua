@@ -18,7 +18,7 @@
 
       <div class="card-body">
         <h5 class="card-title fw-semibold mt-2 text-start">
-          <router-link :to="`/regional_insight/${props.id}`"  class="link-ui">
+          <router-link :to="`/regional_insight/${props.slug}`"  class="link-ui">
             {{ props.title }}
           </router-link>
         </h5>
@@ -44,6 +44,7 @@ import { API_ENDPOINTS } from '../config/api'
 
 const props = defineProps({
   id: String,
+  slug:String,
   image: String,
   region: String,
   title: String,

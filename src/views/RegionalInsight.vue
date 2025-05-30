@@ -14,7 +14,7 @@
       <div class="row">
         <RegionalCard v-for="(item, i) in insights" :id="item.id" :key="i" :image="item.gambar" :region="item.region"
           :badgeColor="item.badge" :title="item.judul" :date="item.tanggal_dibuat" :author="item.nama_author"
-          :location="item.wilayah" />
+          :location="item.wilayah" :slug="item.slug" />
       </div>
     </div>
   </div>

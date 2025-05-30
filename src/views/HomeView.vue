@@ -131,7 +131,7 @@ const fetchTopInsight = async () => {
 
     data_section.judul = top.judul
     data_section.deskripsi = top.deskripsi
-    data_section.link_lainnya = `/regional_insight/${top.id}`
+    data_section.link_lainnya = `/regional_insight/${top.slug}`
 
     fetchRelatedDatasets(top.id)
   } catch (err) {
