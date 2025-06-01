@@ -2,7 +2,7 @@
   <div style="margin-top: 80px;">
     <div class="container my-4">
       <h4 class="text-center fw-bold text-success mb-4">
-        INDIKATOR STRATEGIS REGIONAL
+        DATA STRATEGIS REGIONAL
       </h4>
 
       <div class="card shadow-sm rounded">
