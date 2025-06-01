@@ -3,7 +3,7 @@
     <div class="mt-5">
   <img :src="header.logo" alt="Logo" class="my-3" />
   <h5 class="fw-bolder" style="color: #187718;font-size: 24pt;">KONSULTASI REGIONAL PDRB</h5>
-  <p class="col-md-8 offset-md-2" style="color:#005596;font-size: 8vw;font-weight: bold;">KASULAMPUA</p>
+  <p class="col-md-8 offset-md-2" style="color:#005596;font-size: 6vw;font-weight: bold;">KASULAMPUA</p>
 
   <div class="mt-3 p-3 rounded col-md-8 offset-md-2 mx-3 mx-md-auto" style="border: 5px solid #02609A;">
     <div class="d-flex align-items-center justify-content-between flex-wrap">

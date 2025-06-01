@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="margin-top: 300px;">
+  <div class="container" style="margin-top: 350px;">
     <h2 class="section-title" style="color: #168418">Regional Data Repository</h2>
     <p class="text-center col-md-8 offset-md-2 text-wrap" style="color: #185c77">
       Data repositori yang terintegrasi secara machine-to-machine dengan memanfaatkan
