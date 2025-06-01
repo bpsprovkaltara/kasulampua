@@ -15,6 +15,8 @@ import { ref, onMounted } from 'vue'
 
 const organization = ref([])
 
+defineEmits(['organizationSelected'])
+
 onMounted(async () => {
   const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_ORGANIZATION_LIST}`)
   const data = await res.json()

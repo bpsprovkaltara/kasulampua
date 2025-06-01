@@ -26,7 +26,7 @@
             class="card-footer bg-white border-0 d-flex flex-wrap justify-content-between small text-muted px-3 pb-3">
             <span><i class="bi bi-calendar-event"></i> {{ item.tanggal_diperbarui }}</span>
             <span><i class="bi bi-person-circle"></i> {{ item.penulis?.length > 20 ? item.penulis.slice(0, 20) + '...' :
-              item.author }}</span>
+              item.penulis }}</span>
           </div>
         </div>
       </div>

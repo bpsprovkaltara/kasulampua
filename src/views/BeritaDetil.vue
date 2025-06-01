@@ -13,6 +13,8 @@
 
         <div class="text-muted small mb-4">
           <span class="ms-2"><i class="bi bi-calendar-event text-orange me-1 "></i>{{ news.tanggal_dibuat }}</span>
+          <span class="ms-2"><i class="bi bi-person-circle"></i> {{ news.penulis?.length > 20 ? news.penulis.slice(0, 20) + '...' :
+              news.penulis }}</span>
         </div>
 
         <p class="text-justify">
@@ -57,6 +59,7 @@
                 <small class="text-muted">
                   <i class="bi bi-calendar-event text-orange me-1 "></i>{{ item.tanggal_dibuat }}
                 </small>
+
               </div>
             </div>
           </div>
@@ -103,26 +106,42 @@ const fetchBerita = async () => {
   const res = await fetch(API_ENDPOINTS.BERITA_TERKINI)
   const data = await res.json()
   beritaList.value = data || []
-  setNews()
+  //setNews()
 
 }
 
 const fetchBeritaSlug = async () => {
   const res = await fetch(API_ENDPOINTS.BERITA_SLUG(route.params.id))
   const data = await res.json()
-  news.value = data || []
+
+  if(data.error){
+    news.value =  {
+    judul: 'Berita tidak ditemukan',
+    gambar: '',
+    tanggal_dibuat: '',
+    isi: '',
+    penulis: ''
+  }
+  }else{
+    news.value = data
+  }
+
+  trackInsight(news.value.judul)
 }
 
 
 const setNews = () => {
   const id = route.params.id
   news.value = cariBeritaBySlug(id) || {
-    title: 'Berita tidak ditemukan',
-    urlToImage: '',
-    publishedAt: '',
-    description: '',
-    content: ''
+    judul: 'Berita tidak ditemukan',
+    gambar: '',
+    tanggal_dibuat: '',
+    isi: '',
+    penulis: ''
   }
+
+  trackInsight(news.value.judul)
+
 }
 
 
@@ -149,6 +168,10 @@ onMounted(()=>{
   fetchBerita(),
   fetchBeritaSlug()
 })
+
+const trackInsight = (label) => {
+  window._paq?.push(['trackEvent', 'Berita', 'ViewBerita', 'Berita-'+label])
+}
 
 watch(() => route.params.id, () => {
   setNews()

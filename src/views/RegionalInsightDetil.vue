@@ -22,7 +22,7 @@
               <i class="bi bi-calendar-event me-1"></i> {{ formatDate(state.insight.tanggal_dibuat) }}
             </div>
             <div>
-              <i class="bi bi-person me-1"></i> {{ state.insight.nama_author }}
+              <i class="bi bi-person me-1"></i> {{ state.insight.author }}
             </div>
             <div>
               <i class="bi bi-eye me-1"></i> {{ Number(state.insight?.views ?? 0) + 1 }}
@@ -83,6 +83,8 @@ const fetchInsight = async () => {
     const res = await fetch(API_ENDPOINTS.INSIGHT_SLUG(route.params.id))
     const data = await res.json()
     state.insight = data
+
+    trackInsight(state.insight?.judul)
   } catch (error) {
     console.error('Gagal memuat insight:', error)
   }
@@ -96,6 +98,10 @@ const fetchRelatedDatasets = async () => {
   } catch (error) {
     console.error('Gagal memuat related datasets:', error)
   }
+}
+
+const trackInsight = (label) => {
+  window._paq?.push(['trackEvent', 'Insight', 'ViewInsight', 'Insight-'+label])
 }
 
 onMounted(() => {

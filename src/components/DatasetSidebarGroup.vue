@@ -15,6 +15,8 @@ import { ref, onMounted } from 'vue'
 
 const groups = ref([])
 
+defineEmits(['groupSelected'])
+
 onMounted(async () => {
   const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_GROUP_LIST}`)
   const data = await res.json()

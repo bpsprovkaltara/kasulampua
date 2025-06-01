@@ -63,8 +63,8 @@
           <div class="d-flex flex-column align-items-end">
             <span class="badge bg-secondary mb-2">{{ resource.format }}</span>
             <div class="d-flex gap-2">
-              <a :href="resource.url" class="btn btn-sm btn-outline-primary" target="_blank">
-                ⬇ Unduh
+              <a :href="resource.url" class="btn btn-sm btn-outline-primary" target="_blank" @click="trackDownload(resource.id+'##'+resource.name)">
+                ⬇ Unduh ({{ jumlahDownload[`${resource.id}##${resource.name}`] || 0 }})
               </a>
               <button
                 v-if="['xlsx', 'xls', 'csv'].includes(resource.format.toLowerCase())"
@@ -132,6 +132,7 @@ const dataset = ref(null)
 const currentPage = ref(1)
 const itemsPerPage = 10
 const emit = defineEmits(['setTitle','setOrganizationName'])
+const jumlahDownload = ref({})
 
 const paginatedResources = computed(() => {
   if (!dataset.value?.resources) return []
@@ -176,14 +177,36 @@ const fetchDataset = async (id) => {
     emit('setTitle', dataset.value.title)
     emit('setOrganizationName', dataset.value.organization?.title)
 
+    dataset.value.resources.forEach(resource => {
+      const label = `${resource.id}##${resource.name}`
+      fetchDownloadStats(label)
+    })
 
   } catch (err) {
     console.error("Gagal mengambil dataset:", err)
   }
 }
 
+
+const fetchDownloadStats = async (label) => {
+   const res = await fetch(`${DATAHUB_ENDPOINTS.ANALYTICS_DOWNLOAD}?label=${encodeURIComponent(label)}`)
+   const data = await res.json()
+
+    const items = Array.isArray(data) ? data : [data]
+    items.forEach(item => {
+      jumlahDownload.value[item.label] = Number(item.nb_events || 0)
+    })
+}
+
+const trackDownload = (label) => {
+  window._paq?.push(['trackEvent', 'Dataset', 'Download', label])
+}
+
+
+
 onMounted(() => {
   const id = route.params.id || route.query.id
   if (id) fetchDataset(id)
+
 })
 </script>
