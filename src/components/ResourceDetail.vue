@@ -49,6 +49,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import ExcelPreview from '../components/ExcelPreview.vue'
+import { DATAHUB_ENDPOINTS } from '@/config/api'
 
 const route = useRoute()
 const resourceId = route.params.id
@@ -60,7 +61,7 @@ const fileUrl = ref('')
 
 onMounted(async () => {
   try {
-    const res = await fetch(`http://localhost:3500/ckan/resource/${resourceId}`)
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_RESOURCE_DETAIL}/${resourceId}`)
     const json = await res.json()
     if (json.result) {
       resource.value = json.result

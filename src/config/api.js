@@ -41,7 +41,10 @@ export const DATAHUB_ENDPOINTS = {
   CKAN_ORGANIZATION_PACKAGE: `${DATAHUB_BASE_URL}/ckan/organization-packages`,
   CKAN_GROUP_LIST: `${DATAHUB_BASE_URL}/ckan/group_list`,
   CKAN_ORGANIZATION_LIST: `${DATAHUB_BASE_URL}/ckan/organization_list`,
+  CKAN_RESOURCE_DETAIL: `${DATAHUB_BASE_URL}/ckan/resource`,
+
   CKAN_URL_PROXY: `${DATAHUB_BASE_URL}/ckan/proxy-excel`,
 
-  ANALYTICS_DOWNLOAD: `${DATAHUB_BASE_URL}/analytics/download-statistik`
+  ANALYTICS_DOWNLOAD: `${DATAHUB_BASE_URL}/analytics/download-statistik`,
+
 }
