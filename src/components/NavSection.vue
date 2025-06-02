@@ -25,6 +25,8 @@ const customNavClass = computed(() => {
         return 'bg-default'
       case 'dataset-detail':
         return 'bg-default'
+      case 'resource-detail':
+        return 'bg-default'
       default:
         return ''
     }

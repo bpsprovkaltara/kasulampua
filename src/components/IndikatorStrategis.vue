@@ -24,9 +24,13 @@
           <div v-if="paginatedDataset.length > 0">
             <ul class="list-group list-group-flush">
               <li class="list-group-item" v-for="data in paginatedDataset" :key="data.id">
-                <a :href="data.ckan_url || data.url" target="_blank" class="text-primary link-ui">
+                <router-link
+                  :to="`/resource/${data.ckan_resource_id}`"
+                  class="text-primary link-ui"
+                >
                   {{ data.judul }}
-                </a>
+                </router-link>
+
               </li>
             </ul>
 

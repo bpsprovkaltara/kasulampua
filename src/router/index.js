@@ -7,6 +7,7 @@ import About from '@/views/AboutView.vue'
 import RegionalInsightDetil from '@/views/RegionalInsightDetil.vue'
 import Dataset from '@/views/DatasetViewRoute.vue'
 import DatasetDetail from '@/views/DatasetDetail.vue'
+import ResourceDetail from '@/views/ResourceDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,11 +47,17 @@ const router = createRouter({
       name: 'dataset-detail',
       component: DatasetDetail
     },
+     {
+      path: '/resource/:id',
+      name: 'resource-detail',
+      component: ResourceDetail
+    },
     {
       path: '/about',
       name: 'about',
       component: About,
     },
+
   ],
 })
 
