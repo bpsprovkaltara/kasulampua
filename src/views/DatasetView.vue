@@ -1,13 +1,13 @@
 <template>
   <div class="container-fluid">
     <div class="row mt-4">
-      <div class="col-md-2 border-end">
+      <div class="col-md-2 border-end order-2 order-md-1">
 
         <DatasetSidebar @groupSelected="redirectToGroup" @organizationSelected="redirectToOrg" />
 
       </div>
 
-      <div class="col-md-10">
+      <div class="col-md-10 order-1  order-md-2">
         <DatasetFilter v-model:search="search" @search="applySearch" class="mb-4" />
         <DatasetCard :datasets="filteredDatasets" />
         <Pagination :currentPage="currentPage" :totalPages="totalPages" @pageChanged="goToPage" class="mt-2"/>
