@@ -27,7 +27,7 @@
               <li class="list-group-item" v-for="data in paginatedDataset" :key="data.id">
                 <router-link
                   :to="`/resource/${data.ckan_resource_id}`"
-                  class="text-primary link-ui"
+                  class="text-success link-ui"
                 >
                   {{ data.judul }}
                 </router-link>
