@@ -1,8 +1,8 @@
 <template>
   <Navbar />
   <Header :header="header" :link="pusatInformasi" :regions="regional" />
-  <DataRepository :kategori="kategori" :itemsPerSlide="itemsPerSlide" />
   <IndikatorStrategis />
+  <DataRepository :kategori="kategori" :itemsPerSlide="itemsPerSlide" />
   <NewsSection :berita="berita" />
   <DataStory :dataSection="data_section" :dataset="dataset" />
   <Kontak />

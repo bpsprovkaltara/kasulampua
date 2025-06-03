@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-top: 80px;">
+  <div style="margin-top: 310px;">
     <div class="container my-4">
       <h4 class="text-center fw-bold text-success mb-4">
         DATA STRATEGIS REGIONAL

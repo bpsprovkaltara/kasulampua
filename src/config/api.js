@@ -47,4 +47,8 @@ export const DATAHUB_ENDPOINTS = {
 
   ANALYTICS_DOWNLOAD: `${DATAHUB_BASE_URL}/analytics/download-statistik`,
 
+  RESOFF:`${DATAHUB_BASE_URL}/api/ress-off`,
+  RESBPS:`${DATAHUB_BASE_URL}/api/ress-bps`,
+
+
 }
