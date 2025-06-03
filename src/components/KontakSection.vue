@@ -72,21 +72,26 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 
 const bapperida = [
-  { name: "Kalimantan Selatan", url: "http://bappeda.kalselprov.go.id" },
-  { name: "Kalimantan Barat", url: "https://bappeda.kalbarprov.go.id" },
-  { name: "Kalimantan Tengah", url: "http://bappeda.kalteng.go.id" },
-  { name: "Kalimantan Timur", url: "https://bappeda.kaltimprov.go.id" },
-  { name: "Kalimantan Utara", url: "https://bappedalitbang.kaltaraprov.go.id/" },
-  { name: "Sulawesi Utara", url: "http://bappeda.sulutprov.go.id" },
-  { name: "Sulawesi Tengah", url: "http://bappeda.sultengprov.go.id" },
-  { name: "Sulawesi Selatan", url: "https://bappelitbangda.sulselprov.go.id/" },
-  { name: "Sulawesi Tenggara", url: "https://bappedasultra.go.id" },
-  { name: "Gorontalo", url: "https://bappeda.gorontaloprov.go.id/" },
-  { name: "Sulawesi Barat", url: "http://bappeda.sulbarprov.go.id" },
+  { name: "Kalimantan Selatan", url: "http://kalselprov.go.id" },
+  { name: "Kalimantan Barat", url: "https://kalbarprov.go.id" },
+  { name: "Kalimantan Tengah", url: "http://kalteng.go.id" },
+  { name: "Kalimantan Timur", url: "https://kaltimprov.go.id" },
+  { name: "Kalimantan Utara", url: "https://kaltaraprov.go.id/" },
+  { name: "Sulawesi Utara", url: "http://sulutprov.go.id" },
+  { name: "Sulawesi Tengah", url: "http://sultengprov.go.id" },
+  { name: "Sulawesi Selatan", url: "https://sulselprov.go.id/" },
+  { name: "Sulawesi Tenggara", url: "https://sultraprov.go.id" },
+  { name: "Gorontalo", url: "https://gorontaloprov.go.id/" },
+  { name: "Sulawesi Barat", url: "http://sulbarprov.go.id" },
   { name: "Maluku", url: "https://malukuprov.go.id" },
-  { name: "Maluku Utara", url: "https://bappeda.malutprov.go.id" },
-  { name: "Papua Barat", url: "https://bappeda.papuabaratprov.go.id" },
-  { name: "Papua", url: "https://bappeda.papua.go.id" },
+  { name: "Maluku Utara", url: "https://malutprov.go.id" },
+  { name: "Papua Barat", url: "https://papuabaratprov.go.id" },
+  { name: "Papua", url: "https://papua.go.id" },
+  { name: "Papua Tengah", url: "https://papuatengahprov.go.id" },
+  { name: "Papua Selatan", url: "https://papuaselatan.go.id" },
+  { name: "Papua Barat Daya", url: "https://papuabaratdayaprov.go.id" },
+  { name: "Papua Pegunungan", url: "https://papuapegunungan.go.id" },
+
 ];
 
 

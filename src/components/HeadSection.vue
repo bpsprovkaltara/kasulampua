@@ -10,7 +10,7 @@
       <div class="d-flex align-items-center">
         <i class="bi bi-geo-alt-fill fs-3 me-3" style="color:#005596;"></i>
         <div class="d-flex flex-column">
-          <span class="fw-bold" style="color: #02609A; font-size: 16pt;">KONREG KASULAMPUAN TAHUN 2025</span>
+          <span class="fw-bold" style="color: #02609A; font-size: 16pt;">KONREG PDRB KASULAMPUA TAHUN 2025</span>
           <span class="text-start" style="font-size: 11pt; color: #000;">BANJARMASIN, 12 JUNI 2025</span>
         </div>
       </div>
