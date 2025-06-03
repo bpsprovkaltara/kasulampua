@@ -25,7 +25,7 @@
         <li class="list-group-item d-flex justify-content-start align-items-start">
           <div class="me-3 fw-semibold" style="min-width: 180px">Lisensi</div>
           <div>
-            <a :href="dataset.license_url" target="_blank">{{ dataset.license_title }}</a>
+            <a :href="dataset.license_url" class="link-ui" target="_blank">{{ dataset.license_title }}</a>
           </div>
         </li>
 
@@ -37,7 +37,7 @@
         <li v-if="dataset.tags?.length" class="list-group-item d-flex justify-content-start align-items-start">
           <div class="me-3 fw-semibold" style="min-width: 180px">Tag</div>
           <div>
-            <span v-for="tag in dataset.tags" :key="tag.id" class="badge bg-info me-1">{{ tag.display_name }}</span>
+            <span v-for="tag in dataset.tags" :key="tag.id" class="badge bg-success me-1">{{ tag.display_name }}</span>
           </div>
         </li>
 
@@ -63,7 +63,7 @@
           <div class="d-flex flex-column align-items-end">
             <span class="badge bg-secondary mb-2">{{ resource.format }}</span>
             <div class="d-flex gap-2">
-              <a :href="resource.url" class="btn btn-sm btn-outline-primary" target="_blank" @click="trackDownload(resource.id+'##'+resource.name)">
+              <a :href="resource.url" class="btn btn-sm btn-outline-success" target="_blank" @click="trackDownload(resource.id+'##'+resource.name)">
                 ⬇ Unduh ({{ jumlahDownload[`${resource.id}##${resource.name}`] || 0 }})
               </a>
               <button

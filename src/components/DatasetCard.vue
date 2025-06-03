@@ -5,19 +5,19 @@
       <div class="d-flex justify-content-between">
         <div>
           <h6 class="mb-1">
-            <i class="bi bi-archive text-primary me-2"></i>
+            <i class="bi bi-archive text-success me-2"></i>
             {{ dataset.title }}
           </h6>
           <small class="text-muted">
-            <i class="bi bi-building-fill text-primary me-2"></i> {{ dataset.organization?.title || 'Tidak diketahui' }}
+            <i class="bi bi-building-fill text-success me-2"></i> {{ dataset.organization?.title || 'Tidak diketahui' }}
           </small>
           <br />
           <small class="text-muted">
-            <i class="bi bi-archive text-primary me-2"></i> {{ formatDate(dataset.metadata_created) }}
+            <i class="bi bi-archive text-success me-2"></i> {{ formatDate(dataset.metadata_created) }}
           </small>
           <br />
           <small class="text-muted" v-if="!expanded[index]">
-            <i class="bi bi-file-earmark-ppt text-primary me-2"></i>
+            <i class="bi bi-file-earmark-ppt text-success me-2"></i>
             {{ truncateText(dataset.notes) }}
             <a class="link-ui" href="#" @click.prevent="expanded[index] = true" :id="'link-expand-' + index">
               Selengkapnya
@@ -27,7 +27,7 @@
           <div v-else class="mt-2" :id="'deskripsi-' + index">
             <div class="d-flex justify-content-between text-muted text-start">
               <div>
-                <i class="bi bi-file-earmark-ppt text-primary me-2"></i>
+                <i class="bi bi-file-earmark-ppt text-success me-2"></i>
                 <div class="text-html" v-html="dataset.notes || 'Tanpa deskripsi.'"></div><a class="link-ui" href="#" @click.prevent="expanded[index] = false">...Tutup</a>
               </div>
             </div>
@@ -39,7 +39,7 @@
               path: `/dataset/${dataset.id}`,
               query: { from: $route.fullPath }
             }"
-            class="badge bg-primary text-white text-decoration-none"
+            class="badge bg-success text-white text-decoration-none"
           >
             🔍 Lihat Detail
           </router-link>
