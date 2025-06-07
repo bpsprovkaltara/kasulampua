@@ -63,13 +63,13 @@
           <div class="d-flex flex-column align-items-end">
             <span class="badge bg-secondary mb-2">{{ resource.format }}</span>
             <div class="d-flex gap-2">
-              <a :href="resource.url" class="btn btn-sm btn-outline-success" target="_blank" @click="trackDownload(resource.id+'##'+resource.name)">
+              <a  class="btn btn-sm btn-outline-success" target="_blank" @click="checkAndDownload(resource,dataset.name)">
                 ⬇ Unduh ({{ jumlahDownload[`${resource.id}##${resource.name}`] || 0 }})
               </a>
               <button
                 v-if="['xlsx', 'xls', 'csv'].includes(resource.format.toLowerCase())"
                 class="btn btn-sm btn-outline-success"
-                @click="previewExcel(resource.url)"
+                @click="previewExcel(resource,dataset.name)"
               >
                 👁️ Preview
               </button>
@@ -111,7 +111,7 @@
         <button type="button" class="btn-close" @click="showModal = false"></button>
       </div>
       <div class="modal-body">
-        <ExcelPreview :fileUrl="fileUrl" :visible="showModal" />
+        <ExcelPreview :fileUrl="fileUrl" :visible="showModal" :name="name"/>
       </div>
     </div>
   </div>
@@ -154,10 +154,13 @@ const goToPage = (page) => {
 
 const showModal = ref(false)
 const fileUrl = ref('')
+const name = ref('')
 
-const previewExcel = (url) => {
-  fileUrl.value = url
+
+const previewExcel = (resource,resName) => {
+  fileUrl.value = resource.url
   showModal.value = true
+  name.value = resName
 }
 
 const formatDate = (dateStr) => {
@@ -197,6 +200,27 @@ const fetchDownloadStats = async (label) => {
       jumlahDownload.value[item.label] = Number(item.nb_events || 0)
     })
 }
+
+const checkAndDownload = async (resource,varname) => {
+  const key = `${resource.id}##${resource.name}`;
+  trackDownload(key);
+
+  const encodedUrl = encodeURIComponent(resource.url);
+
+  try {
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CEK_URL_DATA_GO_ID}?url=${encodedUrl}`);
+    const result = await res.json();
+
+    const fallbackUrl = `https://data.go.id/dataset/dataset/${varname || 'id-default'}`;
+
+    window.open(result.exists ? resource.url : fallbackUrl, '_blank');
+  } catch (err) {
+    console.warn('Gagal mengecek file, langsung buka fallback',err);
+  }
+};
+
+
+
 
 const trackDownload = (label) => {
   window._paq?.push(['trackEvent', 'Dataset', 'Download', label])

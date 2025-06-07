@@ -22,6 +22,14 @@
 
 
         <div class="card-body text-start">
+          <div class="mb-3">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="form-control"
+              placeholder="Cari judul dataset..."
+            />
+          </div>
           <div v-if="paginatedDataset.length > 0">
             <ul class="list-group list-group-flush">
               <li class="list-group-item" v-for="data in paginatedDataset" :key="data.id">
@@ -29,7 +37,7 @@
                   :to="`/resource/${data.ckan_resource_id}`"
                   class="text-success link-ui"
                 >
-                  {{ data.judul }}
+                  {{ data.judul }} [{{ data.tahun }}]
                 </router-link>
 
               </li>
@@ -107,9 +115,9 @@ const setTab = (kat) => {
   currentPage.value = 1
 }
 
-const filteredDataset = computed(() =>
-  allDataset.value.filter(item => item.kategori_nama === activeTab.value)
-)
+// const filteredDataset = computed(() =>
+//   allDataset.value.filter(item => item.kategori_nama === activeTab.value)
+// )
 
 const totalPages = computed(() =>
   Math.ceil(filteredDataset.value.length / itemsPerPage)
@@ -119,6 +127,19 @@ const paginatedDataset = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   return filteredDataset.value.slice(start, start + itemsPerPage)
 })
+
+const searchQuery = ref('')
+
+const filteredDataset = computed(() => {
+  const filteredByCategory = allDataset.value.filter(item => item.kategori_nama === activeTab.value)
+
+  if (!searchQuery.value.trim()) return filteredByCategory
+
+  return filteredByCategory.filter(item =>
+    item.judul.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
+
 
 watch(activeTab, () => {
   currentPage.value = 1

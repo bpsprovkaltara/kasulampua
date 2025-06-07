@@ -26,7 +26,7 @@
         <div class="col-lg-9 col-md-6">
           <div class="row">
             <div class="col-md-3 col-6 footer-links">
-              <h6>Bappeda</h6>
+              <h6>Pemerintah Daerah</h6>
               <ul class="ps-0">
                 <li v-for="(link, index) in bapperida" :key="index">
                   <a :href="link.url" target="_blank" rel="nofollow">{{ link.name }}</a>
@@ -34,7 +34,7 @@
               </ul>
             </div>
             <div class="col-md-3 col-6 footer-links">
-              <h6>BPS</h6>
+              <h6>Badan Pusat Statistik</h6>
               <ul class="ps-0">
                 <li v-for="(link, index) in bps" :key="index">
                   <a :href="link.url" target="_blank" rel="nofollow">{{ link.name }}</a>

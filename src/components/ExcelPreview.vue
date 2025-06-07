@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="loading" class="text-muted">Sedang memuat data...</div>
-    <div v-if="error" class="text-danger">{{ error }}</div>
+    <div class="alert alert-danger mt-3" v-if="error" v-html="error"></div>
 
     <div v-if="!loading && excelData.length">
       <!-- <table class="table table-bordered table-sm">
@@ -18,13 +18,13 @@
       </table> -->
       <div class="table-responsive" style="overflow-x: auto; max-height: 500px;">
         <table class="table table-bordered table-sm">
-<thead>
-  <tr v-for="(row, rowIndex) in headerRows" :key="'head-' + rowIndex">
-    <template v-for="(cell, colIndex) in mergeRowCells(row)" :key="'cell-' + rowIndex + '-' + colIndex">
-      <th :colspan="cell.colspan">{{ cell.text }}</th>
-    </template>
-  </tr>
-</thead>
+          <thead>
+            <tr v-for="(row, rowIndex) in headerRows" :key="'head-' + rowIndex">
+              <template v-for="(cell, colIndex) in mergeRowCells(row)" :key="'cell-' + rowIndex + '-' + colIndex">
+                <th :colspan="cell.colspan">{{ cell.text }}</th>
+              </template>
+            </tr>
+          </thead>
           <tbody>
             <tr v-for="(row, i) in excelData" :key="'row-' + i">
               <td v-for="(cell, j) in row" :key="'cell-' + i + '-' + j">
@@ -45,7 +45,8 @@ import * as XLSX from 'xlsx'
 
 const props = defineProps({
   fileUrl: String,
-  visible: Boolean
+  visible: Boolean,
+  name: String
 })
 
 const excelData = ref([])
@@ -82,6 +83,35 @@ const error = ref(null)
 //   }
 // }
 
+const checkIfPageExists = async (targetUrl, fallbackUrl) => {
+  try {
+    const encodedUrl = encodeURIComponent(targetUrl)
+    const res = await fetch(`${DATAHUB_ENDPOINTS.CEK_URL_DATA_GO_ID}?url=${encodedUrl}`)
+    const data = await res.json()
+    return data.exists ? targetUrl : fallbackUrl
+  } catch {
+    return fallbackUrl
+  }
+}
+
+
+
+const showErrorWithLink = async (err, fileUrl,varname) => {
+
+  const urlToCheck = `https://data.go.id/dataset/dataset/${varname}`
+
+  const safeUrl = await checkIfPageExists(urlToCheck,fileUrl)
+
+  error.value = `
+    Gagal memuat file, silahkan
+    kunjungi halaman asal file:
+    <a href="${safeUrl}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+      Buka File Asal
+    </a>
+  `
+}
+
+
 const loadExcel = async () => {
   if (!props.fileUrl) return
   loading.value = true
@@ -103,7 +133,9 @@ const loadExcel = async () => {
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) // treat as no header
     excelData.value = rows.slice(0, 25)
   } catch (err) {
-    error.value = 'Gagal memuat file Excel: ' + err.message
+
+    showErrorWithLink(err,props.fileUrl,props.name)
+
   } finally {
     loading.value = false
   }

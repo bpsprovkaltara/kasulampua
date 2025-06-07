@@ -49,6 +49,6 @@ export const DATAHUB_ENDPOINTS = {
 
   RESOFF:`${DATAHUB_BASE_URL}/api/ress-off`,
   RESBPS:`${DATAHUB_BASE_URL}/api/ress-bps`,
-
+  CEK_URL_DATA_GO_ID:`${DATAHUB_BASE_URL}/ckan/cek-url`
 
 }
