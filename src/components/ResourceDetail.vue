@@ -124,6 +124,15 @@ onMounted(async () => {
       const json = await res.json();
       statistikData.value = [json];
 
+      resource.value = {
+          name:json.var[0].label,
+          description:json.var[0].note,
+          format:'-',
+          created:json.last_update,
+          last_modified:json.last_update,
+          url:json.url || '-'
+        }
+
       fileUrl.value = ''
     } catch (err) {
       error.value = err.message || 'Terjadi kesalahan saat mengambil data';

@@ -1,5 +1,4 @@
 <template>
-  tes
   <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
     <table id="_tabel" class="table table-bordered">
       <thead id="_tabelhead" v-html="kontenHeader"></thead>
