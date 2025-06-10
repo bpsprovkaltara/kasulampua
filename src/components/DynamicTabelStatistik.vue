@@ -32,9 +32,8 @@ const componentMap = {
   jenis3: TabelStatistikJenis3,
 }
 
-// Deteksi otomatis jenis berdasarkan struktur data
 const detectedJenis = computed(() => {
-  const item = props.data?.[props.index]
+  const item = props.data
   if (!item) return 'jenis1'
 
   const turtahunLength = item.turtahun?.length || 0

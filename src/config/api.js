@@ -1,7 +1,11 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const DATAHUB_BASE_URL = import.meta.env.VITE_DATAHUB_BASE_URL
+const MATOMO_BASE_URL = import.meta.env.VITE_MATOMO_URL
 
 
+export const MATOMO_ENDPOINT = {
+  BASE_URL: `${MATOMO_BASE_URL}`,
+}
 
 export const API_ENDPOINTS = {
   BASE_URL: `${API_BASE_URL}`,

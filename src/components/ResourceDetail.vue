@@ -45,7 +45,7 @@
           v-else
           :data="statistikData"
           :index="0"
-          :yearRange="'2000-2023'"
+          :yearRange="'2000-2025'"
         />
 
       </div>
@@ -115,28 +115,21 @@ onMounted(async () => {
     }
   } else if (isResbps.value) {
     try {
-      const res = await fetch(`${DATAHUB_ENDPOINTS.RESOFF}/${resourceId}`)
-      const json = await res.json()
-      if (json && json.url) {
-        fileUrl.value = json.url
-        resource.value = {
-          name:json.judul,
-          description:'-',
-          format:'-',
-          created:json.date,
-          last_modified:json.date,
-          url:json.url
-        }
+      const res = await fetch(`${DATAHUB_ENDPOINTS.RESBPS}/${resourceId}`);
 
-      } else {
-        throw new Error('Data tidak ditemukan')
+      if (!res.ok) {
+        throw new Error(`Gagal fetch data: ${res.status} ${res.statusText}`);
       }
-    } catch (error) {
-      error.value = error.message
-    } finally {
-      loading.value = false
-    }
 
+      const json = await res.json();
+      statistikData.value = [json];
+
+      fileUrl.value = ''
+    } catch (err) {
+      error.value = err.message || 'Terjadi kesalahan saat mengambil data';
+    } finally {
+      loading.value = false;
+    }
   } else {
     try {
       const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_RESOURCE_DETAIL}/${resourceId}`)

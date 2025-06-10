@@ -34,7 +34,7 @@
             <ul class="list-group list-group-flush">
               <li class="list-group-item" v-for="data in paginatedDataset" :key="data.id">
                 <router-link
-                  :to="`/resource/${data.ckan_resource_id}`"
+                  :to="`/resource/${data.ckan_resource_id || data.judul}`"
                   class="text-success link-ui"
                 >
                   {{ data.judul }} [{{ data.tahun }}]

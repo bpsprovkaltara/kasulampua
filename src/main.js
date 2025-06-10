@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
 import './assets/css/main.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
+import { MATOMO_ENDPOINT } from './config/api'
 
 const app = createApp(App)
 
@@ -17,15 +18,15 @@ app.mixin({
     _paq.push(['trackPageView'])
     _paq.push(['enableLinkTracking'])
 
-    const u = 'http://103.142.88.141:9091/'
-    _paq.push(['setTrackerUrl', u + 'matomo.php'])
+    const u = MATOMO_ENDPOINT.BASE_URL
+    _paq.push(['setTrackerUrl', u + '/matomo.php'])
     _paq.push(['setSiteId', '1'])
 
     const d = document
     const g = d.createElement('script')
     const s = d.getElementsByTagName('script')[0]
     g.async = true
-    g.src = u + 'matomo.js'
+    g.src = u + '/matomo.js'
     s.parentNode.insertBefore(g, s)
   }
 })
