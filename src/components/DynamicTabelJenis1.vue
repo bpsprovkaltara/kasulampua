@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import { ref, watch,onMounted } from 'vue'
+import { ref, watch } from 'vue'
 
 // Props / Reactive Input
 const props = defineProps({
@@ -34,7 +34,6 @@ function splitword(text) {
   return text.split(/[\s,]+/).slice(0, 5).join(' ')
 }
 
-onMounted()
 
 // Watch input
 watch(
@@ -76,7 +75,7 @@ watch(
       let baris = `<td class="kolom1">${splitword(vervar.label)}</td>`
       tahunValid.forEach(tahun => {
         const key = `${vervar.val}${varval}${turvarval}${tahun.val}${turtahunval}`
-        console.log(key)
+        //console.log(key)
         const td = item.datacontent[key] ?? '-'
         baris += `<td class="text-end">${gantiSeparator(td)}</td>`
       })
