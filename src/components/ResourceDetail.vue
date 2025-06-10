@@ -20,10 +20,11 @@
         <p class="card-text"><strong>Dibuat:</strong> {{ formatDate(resource.created) }}</p>
         <p class="card-text"><strong>Terakhir Diubah:</strong> {{ formatDate(resource.last_modified) }}</p>
         <p class="card-text"><strong>Deskripsi:</strong></p>
-        <p>{{ resource.description }}</p>
+        <p v-html="resource.description"></p>
+
 
         <div class="text-end mt-4">
-          <a :href="resource.url" class="btn btn-success" target="_blank">
+          <a v-if="resource.url != '-'" :href="resource.url" class="btn btn-success" target="_blank">
             <i class="bi bi-download me-1"></i> Unduh File
           </a>
         </div>
@@ -60,7 +61,7 @@
 
 
 <script setup>
-import { ref,computed,onMounted } from 'vue'
+import { ref,computed,onMounted,defineEmits} from 'vue'
 import { useRoute } from 'vue-router'
 import ExcelPreview from '../components/ExcelPreview.vue'
 import { DATAHUB_ENDPOINTS } from '@/config/api'
@@ -68,6 +69,7 @@ import DynamicTabelStatistik from '../components/DynamicTabelStatistik.vue'
 
 const route = useRoute()
 const resourceId = route.params.id
+const emitData = defineEmits(['emitJudul'])
 
  const resource = ref({
   name:'',
@@ -105,6 +107,8 @@ onMounted(async () => {
           url:json.url
         }
 
+         emitData('emitJudul', json.judul)
+
       } else {
         throw new Error('Data tidak ditemukan')
       }
@@ -132,6 +136,7 @@ onMounted(async () => {
           last_modified:json.last_update,
           url:json.url || '-'
         }
+         emitData('emitJudul', json.var[0].label)
 
       fileUrl.value = ''
     } catch (err) {
