@@ -144,6 +144,7 @@ const fetchTopInsight = async () => {
     data_section.deskripsi = top.deskripsi
     data_section.wilayah = top.wilayah
     data_section.region = top.region
+    data_section.topik = top.topik
     data_section.gambar = top.gambar
         ? `${API_ENDPOINTS.INSIGHT_IMAGE}/${top.gambar}`
         : '/assets/images/headline_image.png'
