@@ -52,7 +52,7 @@
               <div class="form-group col-lg-2 mb-2 mb-lg-0">
                 <div class="col-12">
                   <label>Pilih Tahun</label>
-                  <select v-model.number="tahunAwal" class="form-control" @change="e => alert(tahunAwal)">
+                  <select v-model.number="tahunAwal" class="form-control">
                     <option disabled value="">Pilih tahun awal</option>
                     <option v-for="t in tahunOptions" :key="t.label" :value="parseInt(t.label)">
                       {{ t.label }}

@@ -19,7 +19,12 @@ defineEmits(['organizationSelected'])
 
 onMounted(async () => {
   const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_ORGANIZATION_LIST}`)
-  const data = await res.json()
+  let data = await res.json()
+
+  data = data.sort((a, b) => {
+    return a.name.localeCompare(b.name);
+  });
+
   organization.value = data.map(organization => ({ id: organization.id, name: organization.title,package_count:organization.package_count }))
 })
 </script>
