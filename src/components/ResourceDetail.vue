@@ -176,6 +176,8 @@ onMounted(async () => {
       const json = await res.json()
       if (json) {
         resDb.value = json
+        emitData('emitJudul', json.judul)
+
       } else {
         throw new Error('Data tidak ditemukan')
       }
@@ -201,7 +203,6 @@ onMounted(async () => {
           last_modified: json.date,
           url: json.url
         }
-        emitData('emitJudul', json.judul)
       } else {
         throw new Error('Data tidak ditemukan')
       }
@@ -243,7 +244,7 @@ onMounted(async () => {
         last_modified: json.last_update,
         url: json.url || '-'
       }
-      emitData('emitJudul', json.var[0].label)
+      //emitData('emitJudul', json.var[0].label)
       tahunOptions.value = json.tahun
 
       const currentYear = new Date().getFullYear()
