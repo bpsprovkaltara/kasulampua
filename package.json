@@ -11,8 +11,10 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@vueform/multiselect": "^2.6.11",
     "bootstrap": "^5.3.6",
     "bootstrap-icons": "^1.12.1",
+    "chart.js": "^4.4.9",
     "file-saver": "^2.0.5",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",

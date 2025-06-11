@@ -23,7 +23,8 @@ body {
   background: #dff9df;
 }
 
-.scrolled-regional_insight{
+.scrolled-regional_insight,
+.scrolled-visualisasi_data{
   background: #E1E4CF;
 }
 
@@ -228,7 +229,8 @@ footer {
     background: #dff9df !important;
   }
 
-  .scrolled-regional_insight{
+  .scrolled-regional_insight,
+  .scrolled-visualisasi_data{
     background: #E1E4CF !important;
   }
 

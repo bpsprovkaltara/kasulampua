@@ -8,6 +8,7 @@ import RegionalInsightDetil from '@/views/RegionalInsightDetil.vue'
 import Dataset from '@/views/DatasetViewRoute.vue'
 import DatasetDetail from '@/views/DatasetDetail.vue'
 import ResourceDetail from '@/views/ResourceDetail.vue'
+import VisualisasiData from '@/views/VisualisasiData.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,6 +32,11 @@ const router = createRouter({
       path: '/regional_insight',
       name: 'regional_insight',
       component: RegionalInsight,
+    },
+    {
+      path: '/visualisasi_data',
+      name: 'visualisasi_data',
+      component: VisualisasiData,
     },
     {
       path: '/regional_insight/:id',
