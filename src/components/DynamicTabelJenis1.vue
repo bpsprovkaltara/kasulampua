@@ -55,7 +55,6 @@ watch(
   () => [props.data, props.index, props.yearRange],
   ([data, index, yearRange]) => {
     if (!data?.[index]) return
-  alert(1)
 
     const arrayTahun = yearRange.split('-').map(Number)
     const col = arrayTahun[1] - arrayTahun[0] + 1
@@ -68,18 +67,18 @@ watch(
 
     // Generate header
     let konten = `
-      <tr>
-        <th rowspan="2">${labelvervar}</th>
-        <th colspan="${col}">Tahun</th>
+      <tr style="position: sticky; top: 3px;z-index: 1">
+        <th  rowspan="2" class="text-center" style="background-color: #E7F5EC !important;vertical-align: middle;">${labelvervar}</th>
+        <th  colspan="${col}" class="text-center" style="background-color: #E7F5EC !important;">Tahun</th>
       </tr>
-      <tr id="_bariskolom">
+      <tr style="position: sticky; top: 38px;z-index: 1" id="_bariskolom">
     `
     const tahunValid = []
     for (let year = arrayTahun[0]; year <= arrayTahun[1]; year++) {
       const cekTahun = item.tahun.find(t => t.label == year)
       if (cekTahun) {
         tahunValid.push({ label: year, val: cekTahun.val })
-        konten += `<th>${year}</th>`
+        konten += `<th style="background-color: #E7F5EC !important;" class="text-center" >${year}</th>`
       }
     }
     konten += '</tr>'

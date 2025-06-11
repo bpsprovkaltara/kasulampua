@@ -33,18 +33,18 @@ const componentMap = {
 }
 
 const detectedJenis = computed(() => {
-  const item = props.data
+  const item = props.data[props.index]
   if (!item) return 'jenis1'
 
-  const turtahunLength = item.turtahun?.length || 0
-  const turtahunval = item.turtahun?.[0]?.val || 0
-  const turvarLength = item.turvar?.length || 0
+  const tahun = parseInt(item.tahun[0].val)
+  const turtahun = parseInt(item.turtahun[0].val)
+  const turvar = parseInt(item.turvar[0].val)
 
-  if (turtahunval == 0 && turvarLength === 1) {
+  if (tahun != 0 && turtahun == 0 && turvar ==0) {
     return 'jenis1'
-  } else if (turtahunval !== 0 && turtahunLength > 1 && turvarLength === 1) {
+  }else if (turvar == 0 && turtahun != 0 && tahun != 0) {
     return 'jenis2'
-  } else if (turtahunval == 0 && turvarLength > 1) {
+  }else if (turtahun != 0 && turvar != 0 && tahun != 0) {
     return 'jenis3'
   } else {
     return 'jenis1'

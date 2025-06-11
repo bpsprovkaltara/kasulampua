@@ -51,7 +51,6 @@ watch(
   () => [props.data, props.index, props.yearRange],
   ([data, index, yearRange]) => {
     if (!data?.[index] || !data[index].turtahun?.length) return
-  alert(2)
 
     const arrayTahun = yearRange.split('-').map(Number)
     const item = data[index]
@@ -61,7 +60,7 @@ watch(
     const turvarval = item.turvar?.[0]?.val ?? ''
     turvarvalRef.value = turvarval
 
-    let kolom1 = `<th rowspan="2" style="position: sticky; top: 3px;left: 0; background: #fff; z-index: 2;">${labelvervar}</th>`
+    let kolom1 = `<th rowspan="2" style="position: sticky; top: 3px;left: 0; background-color: #E7F5EC !important; z-index: 2;vertical-align: middle;" class="text-center">${labelvervar}</th>`
     let kolom2 = ''
     const tahunValid = []
 
@@ -70,9 +69,9 @@ watch(
       if (!tahunItem) continue
       tahunValid.push({ label: year, val: tahunItem.val })
 
-      kolom1 += `<th style="position: sticky; top: 3px;z-index: 1" colspan="${col}">${year}</th>`
+      kolom1 += `<th style="position: sticky; top: 3px;z-index: 1;background-color: #E7F5EC !important;" colspan="${col}" class="text-center">${year}</th>`
       item.turtahun.forEach(tt => {
-        kolom2 += `<th style="position: sticky; top: 38px;z-index: 1 white-space: nowrap;">${tt.label}</th>`
+        kolom2 += `<th style="position: sticky; top: 38px;z-index: 1 white-space: nowrap; background-color: #E7F5EC !important;" class="text-center">${tt.label}</th>`
         // Kalau mau freeze header baris bawah, bisa tambahkan top sticky:
         // kolom2 += `<th style="position: sticky; top: 38px; background: #f8f9fa; z-index: 1;">${tt.label}</th>`
       })

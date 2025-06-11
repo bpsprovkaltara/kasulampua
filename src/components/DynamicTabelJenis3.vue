@@ -70,7 +70,7 @@ watch(
   () => [props.data, props.index, props.yearRange, turvarTerpilih.value],
   ([data, index, yearRange, turvarval]) => {
     if (!data?.[index] || !turvarval) return
-  alert(3)
+
 
     const arrayTahun = yearRange.split('-').map(Number)
     const item = data[index]
@@ -88,16 +88,16 @@ watch(
       const tahunItem = item.tahun.find(t => t.label == year)
       if (!tahunItem) continue
       tahunValid.push({ label: year, val: tahunItem.val })
-      kolom += `<th>${year}</th>`
+      kolom += `<th style="background-color: #E7F5EC !important;">${year}</th>`
       col++
     }
 
     kontenHeader.value = `
-      <tr>
-        <th rowspan="2">${labelvervar}</th>
-        <th colspan="${col}">${labelturvar}</th>
+      <tr class="text-center" style="position: sticky; top: 3px;z-index: 2;">
+        <th rowspan="2" style="background-color: #E7F5EC !important;vertical-align: middle;">${labelvervar}</th>
+        <th colspan="${col}" style="background-color: #E7F5EC !important;"  >${labelturvar}</th>
       </tr>
-      <tr>${kolom}</tr>
+      <tr style="position: sticky; top: 38px;z-index: 1;" class="text-center" >${kolom}</tr>
     `
 
     // Body

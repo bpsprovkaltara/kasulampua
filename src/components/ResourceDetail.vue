@@ -9,73 +9,79 @@
     <div v-else-if="error" class="alert alert-danger text-start">
       Gagal memuat data: {{ error }}
     </div>
-
-    <div v-else class="card shadow-sm">
-      <div class="card-header bg-success text-white">
-        <h5 class="mb-0 text-start">Detail Data</h5>
-      </div>
-      <div class="card-body text-start">
-        <h5 class="card-title">{{ resource.name }}</h5>
-        <p class="card-text"><strong>Format:</strong> {{ resource.format || 'Xlsx' }}</p>
-        <p class="card-text"><strong>Dibuat:</strong> {{ formatDate(resource.created) }}</p>
-        <p class="card-text"><strong>Terakhir Diubah:</strong> {{ formatDate(resource.last_modified) }}</p>
-        <p class="card-text"><strong>Deskripsi:</strong></p>
-        <p v-html="resource.description"></p>
-
-        <div class="text-end mt-4">
-          <a v-if="resource.url != '-'" :href="resource.url" class="btn btn-success" target="_blank">
-            <i class="bi bi-download me-1"></i> Unduh File
-          </a>
+    <div v-else>
+      <div  class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0 text-start">Preview Data</h5>
         </div>
-      </div>
 
-      <div class="card-header bg-success text-white">
-        <h5 class="mb-0 text-start">Preview Data</h5>
-      </div>
-      <div class="card-body text-start">
-        <ExcelPreview v-if="(isExcelPreview || !statistikData.length) && fileUrl" :fileUrl="fileUrl" :visible="true" />
+        <div class="card-body text-start">
+          <h5 class="card-title">{{ resource.name }}</h5>
+          <hr>
+          <ExcelPreview v-if="(isExcelPreview || !statistikData.length) && fileUrl" :fileUrl="fileUrl" :visible="true" />
 
-        <div v-else>
-          <div class="form-horizontal">
-            <div class="row">
-              <div class="form-group col-lg-4">
-                <div class="col-lg-12 mb-4">
-                  <label>Pilih Wilayah</label>
-                  <select v-model="wilayahData" class="form-control">
-                    <option disabled value="">Pilih wilayah data</option>
-                    <option v-for="t in opsiWilayah" :key="t.val" :value="t.val">
-                      {{ t.label }}
-                    </option>
-                  </select>
+          <div v-else>
+            <div class="form-horizontal">
+              <div class="row">
+                <div class="form-group col-lg-4">
+                  <div class="col-lg-12 mb-4">
+                    <label>Pilih Wilayah</label>
+                    <select v-model="wilayahData" class="form-control">
+                      <option disabled value="">Pilih wilayah data</option>
+                      <option v-for="t in opsiWilayah" :key="t.val" :value="t.val">
+                        {{ t.label }}
+                      </option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div class="form-group col-lg-2 mb-2 mb-lg-0">
-                <div class="col-12">
-                  <label>Pilih Tahun</label>
-                  <select v-model.number="tahunAwal" class="form-control">
-                    <option disabled value="">Pilih tahun awal</option>
-                    <option v-for="t in tahunOptions" :key="t.label" :value="parseInt(t.label)">
-                      {{ t.label }}
-                    </option>
-                  </select>
+                <div class="form-group col-lg-2 mb-2 mb-lg-0">
+                  <div class="col-12">
+                    <label>Pilih Tahun</label>
+                    <select v-model.number="tahunAwal" class="form-control">
+                      <option disabled value="">Pilih tahun awal</option>
+                      <option v-for="t in tahunOptions" :key="t.label" :value="parseInt(t.label)">
+                        {{ t.label }}
+                      </option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <div class="form-group col-lg-2 mb-2 mb-lg-0">
-                <div class="col-12">
-                  <label class="d-none d-sm-block">&nbsp;</label>
-                  <select v-model.number="tahunAkhir" class="form-control" :disabled="filteredTahunAkhir.length === 0">
-                    <option disabled value="">Pilih tahun akhir</option>
-                    <option v-for="t in filteredTahunAkhir" :key="t.label" :value="parseInt(t.label)">
-                      {{ t.label }}
-                    </option>
-                  </select>
+                <div class="form-group col-lg-2 mb-2 mb-lg-0">
+                  <div class="col-12">
+                    <label class="d-none d-sm-block">&nbsp;</label>
+                    <select v-model.number="tahunAkhir" class="form-control" :disabled="filteredTahunAkhir.length === 0">
+                      <option disabled value="">Pilih tahun akhir</option>
+                      <option v-for="t in filteredTahunAkhir" :key="t.label" :value="parseInt(t.label)">
+                        {{ t.label }}
+                      </option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <DynamicTabelStatistik class="mt-2" :data="statistikData" :index="0" :yearRange="rangeData" />
+            <DynamicTabelStatistik :data="statistikData" :index="0" :yearRange="rangeData" />
+          </div>
+        </div>
+
+
+      </div>
+      <div class="card shadow-sm mt-2">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0 text-start">Detail Data</h5>
+        </div>
+        <div class="card-body text-start">
+          <p class="card-text"><strong>Format:</strong> {{ resource.format || 'Xlsx' }}</p>
+          <p class="card-text"><strong>Dibuat:</strong> {{ formatDate(resource.created) }}</p>
+          <p class="card-text"><strong>Terakhir Diubah:</strong> {{ formatDate(resource.last_modified) }}</p>
+          <p class="card-text"><strong>Deskripsi:</strong></p>
+          <p v-html="resource.description"></p>
+
+          <div class="text-end mt-4">
+            <a v-if="resource.url != '-'" :href="resource.url" class="btn btn-success" target="_blank">
+              <i class="bi bi-download me-1"></i> Unduh File
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -118,7 +124,11 @@ const resDb = ref()
 
 const opsiWilayah = ref([
   {val:'kasulampua',label:'Kasulampua',filter:[6100,6200,6300,6400,6500,7100,7200,7300,7400,7500,7600,8100,8200,9100,9200,9400,9500,9600,9700]},
-  {val:'indonesia',label:'Indonesia',filter:[]}
+  {val:'indonesia',label:'Indonesia',filter:[]},
+  {val:'kalimantan',label:'Kalimantan',filter:[6100,6200,6300,6400,6500]},
+  {val:'sulawesi',label:'Sulawesi',filter:[7100,7200,7300,7400,7500,7600]},
+  {val:'maluku',label:'Maluku',filter:[8100,8200]},
+  {val:'papua',label:'Papua',filter:[9100,9200,9400,9500,9600,9700]}
 ]
 )
 
