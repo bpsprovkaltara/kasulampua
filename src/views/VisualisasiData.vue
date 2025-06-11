@@ -27,7 +27,14 @@
             <strong>{{ state.judul }}</strong>
           </div>
           <div class="card-body">
-            <canvas ref="chartRef" height="600"></canvas>
+            <div v-if="loading" class="text-center my-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div v-else>
+              <canvas ref="chartRef" height="600"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -39,7 +46,7 @@
 </template>
 <script setup>
 import { useRoute } from 'vue-router'
-import { onMounted, ref, reactive, watch } from 'vue'
+import { onMounted, ref, reactive, watch,nextTick  } from 'vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import Kontak from '../components/KontakSection.vue'
@@ -54,7 +61,7 @@ const dataOptions = ref([])
 const chartRef = ref(null)
 const chartInstance = ref(null)
 const route = useRoute()
-
+const loading = ref(true)
 
 const opsiWilayah = ref([
   { val: 'kasulampua', label: 'Kasulampua', filter: [6100, 6200, 6300, 6400, 6500, 7100, 7200, 7300, 7400, 7500, 7600, 8100, 8200, 9100, 9200, 9400, 9500, 9600, 9700] },
@@ -104,7 +111,9 @@ const fetchData = async () => {
   }
 }
 
-const updateData = () =>{
+const updateData = async () =>{
+
+    loading.value = true
 
     let json = dataResponse.value
     const wilayahFilter = opsiWilayah.value.find(w => w.val === selectedRegion.value)?.filter || []
@@ -136,6 +145,8 @@ const updateData = () =>{
     state.satuan = json.var?.[0]?.unit
     state.judul = json.var?.[0]?.label+' Tahun '+tahunTerbaru.label
 
+    loading.value = false
+    await nextTick()
     renderChart()
 }
 
@@ -185,8 +196,13 @@ onMounted(() => {
   if (route.query.data) selectedData.value = route.query.data
 })
 
-// Trigger fetch saat filter berubah
-watch([selectedRegion, selectedData], () => {
+
+watch([selectedRegion], () => {
+  updateData()
+})
+
+watch([selectedData], () => {
+  loading.value = true
   fetchData()
 })
 </script>

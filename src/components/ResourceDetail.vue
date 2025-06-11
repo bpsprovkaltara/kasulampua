@@ -16,7 +16,7 @@
         </div>
 
         <div class="card-body text-start">
-          <h5 class="card-title">{{ resource.name }}</h5>
+          <h5 class="card-title">{{ resDb.judul }}</h5>
           <hr>
           <ExcelPreview v-if="(isExcelPreview || !statistikData.length) && fileUrl" :fileUrl="fileUrl" :visible="true" />
 
