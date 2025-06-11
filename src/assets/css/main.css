@@ -217,8 +217,13 @@ footer {
     background: #dff9df !important;
   }
 
+  .bg-default {
+    background: #dff9df !important;
+  }
+
   .scrolled-dataset,
   .scrolled-dataset-detail,
+  .scrolled-resource-detail,
   .scrolled-about{
     background: #dff9df !important;
   }
@@ -230,10 +235,6 @@ footer {
   .scrolled-regional_insight-detil{
     background: #E1E4CF !important;
 
-  }
-
-  .bg-default {
-    background: #dff9df;
   }
 
   .bg-insight {
@@ -280,7 +281,7 @@ footer {
   }
 
   .navbar .nav-link {
-    background-color: #b9deb9;
+    background-color: #F8FFF8;
   }
 
   .mobile-hidden {

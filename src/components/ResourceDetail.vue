@@ -38,31 +38,8 @@
         <div v-else>
           <div class="form-horizontal">
             <div class="row">
-              <div class="form-group col-sm-2">
-                <div class="col-sm-12">
-                  <label>Pilih Tahun</label>
-                  <select v-model.number="tahunAwal" class="form-control" @change="e => alert(tahunAwal)">
-                    <option disabled value="">Pilih tahun awal</option>
-                    <option v-for="t in tahunOptions" :key="t.label" :value="parseInt(t.label)">
-                      {{ t.label }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group col-sm-2">
-                <div class="col-sm-12">
-                  <label> </label>
-                  <select v-model.number="tahunAkhir" class="form-control" :disabled="filteredTahunAkhir.length === 0">
-                    <option disabled value="">Pilih tahun akhir</option>
-                    <option v-for="t in filteredTahunAkhir" :key="t.label" :value="parseInt(t.label)">
-                      {{ t.label }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="form-group col-sm-4">
-                <div class="col-sm-12">
+              <div class="form-group col-lg-4">
+                <div class="col-lg-12 mb-4">
                   <label>Pilih Wilayah</label>
                   <select v-model="wilayahData" class="form-control">
                     <option disabled value="">Pilih wilayah data</option>
@@ -72,10 +49,33 @@
                   </select>
                 </div>
               </div>
+              <div class="form-group col-lg-2 mb-2 mb-lg-0">
+                <div class="col-12">
+                  <label>Pilih Tahun</label>
+                  <select v-model.number="tahunAwal" class="form-control" @change="e => alert(tahunAwal)">
+                    <option disabled value="">Pilih tahun awal</option>
+                    <option v-for="t in tahunOptions" :key="t.label" :value="parseInt(t.label)">
+                      {{ t.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group col-lg-2 mb-2 mb-lg-0">
+                <div class="col-12">
+                  <label class="d-none d-sm-block">&nbsp;</label>
+                  <select v-model.number="tahunAkhir" class="form-control" :disabled="filteredTahunAkhir.length === 0">
+                    <option disabled value="">Pilih tahun akhir</option>
+                    <option v-for="t in filteredTahunAkhir" :key="t.label" :value="parseInt(t.label)">
+                      {{ t.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
-          <DynamicTabelStatistik class="mt-4" :data="statistikData" :index="0" :yearRange="rangeData" />
+          <DynamicTabelStatistik class="mt-2" :data="statistikData" :index="0" :yearRange="rangeData" />
         </div>
       </div>
     </div>
@@ -189,6 +189,12 @@ onMounted(async () => {
 
       const json = await res.json()
       json.labelvervar = 'Provinsi'
+
+      let htmlTeks = json.var[0].note;
+
+      htmlTeks.replace(/^(?:\s*<p><br\s*\/?><\/p>\s*){2,}/i, '<p><br /></p>').replace(/(?:\s*<p><br\s*\/?><\/p>\s*){2,}$/i, '<p><br /></p>');
+      json.var[0].note = htmlTeks
+
       dataResponse.value = JSON.parse(JSON.stringify(json))
 
       wilayahData.value = 'kasulampua'
