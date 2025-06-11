@@ -7,6 +7,11 @@
     </p>
 
     <div class="container mt-5">
+      <div v-if="loading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
       <div id="multiImageCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
           <div class="carousel-item" v-for="(group, index) in chunkedKategori" :key="index"
@@ -38,7 +43,8 @@ import { API_ENDPOINTS } from '@/config/api'
 
 const props = defineProps({
   kategori: Array,
-  itemsPerSlide: Number
+  itemsPerSlide: Number,
+  loading: Boolean
 })
 
 const urlCkan = ref();

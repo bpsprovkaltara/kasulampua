@@ -2,7 +2,7 @@
   <Navbar />
   <Header :header="header" :link="pusatInformasi" :regions="regional" />
   <IndikatorStrategis />
-  <DataRepository :kategori="kategori" :itemsPerSlide="itemsPerSlide" />
+  <DataRepository :kategori="kategori" :itemsPerSlide="itemsPerSlide" :loading="loading" />
   <NewsSection :berita="berita" />
   <DataStory :dataSection="data_section" :dataset="dataset" />
   <Kontak />
@@ -41,14 +41,21 @@ const regional = reactive({
 
 const itemsPerSlide = ref(5)
 const kategori = ref([])
+const loading = ref(true)
 
 const fetchGroups = async () => {
   try {
     const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_ORGANIZATION_LIST}`)
-    const data = await res.json()
+    let data = await res.json()
+
+    data = data.sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 
      kategori.value = data
+     loading.value = false
   } catch (error) {
+
     console.error('Gagal mengambil data group:', error)
   }
 }
