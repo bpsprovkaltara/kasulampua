@@ -11,23 +11,26 @@
       </button>
     </div>
 
-
+<div class="d-flex justify-content-end mb-3">
+  <button @click="exportToExcel" class="btn btn-success">
+    <i class="bi bi-download me-1"></i> Unduh Data
+  </button>
+</div>
     <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
 
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="tabel-data">
       <thead v-html="kontenHeader"></thead>
       <tbody v-html="kontenBody"></tbody>
     </table>
     </div>
 
-    <div class="_catatanTabel">
-      <p>{{ catatan }}</p>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 const props = defineProps({
   data: Array,
@@ -52,10 +55,22 @@ function onSelectTurvar(val) {
   turvarTerpilih.value = val
 }
 
+
+const exportToExcel = () => {
+  const table = document.getElementById('tabel-data')
+  if (!table) return
+
+  const workbook = XLSX.utils.table_to_book(table, { sheet: 'Sheet1' })
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
+  saveAs(blob, props.data[props.index].var[0].label+'.xlsx')
+}
+
 watch(
   () => [props.data, props.index, props.yearRange, turvarTerpilih.value],
   ([data, index, yearRange, turvarval]) => {
     if (!data?.[index] || !turvarval) return
+  alert(3)
 
     const arrayTahun = yearRange.split('-').map(Number)
     const item = data[index]

@@ -1,17 +1,22 @@
 <template>
+  <div class="d-flex justify-content-end mb-3">
+  <button @click="exportToExcel" class="btn btn-success">
+    <i class="bi bi-download me-1"></i> Unduh Data
+  </button>
+</div>
   <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-    <table id="_tabel" class="table table-bordered">
+    <table id="tabel-data" class="table table-bordered">
       <thead id="_tabelhead" v-html="kontenHeader"></thead>
       <tbody id="_tabelbody" v-html="kontenBody"></tbody>
     </table>
-    <div class="_catatanTabel">
-      <p>{{ catatan }}</p>
-    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 // Props / Reactive Input
 const props = defineProps({
@@ -34,12 +39,23 @@ function splitword(text) {
   return text.split(/[\s,]+/).slice(0, 5).join(' ')
 }
 
+const exportToExcel = () => {
+  const table = document.getElementById('tabel-data')
+  if (!table) return
+
+  const workbook = XLSX.utils.table_to_book(table, { sheet: 'Sheet1' })
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
+  saveAs(blob, props.data[props.index].var[0].label+'.xlsx')
+}
+
 
 // Watch input
 watch(
   () => [props.data, props.index, props.yearRange],
   ([data, index, yearRange]) => {
     if (!data?.[index]) return
+  alert(1)
 
     const arrayTahun = yearRange.split('-').map(Number)
     const col = arrayTahun[1] - arrayTahun[0] + 1

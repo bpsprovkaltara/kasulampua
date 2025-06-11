@@ -47,7 +47,7 @@ const detectedJenis = computed(() => {
   } else if (turtahunval == 0 && turvarLength > 1) {
     return 'jenis3'
   } else {
-    return 'jenis2'
+    return 'jenis1'
   }
 })
 </script>

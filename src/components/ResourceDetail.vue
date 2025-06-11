@@ -16,7 +16,7 @@
       </div>
       <div class="card-body text-start">
         <h5 class="card-title">{{ resource.name }}</h5>
-        <p class="card-text"><strong>Format:</strong> {{ resource.format }}</p>
+        <p class="card-text"><strong>Format:</strong> {{ resource.format || 'Xlsx' }}</p>
         <p class="card-text"><strong>Dibuat:</strong> {{ formatDate(resource.created) }}</p>
         <p class="card-text"><strong>Terakhir Diubah:</strong> {{ formatDate(resource.last_modified) }}</p>
         <p class="card-text"><strong>Deskripsi:</strong></p>
@@ -113,6 +113,8 @@ const tahunAkhir = ref()
 const tahunOptions = ref([])
 const wilayahData = ref()
 const selectedFilter = ref([])
+const resDb = ref()
+
 
 const opsiWilayah = ref([
   {val:'kasulampua',label:'Kasulampua',filter:[6100,6200,6300,6400,6500,7100,7200,7300,7400,7500,7600,8100,8200,9100,9200,9400,9500,9600,9700]},
@@ -133,8 +135,9 @@ const rangeData = computed(() => {
   return ''
 })
 
-const isResoff = computed(() => resourceId?.startsWith('resoff-'))
-const isResbps = computed(() => resourceId?.startsWith('resbps-'))
+const isResbps = computed(() => resDb.value.is_bps_api == 1)
+const isResoff = computed(() => !isResbps.value)
+
 const isExcelPreview = computed(() => isResoff.value || isResbps.value)
 
 watch(wilayahData,(newVal)=>{
@@ -157,7 +160,24 @@ watch(wilayahData,(newVal)=>{
 })
 
 onMounted(async () => {
+
+  try {
+      const res = await fetch(`${DATAHUB_ENDPOINTS.RESDB}/${resourceId}`)
+      const json = await res.json()
+      if (json) {
+        resDb.value = json
+      } else {
+        throw new Error('Data tidak ditemukan')
+      }
+    } catch (error) {
+      error.value = error.message
+    } finally {
+      loading.value = false
+    }
+
+
   if (isResoff.value) {
+    loading.value = true
     try {
       const res = await fetch(`${DATAHUB_ENDPOINTS.RESOFF}/${resourceId}`)
       const json = await res.json()
@@ -166,7 +186,7 @@ onMounted(async () => {
         resource.value = {
           name: json.judul,
           description: '-',
-          format: '-',
+          format: 'Xlsx',
           created: json.date,
           last_modified: json.date,
           url: json.url
@@ -181,6 +201,7 @@ onMounted(async () => {
       loading.value = false
     }
   } else if (isResbps.value) {
+    loading.value = true
     try {
       const res = await fetch(`${DATAHUB_ENDPOINTS.RESBPS}/${resourceId}`)
       if (!res.ok) {
@@ -207,7 +228,7 @@ onMounted(async () => {
       resource.value = {
         name: json.var[0].label,
         description: json.var[0].note,
-        format: '-',
+        format: 'Xlsx',
         created: json.last_update,
         last_modified: json.last_update,
         url: json.url || '-'
@@ -231,6 +252,7 @@ onMounted(async () => {
       loading.value = false
     }
   } else {
+    loading.value = true
     try {
       const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_RESOURCE_DETAIL}/${resourceId}`)
       const json = await res.json()

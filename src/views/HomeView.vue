@@ -126,6 +126,10 @@ const dataset = ref([])
 
 const data_section = reactive({
   judul:'',
+  gambar:'',
+  topik:'',
+  wilayah:'',
+  region:'',
   deskripsi: '',
   link_lainnya: '',
   text_lainnya: '(Baca selengkapnya)',
@@ -138,6 +142,11 @@ const fetchTopInsight = async () => {
 
     data_section.judul = top.judul
     data_section.deskripsi = top.deskripsi
+    data_section.wilayah = top.wilayah
+    data_section.region = top.region
+    data_section.gambar = top.gambar
+        ? `${API_ENDPOINTS.INSIGHT_IMAGE}/${top.gambar}`
+        : '/assets/images/headline_image.png'
     data_section.link_lainnya = `/regional_insight/${top.slug}`
 
     fetchRelatedDatasets(top.id)
