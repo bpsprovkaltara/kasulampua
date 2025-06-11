@@ -10,6 +10,11 @@
         <h5 class="mb-3">Organisasi: {{ organizationTitle || organizationId }}</h5>
 
         <DatasetFilter v-model:search="search" @search="applySearch" class="mb-4"/>
+        <div v-if="loading" class="text-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
         <DatasetCard :datasets="filteredDatasets" />
         <Pagination :currentPage="currentPage" :totalPages="totalPages" @pageChanged="goToPage"  class="mt-2"/>
       </div>
@@ -39,11 +44,15 @@ const search = ref('')
 const offset = ref(0)
 const limit = 10
 const total = ref(0)
+const loading = ref(true)
+
 
 const currentPage = computed(() => Math.floor(offset.value / limit) + 1)
 const totalPages = computed(() => Math.ceil(total.value / limit))
 
 const fetchOrganizationDatasets = async () => {
+  loading.value = true
+
   if (!organizationId.value) return
 
   try {
@@ -56,7 +65,11 @@ const fetchOrganizationDatasets = async () => {
     total.value = data.total
 
     filteredDatasets.value = data.datasets
+  loading.value = false
+
   } catch (err) {
+  loading.value = false
+
     console.error("Gagal ambil data grup:", err)
   }
 }
@@ -73,11 +86,15 @@ const applySearch = () => {
 
 //GET /ckan/datasets-search?org=bps-kalsel&keyword=transportasi&rows=10&offset=0
 const fetchDataFiltered = async () => {
+  loading.value = true
+
   const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET_SEARCH}?org=${organizationName.value}&rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
   const data = await res.json()
   datasets.value = data.result.results
   filteredDatasets.value = data.result.results
   total.value = data.result.count
+  loading.value = false
+
 }
 
 const goToPage = (page) => {

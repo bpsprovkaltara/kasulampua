@@ -9,6 +9,11 @@
 
       <div class="col-md-10 order-1  order-md-2">
         <DatasetFilter v-model:search="search" @search="applySearch" class="mb-4" />
+        <div v-if="loading" class="text-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
         <DatasetCard :datasets="filteredDatasets" />
         <Pagination :currentPage="currentPage" :totalPages="totalPages" @pageChanged="goToPage" class="mt-2"/>
       </div>
@@ -33,17 +38,23 @@ const search = ref('')
 const offset = ref(0)
 const limit = 10
 const totalCount = ref(0)
+const loading = ref(true)
 
 const currentPage = computed(() => Math.floor(offset.value / limit) + 1)
 const totalPages = computed(() => Math.ceil(totalCount.value / limit))
 
 const fetchData = async () => {
+  loading.value = true
+
   const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET}?limit=${limit}&offset=${offset.value}`)
   const data = await res.json()
   datasets.value = data.result
   filteredDatasets.value = data.result
 
   totalCount.value = data.total || 1000
+
+  loading.value = false
+
 }
 
 const applySearch = () => {
@@ -61,11 +72,15 @@ const applySearch = () => {
 }
 
 const fetchDataFiltered = async () => {
+  loading.value = true
   const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET_SEARCH}?rows=${limit}&offset=${offset.value}&keyword=${search.value}`)
   const data = await res.json()
   datasets.value = data.result.results
   filteredDatasets.value = data.result.results
   totalCount.value = data.result.count
+
+  loading.value = false
+
 }
 
 const goToPage = (page) => {
