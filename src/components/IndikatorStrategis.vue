@@ -37,7 +37,7 @@
                   :to="`/resource/${data.ckan_resource_id || data.judul}`"
                   class="text-success link-ui"
                 >
-                  {{ data.judul }} [{{ data.tahun }}]
+                  {{ data.judul }}
                 </router-link>
 
               </li>
