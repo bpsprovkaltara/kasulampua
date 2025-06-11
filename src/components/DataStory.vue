@@ -3,13 +3,14 @@
     <div class="container">
       <div class="row">
         <div class="col-md-9">
+              <h3 class="fw-bolder" style="color: #185c77">[DATA STORY]</h3>
+          <hr>
           <div class="row">
             <div class="col-md-3">
               <img :src="dataSection.gambar" style="height: 200px;"
                 alt="headline" class="img-fluid" />
             </div>
             <div class="col-md-9">
-              <h3 class="fw-bolder" style="color: #185c77">[DATA STORY]</h3>
               <h3 class="fw-bolder">{{ dataSection.judul }}</h3>
               <p>
                 {{ dataSection.deskripsi }}
