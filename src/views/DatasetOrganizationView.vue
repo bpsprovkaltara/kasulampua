@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="row mt-4">
-      <div class="col-md-2 border-end">
+      <div class="col-md-2 border-end order-2 order-md-1">
         <DatasetSidebar  @organizationSelected="organizationSelected" />
 
       </div>
