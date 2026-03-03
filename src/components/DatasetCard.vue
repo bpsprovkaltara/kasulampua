@@ -1,58 +1,61 @@
 <template>
-  <div class="list-group">
+  <div class="dataset-list">
     <div v-for="(dataset, index) in props.datasets" :key="dataset.id || index"
-      class="list-group-item list-group-item-action">
-      <div class="row align-items-stretch">
-        <!-- Kolom kiri -->
-        <div class="col-md-11 col-12">
-          <h6 class="mb-1">
-            <i class="bi bi-archive text-success me-2"></i>
-            {{ dataset.title }}
-          </h6>
-          <small class="text-muted d-block mb-1">
-            <i class="bi bi-building-fill text-success me-2"></i>
-            {{ dataset.organization?.title || 'Tidak diketahui' }}
-          </small>
-          <small class="text-muted d-block mb-1">
-            <i class="bi bi-archive text-success me-2"></i>
-            {{ formatDate(dataset.metadata_created) }}
-          </small>
+      class="dataset-item mb-3">
+      <div class="card-content p-4">
+        <div class="row align-items-start">
+          <div class="col-md-10 col-12">
+            <div class="d-flex align-items-center mb-2">
+              <span class="org-badge">{{ dataset.organization?.title || 'Umum' }}</span>
+            </div>
+            <h5 class="dataset-title mb-2">
+              <router-link :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }" class="title-link">
+                {{ dataset.title }}
+              </router-link>
+            </h5>
+            
+            <div class="dataset-meta mb-3">
+              <span class="meta-item me-3">
+                <i class="bi bi-calendar3 me-2"></i>
+                {{ formatLongDate(dataset.metadata_created) }}
+              </span>
+              <span class="meta-item">
+                <i class="bi bi-building me-2"></i>
+                {{ dataset.organization?.title || 'BPS' }}
+              </span>
+            </div>
 
-          <div v-if="!expanded[index]">
-            <small class="text-muted">
-              <i class="bi bi-file-earmark-ppt text-success me-2"></i>
-              {{ truncateText(dataset.notes) }}
-              <a class="link-ui" href="#" @click.prevent="expanded[index] = true" :id="'link-expand-' + index">
-                Selengkapnya
-              </a>
-            </small>
-          </div>
-          <div v-else class="mt-2" :id="'deskripsi-' + index">
-            <div class="text-muted text-start">
-              <i class="bi bi-file-earmark-ppt text-success me-2"></i>
-              <div class="text-html" v-html="dataset.notes || 'Tanpa deskripsi.'"></div>
-              <a class="link-ui" href="#" @click.prevent="expanded[index] = false">...Tutup</a>
+            <div class="notes-section">
+              <p class="dataset-notes mb-0">
+                <template v-if="!expanded[index]">
+                  {{ truncateText(dataset.notes) }}
+                  <a class="toggle-link" href="#" @click.prevent="expanded[index] = true">
+                    Selengkapnya
+                  </a>
+                </template>
+                <template v-else>
+                  <span v-html="dataset.notes || 'Tanpa deskripsi.'"></span>
+                  <a class="toggle-link ms-2" href="#" @click.prevent="expanded[index] = false">Tutup</a>
+                </template>
+              </p>
             </div>
           </div>
-        </div>
 
-        <!-- Kolom kanan tombol -->
-        <div
-          class="col-md-1 col-12 d-flex align-items-center justify-content-md-end justify-content-start mt-2 mt-md-0">
-          <router-link :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }"
-            class="badge bg-success text-white text-decoration-none">
-            🔍 Lihat Detail
-          </router-link>
+          <div class="col-md-2 col-12 d-flex justify-content-md-end mt-3 mt-md-0">
+            <router-link :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }"
+              class="btn-detail">
+              Detail Data
+            </router-link>
+          </div>
         </div>
       </div>
-
-
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { formatLongDate } from '../utils/dates'
 const props = defineProps({
   datasets: {
     type: Array,
@@ -61,14 +64,6 @@ const props = defineProps({
   index: Number
 })
 
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('id-ID', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
 
 // const truncateText = (text) => {
 //   if (!text || typeof text !== 'string') return 'Tanpa deskripsi.'
@@ -90,23 +85,99 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.description-wrapper {
-  position: relative;
+.dataset-item {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: var(--transition-smooth);
 }
 
-.collapsed-html {
-  max-height: 5em;
-  overflow: hidden;
-  white-space: normal;
+.dataset-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+  border-color: var(--primary-color);
 }
 
-.expanded-html .text-html {
-  border: 1px solid #ddd;
-  background-color: #f8f9fa;
-  padding: 1rem;
+.org-badge {
+  background-color: var(--bg-accent);
+  color: var(--primary-color);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
   border-radius: 6px;
-  max-height: 400px;
-  overflow: auto;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dataset-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.title-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+.title-link:hover {
+  color: var(--primary-color);
+}
+
+.dataset-meta {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.meta-item i {
+  color: var(--primary-color);
+}
+
+.dataset-notes {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.toggle-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.toggle-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.btn-detail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+  white-space: nowrap;
+}
+
+.btn-detail:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
 }
 </style>
 

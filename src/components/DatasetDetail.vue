@@ -1,236 +1,204 @@
 <template>
-  <div v-if="dataset" class="container py-5">
-    <div class="mb-4 border-bottom pb-2">
-      <h2 class="fw-bold">{{ dataset.title }}</h2>
-      <p class="text-muted">{{ dataset.notes }}</p>
+  <div v-if="dataset" class="dataset-detail-card mb-5">
+    <div class="detail-header mb-5">
+      <h1 class="detail-title mb-3">{{ dataset.title }}</h1>
+      <p class="detail-notes" v-if="dataset.notes">{{ dataset.notes }}</p>
     </div>
 
-    <div class="mb-4">
-      <h5 class="fw-bold mb-3">📌 Informasi Umum</h5>
-      <ul class="list-group">
-
-        <li class="list-group-item d-flex justify-content-start align-items-start">
-          <div class="me-3 fw-semibold" style="min-width: 180px">Organisasi</div>
-          <div>{{ dataset.organization?.title || '-' }}</div>
-        </li>
-
-        <li class="list-group-item d-flex justify-content-start align-items-start">
-          <div class="me-3 fw-semibold" style="min-width: 180px">Author</div>
-          <div>
-            {{ dataset.author || '-' }}
-            <span v-if="dataset.author_email">({{ dataset.author_email }})</span>
+    <div class="info-section">
+      <div class="section-header d-flex align-items-center mb-4">
+        <div class="header-line me-3"></div>
+        <h5 class="fw-bold mb-0">Informasi Umum</h5>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-label">Kategori</div>
+          <div class="info-value">
+            <span class="info-badge-amber">
+              {{ dataset.category_name || dataset.category || '-' }}
+            </span>
           </div>
-        </li>
-
-        <li class="list-group-item d-flex justify-content-start align-items-start">
-          <div class="me-3 fw-semibold" style="min-width: 180px">Lisensi</div>
-          <div>
-            <a :href="dataset.license_url" class="link-ui" target="_blank">{{ dataset.license_title }}</a>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Wilayah</div>
+          <div class="info-value">{{ dataset.region_name || dataset.region || '-' }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Tahun</div>
+          <div class="info-value fw-bold">{{ dataset.year || '-' }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Tanggal</div>
+          <div class="info-value">{{ formatLongDate(dataset.date) || '-' }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Status</div>
+          <div class="info-value">
+            <span class="status-badge" :class="dataset.status === 'active' ? 'active' : 'inactive'">
+              {{ dataset.status === 'active' ? '● Aktif' : '○ Tidak Aktif' }}
+            </span>
           </div>
-        </li>
-
-        <li class="list-group-item d-flex justify-content-start align-items-start">
-          <div class="me-3 fw-semibold" style="min-width: 180px">Tanggal Dibuat</div>
-          <div>{{ formatDate(dataset.metadata_created) }}</div>
-        </li>
-
-        <li v-if="dataset.tags?.length" class="list-group-item d-flex justify-content-start align-items-start">
-          <div class="me-3 fw-semibold" style="min-width: 180px">Tag</div>
-          <div>
-            <span v-for="tag in dataset.tags" :key="tag.id" class="badge bg-success me-1">{{ tag.display_name }}</span>
+        </div>
+        
+        <div v-if="dataset.url" class="info-row">
+          <div class="info-label">URL</div>
+          <div class="info-value">
+            <a :href="dataset.url" target="_blank" class="dataset-url-link">
+              {{ dataset.url }} <i class="bi bi-box-arrow-up-right ms-1"></i>
+            </a>
           </div>
-        </li>
-
-        <li v-for="item in dataset.extras || []" :key="item.key"
-          class="list-group-item d-flex justify-content-start align-items-start">
-          <div class="me-3 fw-semibold" style="min-width: 180px">{{ item.key }}</div>
-          <div>{{ item.value }}</div>
-        </li>
-
-      </ul>
+        </div>
+        
+        <div v-if="dataset.path" class="info-row">
+          <div class="info-label">Path</div>
+          <div class="info-value text-muted font-monospace small">{{ dataset.path }}</div>
+        </div>
+      </div>
     </div>
-
-
-    <div v-if="dataset.resources?.length" class="mb-4">
-      <h4 class="fw-bold mb-3">📁 File Tersedia</h4>
-      <ul class="list-group mb-3">
-        <li class="list-group-item d-flex justify-content-between align-items-start"
-          v-for="resource in paginatedResources" :key="resource.id">
-          <div class="me-auto">
-            <div class="fw-bold">{{ resource.name }}</div>
-            <small class="text-muted">{{ resource.description }}</small>
-          </div>
-          <div class="d-flex flex-column align-items-end">
-            <span class="badge bg-secondary mb-2">{{ resource.format }}</span>
-            <div class="d-flex gap-2">
-              <a  class="btn btn-sm btn-outline-success" target="_blank" @click="checkAndDownload(resource,dataset.name)">
-                ⬇ Unduh ({{ jumlahDownload[`${resource.id}##${resource.name}`] || 0 }})
-              </a>
-              <button
-                v-if="['xlsx', 'xls', 'csv'].includes(resource.format.toLowerCase())"
-                class="btn btn-sm btn-outline-success"
-                @click="previewExcel(resource,dataset.name)"
-              >
-                👁️ Preview
-              </button>
-            </div>
-          </div>
-
-        </li>
-      </ul>
-
-      <nav>
-        <ul class="pagination justify-content-center">
-          <li class="page-item" :class="{ disabled: currentPage === 1 }">
-            <button class="page-link" @click="goToPage(currentPage - 1)">«</button>
-          </li>
-          <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
-            <button class="page-link" @click="goToPage(page)">{{ page }}</button>
-          </li>
-          <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-            <button class="page-link" @click="goToPage(currentPage + 1)">»</button>
-          </li>
-        </ul>
-      </nav>
-    </div>
-
-
   </div>
 
   <div v-else class="text-center py-5">
-    <div class="spinner-border text-secondary" role="status"></div>
-    <p class="mt-3">Memuat data dataset...</p>
+    <div class="ds-loading-spinner mx-auto mb-3"></div>
+    <p class="text-muted small">Memuat data dataset...</p>
   </div>
-<div v-if="showModal" class="modal-backdrop fade show position-fixed" style="z-index: 1040;"></div>
-
-<div v-if="showModal" class="modal fade show d-block" tabindex="-1" style="z-index: 1050;">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Preview Data Excel</h5>
-        <button type="button" class="btn-close" @click="showModal = false"></button>
-      </div>
-      <div class="modal-body">
-        <ExcelPreview :fileUrl="fileUrl" :visible="showModal" :name="name"/>
-      </div>
-    </div>
-  </div>
-</div>
-
 </template>
+
+<style scoped>
+.dataset-detail-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+.detail-title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.detail-notes {
+  font-size: 1.0625rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.header-line {
+  width: 40px;
+  height: 4px;
+  background: var(--primary-color);
+  border-radius: 2px;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  background: white;
+  padding: 1rem 1.5rem;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.info-badge-amber {
+  background: var(--bg-accent);
+  color: var(--primary-color);
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: 1px solid var(--border-amber-20);
+}
+
+.status-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+.status-badge.active { background: #f0fdf4; color: #16a34a; }
+.status-badge.inactive { background: #fef2f2; color: #dc2626; }
+
+.dataset-url-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid transparent;
+  transition: var(--transition-smooth);
+}
+.dataset-url-link:hover {
+  border-bottom-color: var(--primary-color);
+}
+
+.ds-loading-spinner {
+  width: 44px; height: 44px;
+  border: 4px solid var(--secondary-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+  .dataset-detail-card { padding: 1.5rem; }
+  .info-row { grid-template-columns: 1fr; gap: 4px; padding: 1rem; }
+  .info-label { font-size: 0.75rem; }
+}
+</style>
 
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import ExcelPreview from '../components/ExcelPreview.vue'
-import { DATAHUB_ENDPOINTS } from '@/config/api'
+import { API_ENDPOINTS } from '@/config/api'
+import { formatLongDate } from '../utils/dates'
 
 const route = useRoute()
 const dataset = ref(null)
+const emit = defineEmits(['setTitle', 'setOrganizationName'])
 
-const currentPage = ref(1)
-const itemsPerPage = 10
-const emit = defineEmits(['setTitle','setOrganizationName'])
-const jumlahDownload = ref({})
-
-const paginatedResources = computed(() => {
-  if (!dataset.value?.resources) return []
-  const start = (currentPage.value - 1) * itemsPerPage
-  return dataset.value.resources.slice(start, start + itemsPerPage)
-})
-
-const totalPages = computed(() => {
-  return dataset.value?.resources
-    ? Math.ceil(dataset.value.resources.length / itemsPerPage)
-    : 1
-})
-
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
-}
-
-const showModal = ref(false)
-const fileUrl = ref('')
-const name = ref('')
-
-
-const previewExcel = (resource,resName) => {
-  fileUrl.value = resource.url
-  showModal.value = true
-  name.value = resName
-}
-
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('id-ID', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
 
 const fetchDataset = async (id) => {
   try {
-    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_DATASET_SHOW}/${id}`)
-    const data = await res.json()
-    dataset.value = data.result
+    const res = await fetch(API_ENDPOINTS.DATASET_DETAIL(id))
+    dataset.value = await res.json()
     emit('setTitle', dataset.value.title)
-    emit('setOrganizationName', dataset.value.organization?.title)
-
-    dataset.value.resources.forEach(resource => {
-      const label = `${resource.id}##${resource.name}`
-      fetchDownloadStats(label)
-    })
-
+    emit('setOrganizationName', dataset.value.region_name || dataset.value.region || '-')
   } catch (err) {
-    console.error("Gagal mengambil dataset:", err)
+    console.error('Gagal mengambil dataset:', err)
   }
 }
-
-
-const fetchDownloadStats = async (label) => {
-   const res = await fetch(`${DATAHUB_ENDPOINTS.ANALYTICS_DOWNLOAD}?label=${encodeURIComponent(label)}`)
-   const data = await res.json()
-
-    const items = Array.isArray(data) ? data : [data]
-    items.forEach(item => {
-      jumlahDownload.value[item.label] = Number(item.nb_events || 0)
-    })
-}
-
-const checkAndDownload = async (resource,varname) => {
-  const key = `${resource.id}##${resource.name}`;
-  trackDownload(key);
-
-  const encodedUrl = encodeURIComponent(resource.url);
-
-  try {
-    const res = await fetch(`${DATAHUB_ENDPOINTS.CEK_URL_DATA_GO_ID}?url=${encodedUrl}`);
-    const result = await res.json();
-
-    const fallbackUrl = `https://data.go.id/dataset/dataset/${varname || 'id-default'}`;
-
-    window.open(result.exists ? resource.url : fallbackUrl, '_blank');
-  } catch (err) {
-    console.warn('Gagal mengecek file, langsung buka fallback',err);
-  }
-};
-
-
-
-
-const trackDownload = (label) => {
-  window._paq?.push(['trackEvent', 'Dataset', 'Download', label])
-}
-
-
 
 onMounted(() => {
   const id = route.params.id || route.query.id
   if (id) fetchDataset(id)
-
 })
 </script>

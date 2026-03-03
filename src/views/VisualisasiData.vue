@@ -41,7 +41,6 @@
     </div>
   </div>
 
-  <Kontak />
   <Footer />
 </template>
 <script setup>
@@ -49,7 +48,6 @@ import { useRoute } from 'vue-router'
 import { onMounted, ref, reactive, watch,nextTick  } from 'vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
-import Kontak from '../components/KontakSection.vue'
 import { DATAHUB_ENDPOINTS, API_ENDPOINTS } from '../config/api'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
