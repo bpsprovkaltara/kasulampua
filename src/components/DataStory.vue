@@ -2,11 +2,11 @@
   <section class="data-story-section py-5">
     <div class="container">
       <div class="d-flex align-items-center mb-5">
-        <div class="section-label me-4">REGIONAL INSIGHT</div>
+        <div class="section-label me-4">DATA INSIGHT</div>
         <div class="flex-grow-1 section-line"></div>
-        <a href="/regional_insight" class="btn-premium-cta btn-premium-cta-outline px-4 py-2 ms-4">
+        <!-- <a href="/regional_insight" class="btn-premium-cta btn-premium-cta-outline px-4 py-2 ms-4">
           Semua Insight
-        </a>
+        </a> -->
       </div>
 
       <div class="row g-5 align-items-start">
@@ -53,7 +53,7 @@
 
           <div class="insight-card p-5 text-center text-muted" v-else>
             <i class="bi bi-bar-chart-line display-1 mb-3 d-block opacity-25"></i>
-            <p>Memuat insight regional...</p>
+            <p>Memuat data insight...</p>
           </div>
         </div>
 
@@ -92,7 +92,7 @@
             <div class="cta-glow"></div>
             <div class="cta-content">
               <p class="cta-eyebrow">KASULAMPUA INSIGHT</p>
-              <h4 class="cta-title">Eksplorasi Data Regional</h4>
+              <h4 class="cta-title">Eksplorasi Data Insight</h4>
               <p class="cta-text">
                 Temukan visualisasi data mendalam untuk mendukung pengambilan keputusan di wilayah
                 Kasulampua.

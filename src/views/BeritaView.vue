@@ -52,10 +52,7 @@
           <button
             class="search-clear"
             v-if="searchQuery"
-            @click="
-              searchQuery = ''
-              applySearch()
-            "
+            @click="clearSearch"
           >
             <i class="bi bi-x"></i>
           </button>
@@ -76,23 +73,24 @@
         <p class="text-muted small">Coba kata kunci lain.</p>
         <button
           class="btn btn-sm btn-outline-amber rounded-pill px-4 mt-2"
-          @click="
-            searchQuery = ''
-            applySearch()
-          "
+          @click="clearSearch"
         >
           Reset Pencarian
         </button>
       </div>
 
       <template v-else>
-        <div class="featured-card mb-5" v-if="filteredList[0]">
+        <router-link
+          v-if="currentPage === 1 && paginatedList[0]"
+          :to="`/berita/${paginatedList[0].slug}`"
+          class="featured-card mb-5 d-block text-decoration-none"
+        >
           <div class="row g-0 align-items-stretch">
             <div class="col-lg-6">
               <div class="featured-img-wrapper">
                 <img
-                  :src="urlImage(filteredList[0].image) || '/assets/images/default-news.jpg'"
-                  :alt="filteredList[0].title"
+                  :src="urlImage(paginatedList[0].image) || '/assets/images/default-news.jpg'"
+                  :alt="paginatedList[0].title"
                   class="featured-img"
                 />
                 <div class="featured-img-overlay"></div>
@@ -109,33 +107,36 @@
                     <i class="bi bi-calendar3 me-2"></i>
                     {{
                       formatLongDate(
-                        filteredList[0].tanggal_diperbarui || filteredList[0].created_at,
+                        paginatedList[0].tanggal_diperbarui || paginatedList[0].created_at,
                       )
                     }}
                   </div>
-                  <h2 class="featured-title mb-3">{{ filteredList[0].title }}</h2>
-                  <p class="featured-excerpt">{{ filteredList[0].content?.slice(0, 220) }}...</p>
+                  <h2 class="featured-title mb-3">{{ paginatedList[0].title }}</h2>
+                  <p class="featured-excerpt">{{ paginatedList[0].content?.slice(0, 220) }}...</p>
                 </div>
-                <div class="d-flex align-items-center gap-3 mt-4">
-                  <router-link :to="`/berita/${filteredList[0].slug}`" class="btn-read-featured">
-                    Baca Selengkapnya
-                  </router-link>
-                  <span class="author-chip" v-if="filteredList[0].penulis">
-                    <i class="bi bi-person me-1"></i>{{ filteredList[0].penulis?.slice(0, 20) }}
+                <div class="mt-4 d-flex justify-content-between align-items-center">
+                  <span class="author-chip" v-if="paginatedList[0].penulis">
+                    <i class="bi bi-person me-1"></i>{{ paginatedList[0].penulis?.slice(0, 20) }}
                   </span>
+                  <div class="detail-label">
+                    Baca Berita
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </router-link>
 
-        <div class="row g-4" v-if="filteredList.length > 1">
+        <div class="row g-4">
           <div
+            v-for="(item, index) in (currentPage === 1 ? paginatedList.slice(1) : paginatedList)"
+            :key="item.id || index"
             class="col-md-6 col-lg-4"
-            v-for="(item, index) in filteredList.slice(1)"
-            :key="index"
           >
-            <div class="news-card h-100">
+            <router-link
+              :to="`/berita/${item.slug}`"
+              class="news-card h-100 d-block text-decoration-none"
+            >
               <div class="nc-img-wrapper">
                 <img
                   :src="urlImage(item.image) || '/assets/images/default-news.jpg'"
@@ -156,19 +157,22 @@
                   </span>
                 </div>
                 <h5 class="nc-title">
-                  <router-link :to="`/berita/${item.slug}`" class="nc-title-link">
-                    {{ item.title }}
-                  </router-link>
+                  {{ item.title }}
                 </h5>
                 <p class="nc-excerpt">{{ item.content?.slice(0, 110) }}...</p>
-
-                <router-link :to="`/berita/${item.slug}`" class="nc-read-btn">
+                <div class="detail-label mt-3">
                   Baca Berita
-                </router-link>
+                </div>
               </div>
-            </div>
+            </router-link>
           </div>
         </div>
+
+        <PaginationControl
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @change="(p) => { currentPage = p; applySearch() }"
+        />
       </template>
     </div>
   </section>
@@ -180,30 +184,54 @@
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { API_ENDPOINTS } from '../config/api'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatLongDate } from '../utils/dates'
+import { DUMMY_BERITA } from '../utils/dummyBerita'
+import PaginationControl from '../components/PaginationControl.vue'
 
 const beritaList = ref([])
 const searchQuery = ref('')
 const loading = ref(true)
 const route = useRoute()
 
+const currentPage = ref(1)
+const itemsPerPage = 7 
+
 const filteredList = computed(() => {
-  if (!searchQuery.value.trim()) return beritaList.value
-  return beritaList.value.filter(
-    (item) =>
-      item.title?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      item.content?.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  )
+  let list = beritaList.value
+  if (searchQuery.value.trim()) {
+    list = list.filter(
+      (item) =>
+        item.title?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        item.content?.toLowerCase().includes(searchQuery.value.toLowerCase()),
+    )
+  }
+  return list
+})
+
+const totalPages = computed(() => Math.ceil(filteredList.value.length / itemsPerPage))
+
+const paginatedList = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredList.value.slice(start, start + itemsPerPage)
+})
+
+watch(searchQuery, () => {
+  currentPage.value = 1
 })
 
 const fetchBerita = async (filter = {}) => {
   loading.value = true
   try {
+    /*
     const query = new URLSearchParams(filter).toString()
     const res = await fetch(`${API_ENDPOINTS.BERITA}?${query}`)
     beritaList.value = (await res.json()) || []
+    */
+
+    // DUMMY DATA 
+    beritaList.value = DUMMY_BERITA
   } catch (err) {
     console.error('Gagal memuat berita:', err)
   } finally {
@@ -229,6 +257,12 @@ onMounted(() => {
   }
   fetchBerita(initial)
 })
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  currentPage.value = 1
+  applySearch()
+}
 </script>
 
 <style scoped>
@@ -344,9 +378,16 @@ onMounted(() => {
   transition: var(--transition-smooth);
 }
 .featured-card:hover {
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12);
   transform: translateY(-4px);
+  box-shadow: 0 20px 40px -15px rgba(217, 119, 6, 0.15);
   border-color: var(--primary-color);
+}
+.featured-card:hover .featured-title {
+  color: var(--primary-color);
+}
+.featured-card:hover .detail-label {
+  opacity: 1;
+  transform: translateX(0);
 }
 .featured-img-wrapper {
   position: relative;
@@ -421,27 +462,6 @@ onMounted(() => {
   font-size: 1rem;
 }
 
-.btn-read-featured {
-  display: inline-flex;
-  align-items: center;
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  color: white;
-  font-weight: 700;
-  font-size: 0.875rem;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 28px;
-  text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 15px -3px rgba(217, 119, 6, 0.4);
-  letter-spacing: 0.01em;
-}
-.btn-read-featured:hover {
-  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px -6px rgba(217, 119, 6, 0.45);
-  color: white;
-}
 
 .author-chip {
   font-size: 0.8125rem;
@@ -465,8 +485,13 @@ onMounted(() => {
 }
 .news-card:hover {
   border-color: var(--primary-color);
-  box-shadow: 0 12px 24px -8px rgba(217, 119, 6, 0.12);
+  background-color: #fffaf0;
   transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(217, 119, 6, 0.15);
+}
+.news-card:hover .detail-label {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .nc-img-wrapper {
@@ -497,6 +522,18 @@ onMounted(() => {
   flex-direction: column;
   flex: 1;
   gap: 12px;
+  text-decoration: none;
+}
+.nc-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+  transition: var(--transition-smooth);
+}
+.news-card:hover .nc-title {
+  color: var(--primary-color);
 }
 .nc-meta {
   display: flex;
@@ -523,14 +560,7 @@ onMounted(() => {
   line-height: 1.5;
   margin: 0;
 }
-.nc-title-link {
-  text-decoration: none;
-  color: inherit;
-  transition: var(--transition-smooth);
-}
-.news-card:hover .nc-title-link {
-  color: var(--primary-color);
-}
+
 .nc-excerpt {
   font-size: 0.875rem;
   color: var(--text-secondary);
@@ -559,6 +589,17 @@ onMounted(() => {
   color: white;
   transform: translateY(-3px);
   box-shadow: 0 8px 20px -5px rgba(217, 119, 6, 0.3);
+}
+
+.detail-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: var(--transition-smooth);
 }
 
 .berita-spinner {

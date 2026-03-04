@@ -155,6 +155,7 @@ import Footer from '../components/FooterSection.vue'
 import Navbar from '../components/NavSection.vue'
 import { API_ENDPOINTS } from '../config/api'
 import { formatLongDate } from '../utils/dates'
+import { DUMMY_BERITA } from '../utils/dummyBerita'
 
 const beritaList = ref([])
 const route = useRoute()
@@ -169,8 +170,9 @@ const pageUrl = computed(() => window.location.href)
 
 const fetchBerita = async () => {
   try {
-    const res = await fetch(API_ENDPOINTS.BERITA_TERKINI)
-    beritaList.value = (await res.json()) || []
+    // const res = await fetch(API_ENDPOINTS.BERITA_TERKINI)
+    // beritaList.value = (await res.json()) || []
+    beritaList.value = DUMMY_BERITA
   } catch (e) {
     console.error('Gagal memuat daftar berita:', e)
   }
@@ -179,12 +181,21 @@ const fetchBerita = async () => {
 const fetchBeritaSlug = async () => {
   loading.value = true
   try {
+    /*
     const res = await fetch(API_ENDPOINTS.BERITA_SLUG(route.params.id))
     const data = await res.json()
     news.value = data.error
       ? { title: 'Berita tidak ditemukan', image: '', created_at: '', content: '' }
       : data
-    trackInsight(news.value.title || news.value.judul)
+    */
+    
+    const found = DUMMY_BERITA.find(b => b.slug === route.params.id)
+    if (found) {
+      news.value = found
+      trackInsight(news.value.title)
+    } else {
+      news.value = { title: 'Berita tidak ditemukan', image: '', created_at: '', content: '' }
+    }
   } catch (e) {
     console.error('Gagal memuat berita:', e)
   } finally {
@@ -596,6 +607,7 @@ watch(
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   transition: color 0.2s;
 }
