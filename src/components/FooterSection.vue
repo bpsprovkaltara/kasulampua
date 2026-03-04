@@ -304,14 +304,16 @@ const footerSections = [
 .footer-link {
   color: #9ca3af !important;
   text-decoration: none !important;
-  font-size: 0.8rem !important;
+  font-size: 0.85rem !important;
   line-height: 1.8;
   transition: var(--transition-smooth);
+  display: inline-block;
+  padding: 4px 0;
 }
 
 .footer-link:hover {
   color: #f59e0b !important;
-  padding-left: 4px;
+  transform: translateX(4px);
 }
 
 .rotate-180 {

@@ -20,14 +20,14 @@ export function useNavigation() {
   })
 
   const navigation = reactive({
-    logo: '/assets/images/logo.svg',
+    logo: '/assets/images/logo-nav.png',
   })
 
   const navigationLinks = computed(() => [
     { text: 'Beranda', href: '/' },
     { text: 'Pusat Informasi', href: 'https://info.kasulampua.id' },
-    { text: 'Regional Insight', href: '/regional_insight' },
-    { text: 'Data', href: '/dataset' },
+    { text: 'Data Insight', href: '/regional_insight' },
+    { text: 'Datasets', href: '/dataset' },
     { text: 'Berita', href:'/berita'},
     { text: 'Tentang', href: '/about' },
   ])

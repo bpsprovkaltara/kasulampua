@@ -15,22 +15,24 @@ export const API_ENDPOINTS = {
   BERITA_SLUG: ($slug) => `${API_BASE_URL}/api/berita/slug/${$slug}`,
   BERITA_DETAIL: (id) => `${API_BASE_URL}/api/berita/${id}`,
   BERITA_IMAGE:`${API_BASE_URL}/uploads/berita`,
-  BERITA_TERKINI:`${API_BASE_URL}/api/berita/newBerita`,
-
+  BERITA_TERKINI:`${API_BASE_URL}/api/berita`, 
 
   // CRUD Insight
   INSIGHT: `${API_BASE_URL}/api/insight`,
   INSIGHT_SLUG:  ($slug) => `${API_BASE_URL}/api/insight/slug/${$slug}`,
   INSIGHT_DETAIL: (id) => `${API_BASE_URL}/api/insight/${id}`,
   INSIGHT_IMAGE:`${API_BASE_URL}/uploads/insight`,
-  INSIGHT_TOP:`${API_BASE_URL}/api/insight/topInsight`,
-
-
+  INSIGHT_TOP:`${API_BASE_URL}/api/insight`, 
 
   SETELAN: `${API_BASE_URL}/api/setelan`,
 
+  // Dataset
+  DATASET: `${API_BASE_URL}/api/dataset`,
+  DATASET_KATEGORI: `${API_BASE_URL}/api/dataset/kategori`,
+  DATASET_REGION: `${API_BASE_URL}/api/dataset/region`,
+  DATASET_DETAIL: (id) => `${API_BASE_URL}/api/dataset/${id}`,
 
-  DATASET_KATEGORI: `${API_BASE_URL}/api/dataset-kategori`,
+  // Legacy/Other (Kept for compatibility if used elsewhere)
   LISTDATASET: `${API_BASE_URL}/api/dataset-list`,
 }
 

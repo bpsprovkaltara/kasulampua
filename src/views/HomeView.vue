@@ -1,12 +1,14 @@
 <template>
-  <Navbar />
-  <Header :header="header" :link="pusatInformasi" :regions="regional" />
-  <IndikatorStrategis />
-  <DataRepository :kategori="kategori" :itemsPerSlide="itemsPerSlide" :loading="loading" />
-  <NewsSection :berita="berita" />
-  <DataStory :dataSection="data_section" :dataset="dataset" />
-  <Kontak />
-  <Footer />
+  <div class="home-wrapper">
+    <Navbar />
+    <Header :header="header" :link="pusatInformasi" :regions="regional" />
+    <main>
+      <DataRepository />
+      <NewsSection :berita="berita" />
+      <DataStory :dataSection="data_section" :dataset="dataset" />
+    </main>
+    <Footer />
+  </div>
 </template>
 
 <script setup>
@@ -20,14 +22,14 @@ import DataRepository from '../components/DataRepository.vue'
 import NewsSection from '../components/NewsSection.vue'
 import DataStory from '../components/DataStory.vue'
 import Footer from '../components/FooterSection.vue'
-import Kontak from '../components/KontakSection.vue'
-import IndikatorStrategis from '@/components/IndikatorStrategis.vue'
+import { DUMMY_BERITA } from '../utils/dummyBerita'
+import { DUMMY_INSIGHTS } from '../utils/dummyInsights'
 
 
 const pusatInformasi = ref({ href: 'https://info.kasulampua.id/' })
 
 const header = reactive({
-  logo: 'assets/images/logo_instansi.png',
+  logo: '/assets/images/logo-kasulampua-PUTIH.png',
   title: 'Kasulampua',
   description:''
 })
@@ -45,17 +47,25 @@ const loading = ref(true)
 
 const fetchGroups = async () => {
   try {
+    /* 
     const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_ORGANIZATION_LIST}`)
     let data = await res.json()
 
     data = data.sort((a, b) => {
       return a.name.localeCompare(b.name);
     });
+    kategori.value = data
+    */
 
-     kategori.value = data
-     loading.value = false
+    // DUMMY DATA 
+    kategori.value = [
+      { name: 'BPS Provinsi Kalimantan Utara' },
+      { name: 'BPS Provinsi Sulawesi Tengah' },
+      { name: 'BPS Provinsi Maluku Utara' },
+      { name: 'BPS Provinsi Papua Barat' }
+    ]
+    loading.value = false
   } catch (error) {
-
     console.error('Gagal mengambil data group:', error)
   }
 }
@@ -103,20 +113,28 @@ const berita = reactive({
 })
 
 const fetchHeadlineBerita = async () => {
-
   try {
+    /* 
     const res = await fetch(API_ENDPOINTS.BERITA+'?type=headline_utama')
     const data = await res.json()
 
     if (res.ok && data && data.length > 0) {
       const item = data[0]
-      berita.headline_image = item.gambar
-        ? `${API_ENDPOINTS.BERITA_IMAGE}/${item.gambar}`
+      berita.headline_image = item.image
+        ? `${item.image}` // New API seems to provide full URL or specific path
         : '/assets/images/headline_image.png'
-      berita.judul_headline = item.judul
-      berita.ringkasan_headline = item.isi?.substring(0, 500) + '...'
+      berita.judul_headline = item.title
+      berita.ringkasan_headline = item.content?.substring(0, 500) + '...'
       berita.href = `/berita/${item.slug}`
     }
+    */
+
+    // DUMMY DATA
+    const headline = DUMMY_BERITA[0]
+    berita.headline_image = headline.image
+    berita.judul_headline = headline.title
+    berita.ringkasan_headline = headline.content.replace(/<[^>]*>/g, '').substring(0, 300) + '...'
+    berita.href = `/berita/${headline.slug}`
   } catch (err) {
     console.error('Gagal memuat headline:', err)
   }
@@ -137,33 +155,51 @@ const data_section = reactive({
 
 const fetchTopInsight = async () => {
   try {
+    /* 
     const res = await fetch(API_ENDPOINTS.INSIGHT_TOP)
     const top = await res.json()
 
-    data_section.judul = top.judul
-    data_section.deskripsi = top.deskripsi
-    data_section.wilayah = top.wilayah
+    data_section.judul = top.title
+    data_section.deskripsi = top.description
+    data_section.wilayah = top.region_name || top.wilayah
     data_section.region = top.region
-    data_section.topik = top.topik
-    data_section.gambar = top.gambar
-        ? `${API_ENDPOINTS.INSIGHT_IMAGE}/${top.gambar}`
+    data_section.topik = top.topic || top.topik
+    data_section.gambar = top.image
+        ? `${top.image}`
         : '/assets/images/headline_image.png'
     data_section.link_lainnya = `/regional_insight/${top.slug}`
 
     fetchRelatedDatasets(top.id)
+    */
+
+    // FORCING DUMMY 
+    const top = DUMMY_INSIGHTS[0]
+    data_section.judul = top.title
+    data_section.deskripsi = top.description
+    data_section.wilayah = top.region_name
+    data_section.region = top.region
+    data_section.topik = top.topic
+    data_section.gambar = top.image
+    data_section.link_lainnya = `/regional_insight/${top.slug}`
+    
+    dataset.value = [
+      { title: 'Dataset PDRB Perkapita 2023', url: '#' },
+      { title: 'Laju Pertumbuhan Ekonomi Triwulan IV', url: '#' },
+      { title: 'Indeks Harga Konsumen Gabungan', url: '#' }
+    ]
+    
+    dataset.value = [
+      { title: 'Dataset PDRB Perkapita 2023', url: '#' },
+      { title: 'Laju Pertumbuhan Ekonomi Triwulan IV', url: '#' },
+      { title: 'Indeks Harga Konsumen Gabungan', url: '#' }
+    ]
   } catch (err) {
     console.error('Gagal ambil top insight:', err)
   }
 }
 
 const fetchRelatedDatasets = async (id) => {
-  try {
-    const res = await fetch(`${API_ENDPOINTS.INSIGHT}/${id}/related-datasets`)
-    const data = await res.json()
-    dataset.value = data
-  } catch (error) {
-    console.error('Gagal memuat related datasets:', error)
-  }
+  // Ignored in dummy mode
 }
 
 

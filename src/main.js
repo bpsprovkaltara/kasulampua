@@ -9,6 +9,7 @@ import { MATOMO_ENDPOINT } from './config/api'
 
 const app = createApp(App)
 
+/* 
 app.mixin({
   mounted() {
     if (this.$root !== this) return
@@ -38,6 +39,8 @@ router.afterEach(() => {
     window._paq.push(['trackPageView'])
   }
 })
+*/
 
 app.use(router)
+
 app.mount('#app')

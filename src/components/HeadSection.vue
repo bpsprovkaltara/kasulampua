@@ -73,7 +73,7 @@
       </div>
       <div class="glass-module module-2 fade-in-up" style="animation-delay: 0.4s">
         <i class="bi bi-geo-alt-fill me-2 fs-5"></i>
-        <span>Regional Insight</span>
+        <span>Data Insight</span>
       </div>
       <div class="glass-module module-3 fade-in-up" style="animation-delay: 0.6s">
         <i class="bi bi-graph-up-arrow me-2 fs-5"></i>
@@ -90,6 +90,14 @@
 
         <h1 class="hero-main-title mb-3">KASULAMPUA</h1>
 
+        <div class="hero-event-banner mb-4">
+          <span class="event-text">
+            <strong>Konsultasi Regional PDRB Kasulampua 2026</strong>
+            <span class="mx-2 opacity-50">|</span>
+            <i class="bi bi-geo-alt-fill text-amber me-1"></i>Tanjung Selor, 15–17 April 2026
+          </span>
+        </div>
+
         <p class="hero-main-subtitle mb-5 mx-auto">
           Portal Data Terintegrasi Kalimantan, Sulawesi, Maluku &amp; Papua
         </p>
@@ -97,16 +105,6 @@
         <div class="hero-actions d-flex flex-wrap justify-content-center gap-4 mb-4">
           <a :href="link.href" class="btn btn-hero-primary-v2"> Masuk ke Pusat Informasi </a>
         </div>
-
-        <!-- ===== EVENT ANNOUNCEMENT ===== -->
-        <!-- <div class="hero-event-banner mb-5">
-    
-          <span class="event-text">
-            <i class="bi bi-calendar-event me-2"></i>
-            <strong>Konsultasi Regional PDRB Kasulampua 2026</strong>
-            &nbsp;&mdash;&nbsp; Tanjung Selor, 15–17 April 2026
-          </span>
-        </div> -->
 
         <div class="hero-partners mt-4">
           <p class="partners-label mb-3">DIDUKUNG OLEH</p>
@@ -168,25 +166,25 @@
         <p class="section-label mb-4 text-center">CAKUPAN WILAYAH STRATEGIS</p>
         <div class="row g-4 justify-content-center">
           <div class="col-6 col-md-3" v-for="(item, key) in regions" :key="key">
-            <div class="region-card-premium-v2">
+            <router-link
+              :to="{ path: '/visualisasi_data', query: { region: key } }"
+              class="region-card-premium-v2 text-decoration-none"
+            >
               <div class="p-4 d-flex flex-column align-items-center text-center">
                 <div class="region-icon-wrapper-v4">
                   <img
                     :src="item.icon"
                     :alt="'icon_' + key"
                     class="img-fluid"
-                    style="height: 48px; width: auto"
+                    style="height: 96px; width: auto"
                   />
                 </div>
                 <h5 class="region-title-v4 text-capitalize">{{ key }}</h5>
-                <router-link
-                  :to="{ path: '/visualisasi_data', query: { region: key } }"
-                  class="btn-region-link-v2"
-                >
+                <span class="btn-region-link-v2">
                   Lihat Analisis
-                </router-link>
+                </span>
               </div>
-            </div>
+            </router-link>
           </div>
         </div>
       </div>
@@ -347,7 +345,7 @@ function particleStyle(n) {
 }
 
 .hero-container {
-  padding: 80px 1rem 40px;
+  padding: 120px 1rem 40px;
   z-index: 10;
   position: relative;
 }
@@ -482,7 +480,7 @@ function particleStyle(n) {
   transition: transform 0.3s ease;
 }
 .module-1 {
-  top: 18%;
+  top: 12%;
   right: 8%;
   animation: float-v2 7s infinite ease-in-out;
 }
@@ -556,42 +554,87 @@ function particleStyle(n) {
   color: #94a3b8;
 }
 .region-card-premium-v2 {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 24px;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 32px;
+  display: block;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+.region-card-premium-v2::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 .region-card-premium-v2:hover {
-  transform: translateY(-12px) scale(1.02);
-  border-color: #d97706;
-  box-shadow: 0 20px 40px rgba(217, 119, 6, 0.08);
+  transform: translateY(-20px) scale(1.05);
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 30px 60px -15px rgba(217, 119, 6, 0.2);
+}
+.region-card-premium-v2:hover::before {
+  opacity: 1;
 }
 .region-icon-wrapper-v4 {
-  width: 84px;
-  height: 84px;
-  background: #f8fafc;
-  border-radius: 20px;
+  width: auto;
+  height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.5rem;
-  transition: all 0.5s ease;
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+  position: relative;
 }
 .region-card-premium-v2:hover .region-icon-wrapper-v4 {
-  background: #fff7ed;
-  transform: rotate(8deg);
+  transform: translateY(-10px) rotate(5deg) scale(1.15);
+  filter: drop-shadow(0 15px 15px rgba(217, 119, 6, 0.2));
 }
 .region-title-v4 {
   font-weight: 900;
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   color: #1e293b;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  z-index: 2;
+  position: relative;
+  transition: color 0.3s ease;
+}
+.region-card-premium-v2:hover .region-title-v4 {
+  color: #92400e;
 }
 .btn-region-link-v2 {
   font-size: 0.85rem;
   font-weight: 800;
   color: #d97706;
   text-decoration: none;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  z-index: 2;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-region-link-v2::after {
+  content: '→';
+  transform: translateX(-5px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+.region-card-premium-v2:hover .btn-region-link-v2 {
+  opacity: 1;
+  letter-spacing: 0.05em;
+}
+.region-card-premium-v2:hover .btn-region-link-v2::after {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 .fade-in {

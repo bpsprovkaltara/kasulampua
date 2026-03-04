@@ -13,4 +13,18 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://apikasulampua.datakaltara.my.id',
+        changeOrigin: true,
+        secure: true,
+      },
+      '/uploads': {
+        target: 'https://apikasulampua.datakaltara.my.id',
+        changeOrigin: true,
+        secure: true,
+      }
+    }
+  }
 })

@@ -102,7 +102,7 @@
    
       <IndonesiaMap />
 
-      <div class="row g-4 mt-4">
+      <!-- <div class="row g-4 mt-4">
         <div class="col-md-6 col-lg-3" v-for="region in regions" :key="region.name">
           <div class="region-card h-100">
             <div class="region-card-top" :style="{ background: region.gradient }">
@@ -119,7 +119,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </section>
 
