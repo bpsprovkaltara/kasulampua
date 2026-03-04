@@ -14,7 +14,7 @@
     <div class="filter-divider" aria-hidden="true"></div>
 
     <div class="filter-chips">
-      <span class="chip-label">Regional:</span>
+      <span class="chip-label">Wilayah:</span>
       <button class="filter-chip" :class="{ active: selectedRegion === '' }" @click="setRegion('')">
         Semua
       </button>
@@ -39,6 +39,7 @@
         <option>Logistik</option>
         <option>Ekonomi</option>
         <option>Pertanian</option>
+        <option>Infrastruktur</option>
       </select>
     </div>
   </div>

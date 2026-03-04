@@ -1,5 +1,5 @@
 <template>
-  <div class="insight-card h-100">
+  <router-link :to="`/regional_insight/${props.slug}`" class="insight-card h-100 text-decoration-none">
     <div class="card-image-wrapper">
       <img :src="urlImage(props.image)" class="card-img" alt="Insight cover" />
       <div class="image-overlay"></div>
@@ -16,16 +16,19 @@
     </div>
     <div class="card-body-content">
       <h5 class="card-title">
-        <router-link :to="`/regional_insight/${props.slug}`" class="title-link">
-          {{ props.title }}
-        </router-link>
+        {{ props.title }}
       </h5>
 
       <div class="card-meta">
-        <div class="meta-row" v-if="props.date">
-          <i class="bi bi-calendar3 meta-icon"></i>
-          <span>{{ formatLongDate(props.date) }}</span>
-        </div>
+            <div class="meta-row mt-2 d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-calendar3 meta-icon me-2"></i>
+                <span class="date-text">{{ formatLongDate(props.date) }}</span>
+              </div>
+              <div class="detail-label">
+                Lihat Insight
+              </div>
+            </div>
         <div class="meta-row" v-if="props.author">
           <i class="bi bi-person meta-icon"></i>
           <span>{{ props.author }}</span>
@@ -35,15 +38,8 @@
           <span>{{ props.location }}</span>
         </div>
       </div>
-
-      <router-link
-        :to="`/regional_insight/${props.slug}`"
-        class="btn-premium-cta btn-premium-cta-outline px-4 py-2 mt-auto"
-      >
-        Lihat Insight
-      </router-link>
     </div>
-  </div>
+  </router-link>
 </template>
 
 <script setup>
@@ -165,14 +161,31 @@ const badgeColorMap = {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.title-link {
-  text-decoration: none;
-  color: inherit;
   transition: var(--transition-smooth);
 }
-.insight-card:hover .title-link {
+.regional-card:hover {
+  border-color: var(--primary-color);
+  background-color: #fffaf0;
+}
+
+.regional-card:hover .card-title {
   color: var(--primary-color);
+}
+
+.regional-card:hover .detail-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: var(--transition-smooth);
 }
 
 .card-meta {
@@ -187,33 +200,15 @@ const badgeColorMap = {
   gap: 8px;
   font-size: 0.8rem;
   color: var(--text-secondary);
+  line-height: 1;
 }
 .meta-icon {
   color: var(--primary-color);
   font-size: 0.875rem;
   flex-shrink: 0;
-  width: 16px;
 }
-
-.read-more-btn {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  text-decoration: none;
-  border: 1px solid var(--primary-color);
-  background: transparent;
-  padding: 8px 20px;
-  border-radius: 100px;
-  transition: var(--transition-smooth);
-  align-self: flex-start;
-  margin-top: auto;
-}
-.read-more-btn:hover {
-  background: var(--primary-color);
-  color: white;
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+.date-text {
+  font-weight: 500;
+  white-space: nowrap;
 }
 </style>

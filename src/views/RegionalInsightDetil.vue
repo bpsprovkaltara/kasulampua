@@ -10,7 +10,7 @@
       <nav class="insight-breadcrumb mb-4">
         <router-link to="/" class="bc-link">Beranda</router-link>
         <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
-        <router-link to="/regional_insight" class="bc-link">Regional Insight</router-link>
+        <router-link to="/regional_insight" class="bc-link">Data Insight</router-link>
         <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
         <span class="bc-current">Detail</span>
       </nav>
@@ -63,32 +63,87 @@
               <p class="desc-body">{{ state.insight.description }}</p>
             </div>
 
-            <!-- Tableau / Visualization Panel -->
-            <div class="viz-panel mb-5" v-if="state.insight.link">
-              <div class="viz-header">
-                <div class="viz-header-left">
-                  <i class="bi bi-bar-chart-fill viz-header-icon"></i>
+            <!-- TABLE DATA (EXCEL STYLE) -->
+            <div class="insight-table-card mb-5" v-if="state.insight.table_data">
+              <div class="table-card-header">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-table text-amber"></i>
+                  <h6 class="mb-0 fw-bold">Dataset Pendukung (Tabel Data)</h6>
+                </div>
+                <div class="table-actions">
+                  <button class="btn-table-action" title="Download Excel"><i class="bi bi-file-earmark-excel"></i></button>
+                  <button class="btn-table-action" title="Copy Data"><i class="bi bi-copy"></i></button>
+                </div>
+              </div>
+              <div class="table-responsive excel-style-wrapper">
+                <table class="table table-hover table-bordered excel-table mb-0">
+                  <thead>
+                    <tr>
+                      <th v-for="(val, key) in state.insight.table_data[0]" :key="key" class="text-capitalize">
+                        {{ key.replace('_', ' ') }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, i) in state.insight.table_data" :key="i">
+                      <td v-for="(val, key) in row" :key="key">
+                        {{ val }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-card-footer">
+                <p class="small text-muted mb-0">Sumber: BPS Kasulampua (Dummy Data for Presentation)</p>
+              </div>
+            </div>
+
+            <!-- Interactive Visual Dashboard -->
+            <div class="insight-viz-card mb-5" v-if="state.insight?.chart_data">
+              <div class="viz-card-header">
+                <div class="header-main">
+                  <div class="viz-icon-box">
+                    <i class="bi bi-graph-up-arrow"></i>
+                  </div>
                   <div>
-                    <div class="viz-title">Visualisasi Data Interaktif</div>
-                    <div class="viz-subtitle">
-                      Gunakan filter pada grafik untuk eksplorasi lebih dalam
+                    <h6 class="viz-card-title mb-0">Dashboard Visualisasi Interaktif</h6>
+                    <p class="viz-card-subtitle mb-0">Analisis Mendalam Berbasis Dataset Regional</p>
+                  </div>
+                </div>
+                <div class="viz-chart-toggles">
+                  <button 
+                    v-for="btn in [
+                      { type: 'bar', label: 'Batang', icon: 'bi-bar-chart-fill' },
+                      { type: 'line', label: 'Garis', icon: 'bi-graph-up' },
+                      { type: 'doughnut', label: 'Lingkaran', icon: 'bi-pie-chart-fill' }
+                    ]" 
+                    :key="btn.type"
+                    class="toggle-btn" 
+                    :class="{ active: activeChartType === btn.type }"
+                    @click="updateChartType(btn.type)"
+                  >
+                    <i :class="btn.icon" class="me-2"></i>
+                    <span>{{ btn.label }}</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="viz-card-body">
+                <div class="chart-wrapper">
+                  <canvas ref="chartRef"></canvas>
+                </div>
+              </div>
+              
+              <div class="viz-card-footer">
+                <div class="row g-3">
+                  <div class="col-sm-4" v-for="(ds, idx) in state.insight.chart_data.datasets" :key="idx">
+                    <div class="stat-mini-card">
+                      <div class="stat-label">{{ ds.label }}</div>
+                      <div class="stat-value">{{ Math.max(...ds.data).toLocaleString() }}{{ ds.label.includes('%') ? '%' : '' }}</div>
+                      <div class="stat-trend text-success"><i class="bi bi-caret-up-fill"></i> Tertinggi</div>
                     </div>
                   </div>
                 </div>
-                <a :href="state.insight.link" target="_blank" class="viz-open-btn">
-                  Buka Layar Penuh
-                </a>
-              </div>
-              <div class="viz-frame-wrapper">
-                <iframe
-                  :src="state.insight.link"
-                  frameborder="0"
-                  allowtransparency="true"
-                  allowfullscreen="true"
-                  title="Data Visualization"
-                  scrolling="no"
-                  class="viz-iframe"
-                ></iframe>
               </div>
             </div>
 
@@ -198,12 +253,14 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, computed } from 'vue'
+import { onMounted, reactive, ref, computed, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { API_ENDPOINTS } from '@/config/api'
 import { formatLongDate } from '@/utils/dates'
+import { DUMMY_INSIGHTS } from '@/utils/dummyInsights'
+import { Chart } from 'chart.js/auto'
 
 const route = useRoute()
 const copied = ref(false)
@@ -213,6 +270,92 @@ const state = reactive({
   insight: null,
   dataset: [],
 })
+
+const chartRef = ref(null)
+const activeChartType = ref('bar')
+let chartInstance = null
+
+watch(chartRef, (newVal) => {
+  if (newVal) {
+    initChart()
+  }
+})
+
+const initChart = async () => {
+  if (!state.insight?.chart_data || !chartRef.value) return
+  
+  await nextTick()
+  
+  if (chartInstance) {
+    chartInstance.destroy()
+  }
+  
+  const ctx = chartRef.value.getContext('2d')
+  chartInstance = new Chart(ctx, {
+    type: activeChartType.value,
+    data: state.insight.chart_data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 25,
+            font: {
+              size: 13,
+              weight: '600',
+              family: "'Inter', sans-serif"
+            },
+            color: '#64748b'
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleFont: { size: 14, weight: 'bold' },
+          bodyFont: { size: 13 },
+          padding: 12,
+          cornerRadius: 10,
+          displayColors: true,
+          usePointStyle: true
+        }
+      },
+      interaction: {
+        intersect: false,
+        mode: 'index',
+      },
+      scales: activeChartType.value !== 'doughnut' ? {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: '#f1f5f9',
+            drawBorder: false
+          },
+          ticks: {
+            font: { size: 11, weight: '500' },
+            color: '#94a3b8'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: { size: 11, weight: '500' },
+            color: '#94a3b8'
+          }
+        }
+      } : {}
+    }
+  })
+}
+
+const updateChartType = (type) => {
+  activeChartType.value = type
+  initChart()
+}
 
 function imgUrl(image) {
   if (!image) return false
@@ -230,9 +373,18 @@ async function copyLink() {
 
 const fetchInsight = async () => {
   try {
+    /*
     const res = await fetch(API_ENDPOINTS.INSIGHT_SLUG(route.params.id))
     state.insight = await res.json()
-    trackInsight(state.insight?.title)
+    */
+    
+    // FIND IN DUMMY DATA
+    const found = DUMMY_INSIGHTS.find(i => i.slug === route.params.id)
+    if (found) {
+      state.insight = found
+      trackInsight(state.insight?.title)
+      initChart()
+    }
   } catch (e) {
     console.error('Gagal memuat insight:', e)
   }
@@ -240,8 +392,16 @@ const fetchInsight = async () => {
 
 const fetchRelatedDatasets = async () => {
   try {
+    /*
     const res = await fetch(`${API_ENDPOINTS.INSIGHT}/${route.params.id}/related-datasets`)
     state.dataset = await res.json()
+    */
+
+    // DUMMY DATA
+    state.dataset = [
+      { title: 'Tabel PDRB Perkapita 2023', url: '#' },
+      { title: 'Indikator Makro Ekonomi Regional', url: '#' }
+    ]
   } catch (e) {
     console.error('Gagal memuat related datasets:', e)
   }
@@ -688,6 +848,203 @@ onMounted(() => {
   font-size: 2.5rem;
   color: var(--text-secondary);
   opacity: 0.3;
+}
+
+/* EXCEL TABLE STYLES */
+.insight-table-card {
+  background: white;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+.table-card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafaf9;
+}
+.text-amber {
+  color: var(--primary-color) !important;
+}
+.btn-table-action {
+  background: white;
+  border: 1px solid var(--border-color);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  margin-left: 6px;
+}
+.btn-table-action:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.excel-style-wrapper {
+  max-height: 400px;
+  overflow: auto;
+}
+.excel-table {
+  font-size: 0.875rem;
+}
+.excel-table thead th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.excel-table tbody td {
+  padding: 12px 16px;
+  color: #1e293b;
+  font-weight: 500;
+  border-bottom: 1px solid #f1f5f9;
+}
+.excel-table tbody tr:hover td {
+  background-color: #fffbeb;
+}
+
+.table-card-footer {
+  padding: 0.75rem 1.5rem;
+  background: #fafaf9;
+  border-top: 1px solid var(--border-color);
+}
+
+/* VIZ DASHBOARD STYLES */
+.insight-viz-card {
+  background: white;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+}
+.viz-card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.viz-icon-box {
+  width: 48px;
+  height: 48px;
+  background: var(--bg-accent);
+  color: var(--primary-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+.viz-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.viz-card-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.viz-chart-toggles {
+  display: flex;
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 12px;
+  gap: 5px;
+}
+.toggle-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.toggle-btn i {
+  font-size: 1rem;
+}
+.toggle-btn span {
+  white-space: nowrap;
+}
+.toggle-btn.active {
+  background: white;
+  color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+.toggle-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.viz-card-body {
+  padding: 1.5rem;
+}
+.chart-wrapper {
+  height: 320px;
+  position: relative;
+}
+
+.viz-card-footer {
+  padding: 1.5rem;
+  background: #fafaf9;
+  border-top: 1px solid var(--border-color);
+}
+.stat-mini-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  padding: 12px 16px;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+.stat-mini-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-color);
+}
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.stat-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 @media (max-width: 991px) {

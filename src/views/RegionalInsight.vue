@@ -14,7 +14,7 @@
           </div>
 
           <h1 class="hero-v2-title">
-            Regional <br />
+            Data <br />
             <em>Insight</em>
           </h1>
 
@@ -56,7 +56,7 @@
       </div>
 
       <div v-else class="row g-4">
-        <div class="col-md-6 col-lg-4" v-for="(item, i) in insights" :key="i">
+        <div class="col-md-6 col-lg-4" v-for="(item, i) in paginatedInsights" :key="item.id || i">
           <RegionalCard
             :id="item.id"
             :image="item.image"
@@ -70,6 +70,12 @@
             :topic="item.topic"
           />
         </div>
+
+        <PaginationControl
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @change="(p) => { currentPage = p }"
+        />
       </div>
     </div>
   </div>
@@ -79,24 +85,62 @@
 
 <script setup>
 import { useRoute } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import RegionalFilter from '../components/RegionalFilter.vue'
 import RegionalCard from '../components/RegionalCard.vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { API_ENDPOINTS } from '../config/api'
+import PaginationControl from '../components/PaginationControl.vue'
+import { DUMMY_INSIGHTS } from '../utils/dummyInsights'
 
 const insights = ref([])
 const loading = ref(true)
 const route = useRoute()
 
+const currentPage = ref(1)
+const itemsPerPage = 9
+
+const totalPages = computed(() => Math.ceil(insights.value.length / itemsPerPage))
+const paginatedInsights = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return insights.value.slice(start, start + itemsPerPage)
+})
+
+watch(route, () => {
+  currentPage.value = 1
+})
+
 const fetchInsight = async (filter = {}) => {
   loading.value = true
   try {
+    /* 
     const query = new URLSearchParams(filter).toString()
     const res = await fetch(`${API_ENDPOINTS.INSIGHT}?${query}`)
     const data = await res.json()
     insights.value = data || []
+    */
+
+    // DUMMY DATA WITH FRONTEND FILTERING
+    let filtered = [...DUMMY_INSIGHTS]
+
+    if (filter.keyword) {
+      const k = filter.keyword.toLowerCase()
+      filtered = filtered.filter(i => 
+        i.title.toLowerCase().includes(k) || 
+        i.description?.toLowerCase().includes(k)
+      )
+    }
+
+    if (filter.region) {
+      filtered = filtered.filter(i => i.region === filter.region)
+    }
+
+    if (filter.topik) {
+      filtered = filtered.filter(i => i.topic === filter.topik)
+    }
+
+    insights.value = filtered
   } catch (err) {
     console.error('Gagal memuat insight:', err)
   } finally {
@@ -105,6 +149,7 @@ const fetchInsight = async (filter = {}) => {
 }
 
 const applyFilter = (filter) => {
+  currentPage.value = 1
   fetchInsight(filter)
 }
 

@@ -82,12 +82,18 @@ const searchQuery = ref('')
 
 const fetchKategori = async () => {
   try {
+    /*
     const res = await fetch(API_ENDPOINTS.DATASET_KATEGORI)
     const data = await res.json()
     if (Array.isArray(data) && data.length > 0) {
       kategori.value = data.map((item) => item.name || item.nama)
       activeTab.value = kategori.value[0]
     }
+    */
+
+    // DUMMY DATA FOR PRESENTATION
+    kategori.value = ['Sosial', 'Kependudukan', 'Pertanian', 'Ekonomi', 'Kesehatan', 'Pendidikan']
+    activeTab.value = kategori.value[0]
   } catch (error) {
     console.error('Gagal mengambil kategori:', error)
   }
@@ -95,6 +101,7 @@ const fetchKategori = async () => {
 
 const fetchDataset = async () => {
   try {
+    /*
     const res = await fetch(API_ENDPOINTS.DATASET)
     const rawData = await res.json()
     const catRes = await fetch(API_ENDPOINTS.DATASET_KATEGORI)
@@ -104,6 +111,17 @@ const fetchDataset = async () => {
       catMap[c.id] = c.name || c.nama
     })
     allDataset.value = rawData.map((d) => ({ ...d, kategori_nama: catMap[d.category] }))
+    */
+
+    // DUMMY DATA FOR PRESENTATION
+    allDataset.value = [
+      { id: 1, title: 'Indeks Pembangunan Manusia 2023', year: '2023', kategori_nama: 'Sosial', ckan_resource_id: 'ipm-2023' },
+      { id: 2, title: 'Persentase Penduduk Miskin Menurut Kabupaten', year: '2023', kategori_nama: 'Sosial', ckan_resource_id: 'miskin-2023' },
+      { id: 3, title: 'Jumlah Penduduk Berdasarkan Jenis Kelamin', year: '2022', kategori_nama: 'Kependudukan', ckan_resource_id: 'gender-2022' },
+      { id: 4, title: 'Produksi Kayu Bulat Regional', year: '2023', kategori_nama: 'Pertanian', ckan_resource_id: 'kayu-2023' },
+      { id: 5, title: 'Luas Panen Padi Menurut Subround', year: '2024', kategori_nama: 'Pertanian', ckan_resource_id: 'padi-2024' },
+      { id: 6, title: 'Laju Pertumbuhan PDRB Atas Dasar Harga Konstan', year: '2023', kategori_nama: 'Ekonomi', ckan_resource_id: 'pdrb-konstan' }
+    ]
   } catch (error) {
     console.error('Gagal mengambil dataset:', error)
   }
