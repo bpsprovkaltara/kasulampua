@@ -61,11 +61,14 @@
             </div>
 
             <div class="sidebar-card mb-3">
-              <div class="sidebar-card-header">
-                <i class="bi bi-grid-3x3-gap-fill text-amber me-2"></i>
-                <span>Kategori</span>
+              <div class="sidebar-card-header clickable" @click="toggleCategory">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-grid-3x3-gap-fill text-amber me-2"></i>
+                  <span>Kategori</span>
+                </div>
+                <i class="bi bi-chevron-down ms-auto transition-smooth" :class="{ 'rotate-180': categoryExpanded }"></i>
               </div>
-              <div class="sidebar-card-body">
+              <div class="sidebar-card-body collapsible" :class="{ 'expanded': categoryExpanded }">
                 <button
                   class="sidebar-item"
                   :class="{ active: selectedCategory === null }"
@@ -90,11 +93,14 @@
             </div>
 
             <div class="sidebar-card">
-              <div class="sidebar-card-header">
-                <i class="bi bi-geo-alt-fill text-amber me-2"></i>
-                <span>Wilayah</span>
+              <div class="sidebar-card-header clickable" @click="toggleRegion">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-geo-alt-fill text-amber me-2"></i>
+                  <span>Wilayah</span>
+                </div>
+                <i class="bi bi-chevron-down ms-auto transition-smooth" :class="{ 'rotate-180': regionExpanded }"></i>
               </div>
-              <div class="sidebar-card-body">
+              <div class="sidebar-card-body collapsible" :class="{ 'expanded': regionExpanded }">
                 <button
                   class="sidebar-item"
                   :class="{ active: selectedRegion === null }"
@@ -104,7 +110,7 @@
                   <span class="si-label">Semua Wilayah</span>
                 </button>
                 <button
-                  v-for="reg in regions"
+                  v-for="reg in filteredRegions"
                   :key="reg.id"
                   class="sidebar-item"
                   :class="{ active: selectedRegion === reg.id }"
@@ -134,21 +140,25 @@
                 <button
                   v-if="search"
                   class="search-clear"
-                  @click="
-                    search = ''
-                    applySearch()
-                  "
+                  @click="search = ''; applySearch()"
                 >
                   <i class="bi bi-x"></i>
                 </button>
               </div>
             </div>
-            <div class="result-info">
-              <span class="result-count" v-if="!loading">
+            <div class="result-info d-flex align-items-center">
+              <span class="result-count me-auto" v-if="!loading">
                 <i class="bi bi-database-fill text-amber me-2"></i>
-                Menampilkan <strong>{{ paginatedDatasets.length }}</strong> dari
-                <strong>{{ filteredDatasets.length }}</strong> dataset
+                Menampilkan <strong>{{ filteredDatasets.length }}</strong> dataset
               </span>
+              
+              <div class="sort-select-wrapper ms-3" v-if="!loading && filteredDatasets.length">
+                <span class="small text-muted fw-bold me-2 d-none d-sm-inline">Urutkan:</span>
+                <select v-model="sortBy" class="sort-select">
+                  <option value="newest">Terbaru</option>
+                  <option value="alphabetical">A-Z</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -169,10 +179,11 @@
           </div>
 
           <div v-else class="dataset-list">
-            <div
+            <router-link
               v-for="(dataset, index) in paginatedDatasets"
               :key="dataset.id || index"
-              class="dataset-item"
+              :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }"
+              class="dataset-item text-decoration-none"
             >
               <div class="item-rank">{{ (currentPage - 1) * limit + index + 1 }}</div>
 
@@ -182,9 +193,13 @@
                     <i :class="getCategoryIcon(getCategoryName(dataset.category))" class="me-1"></i>
                     {{ getCategoryName(dataset.category) }}
                   </span>
-                  <span class="item-region-tag" v-if="getRegionName(dataset.region)">
+                  <span 
+                    class="item-region-tag clickable" 
+                    v-if="getRegionName(dataset)"
+                    @click.prevent.stop="selectRegionByRef(dataset)"
+                  >
                     <i class="bi bi-geo-alt me-1"></i>
-                    {{ getRegionName(dataset.region) }}
+                    {{ getRegionName(dataset) }}
                   </span>
                   <span class="item-year-tag" v-if="dataset.year">{{ dataset.year }}</span>
                   <span
@@ -199,44 +214,18 @@
               </div>
 
               <div class="item-action flex-shrink-0">
-                <router-link
-                  :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }"
-                  class="detail-btn"
-                >
-                  <i class="bi bi-arrow-right"></i>
-                </router-link>
+                <div class="detail-label">
+                  Lihat Detail
+                </div>
               </div>
-            </div>
+            </router-link>
           </div>
 
-          <div class="pagination-bar mt-4" v-if="totalPages > 1">
-            <button
-              class="page-btn"
-              :disabled="currentPage === 1"
-              @click="goToPage(currentPage - 1)"
-            >
-              <i class="bi bi-chevron-left"></i>
-            </button>
-            <div class="page-numbers">
-              <button
-                v-for="p in visiblePages"
-                :key="p"
-                class="page-num"
-                :class="{ active: p === currentPage, ellipsis: p === '...' }"
-                :disabled="p === '...'"
-                @click="p !== '...' && goToPage(p)"
-              >
-                {{ p }}
-              </button>
-            </div>
-            <button
-              class="page-btn"
-              :disabled="currentPage === totalPages"
-              @click="goToPage(currentPage + 1)"
-            >
-              <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <PaginationControl
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @change="goToPage"
+          />
         </div>
       </div>
     </div>
@@ -250,27 +239,41 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
-import { API_ENDPOINTS } from '@/config/api'
+import { useDatasetStore } from '@/composables/useDatasetStore'
+import PaginationControl from '../components/PaginationControl.vue'
 
 const route = useRoute()
-const allDatasets = ref([])
-const categories = ref([])
-const regions = ref([])
+const store = useDatasetStore()
+const { allDatasets, categories, regions, isLoading: loading } = store
+
 const search = ref('')
 const selectedCategory = ref(null)
 const selectedRegion = ref(null)
-const loading = ref(true)
+const sortBy = ref('newest') 
 const currentPage = ref(1)
 const limit = 12
+const categoryExpanded = ref(false)
+const regionExpanded = ref(false)
+
+const toggleCategory = () => (categoryExpanded.value = !categoryExpanded.value)
+const toggleRegion = () => (regionExpanded.value = !regionExpanded.value)
 
 const filteredDatasets = computed(() => {
-  let result = allDatasets.value
+  let result = [...allDatasets.value]
+  
   if (selectedCategory.value !== null)
     result = result.filter((d) => d.category === selectedCategory.value)
   if (selectedRegion.value !== null)
     result = result.filter((d) => d.region === selectedRegion.value)
   if (search.value.trim())
     result = result.filter((d) => d.title.toLowerCase().includes(search.value.toLowerCase()))
+    
+  if (sortBy.value === 'newest') {
+    result.sort((a, b) => new Date(b.date) - new Date(a.date))
+  } else if (sortBy.value === 'alphabetical') {
+    result.sort((a, b) => a.title.localeCompare(b.title))
+  }
+  
   return result
 })
 
@@ -279,27 +282,41 @@ const paginatedDatasets = computed(() =>
   filteredDatasets.value.slice((currentPage.value - 1) * limit, currentPage.value * limit),
 )
 
-const visiblePages = computed(() => {
-  const total = totalPages.value
-  const cur = currentPage.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  const pages = []
-  if (cur > 3) {
-    pages.push(1)
-    if (cur > 4) pages.push('...')
-  }
-  for (let i = Math.max(1, cur - 2); i <= Math.min(total, cur + 2); i++) pages.push(i)
-  if (cur < total - 3) {
-    if (cur < total - 3) pages.push('...')
-    pages.push(total)
-  }
-  return pages
+const filteredRegions = computed(() => {
+  return regions.value
 })
 
 const getCategoryName = (id) => categories.value.find((c) => c.id === id)?.name || '-'
-const getRegionName = (id) => regions.value.find((r) => r.id === id)?.name || '-'
+const getRegionName = (dataset) => {
+  // If explicitly set (dummy data)
+  if (dataset.region) {
+    const reg = regions.value.find((r) => String(r.id) === String(dataset.region))
+    if (reg) return reg.name
+  }
+  
+  // Mapping from organization name (CKAN data)
+  const orgName = dataset.organization?.name || ''
+  if (orgName.includes('kaltara')) return 'Kalimantan Utara'
+  if (orgName.includes('sulteng')) return 'Sulawesi Tengah'
+  if (orgName.includes('malut')) return 'Maluku Utara'
+  if (orgName.includes('pabarat')) return 'Papua Barat'
+  
+  return null
+}
+
+const selectRegionByRef = (dataset) => {
+  const name = getRegionName(dataset)
+  if (!name) return
+  const reg = regions.value.find(r => r.name === name)
+  if (reg) selectRegion(reg.id)
+}
+
 const countByCategory = (id) => allDatasets.value.filter((d) => d.category === id).length
-const countByRegion = (id) => allDatasets.value.filter((d) => d.region === id).length
+const countByRegion = (id) => {
+  const regionName = regions.value.find(r => r.id === id)?.name
+  if (!regionName) return 0
+  return allDatasets.value.filter((d) => getRegionName(d) === regionName).length
+}
 
 const categoryIcons = {
   Sosial: 'bi bi-people-fill',
@@ -334,27 +351,13 @@ const resetFilters = () => {
   selectedCategory.value = null
   selectedRegion.value = null
   search.value = ''
+  sortBy.value = 'newest'
   currentPage.value = 1
 }
 
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const [dsRes, catRes, regRes] = await Promise.all([
-      fetch(API_ENDPOINTS.DATASET),
-      fetch(API_ENDPOINTS.DATASET_KATEGORI),
-      fetch(API_ENDPOINTS.DATASET_REGION),
-    ])
-    allDatasets.value = (await dsRes.json()) || []
-    categories.value = (await catRes.json()) || []
-    regions.value = (await regRes.json()) || []
-  } catch (err) {
-    console.error('Gagal memuat dataset:', err)
-  }
-  loading.value = false
-}
-
-onMounted(fetchData)
+onMounted(() => {
+  store.fetchAllData()
+})
 </script>
 
 <style scoped>
@@ -420,9 +423,33 @@ onMounted(fetchData)
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
-.sidebar-card-body {
+.sidebar-card-header.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+.sidebar-card-header.clickable:hover {
+  background: var(--bg-accent-light);
+}
+
+.sidebar-card-body.collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s;
+  padding: 0 10px;
+}
+.sidebar-card-body.collapsible.expanded {
+  max-height: 1000px; /* Large enough to fit content */
   padding: 10px;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.transition-smooth {
+  transition: all 0.3s ease;
 }
 
 .sidebar-item {
@@ -504,9 +531,26 @@ onMounted(fetchData)
   font-size: 0.875rem;
   color: var(--text-secondary);
   background: white;
-  padding: 12px 20px;
-  border-radius: 10px;
+  padding: 10px 20px;
+  border-radius: 12px;
   border: 1px solid var(--border-color);
+  flex: 1;
+}
+
+.sort-select {
+  border: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  outline: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: var(--transition-smooth);
+}
+.sort-select:hover {
+  background: var(--bg-accent);
 }
 
 .search-box {
@@ -577,8 +621,9 @@ onMounted(fetchData)
 }
 .dataset-item:hover {
   border-color: var(--primary-color);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
-  transform: translateX(4px);
+  background-color: #fffaf0;
+  box-shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.15);
+  transform: translateY(-2px);
 }
 
 .item-rank {
@@ -616,6 +661,15 @@ onMounted(fetchData)
   background: #f0fdf4;
   color: #16a34a;
   border: 1px solid #bbf7d0;
+  transition: all 0.2s ease;
+}
+.item-region-tag.clickable {
+  cursor: pointer;
+}
+.item-region-tag.clickable:hover {
+  background: #dcfce7;
+  border-color: #16a34a;
+  transform: translateY(-1px);
 }
 .item-year-tag {
   background: var(--bg-color);
@@ -651,27 +705,20 @@ onMounted(fetchData)
   max-width: 500px;
 }
 
-.detail-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-color);
+.detail-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  font-size: 1.25rem;
+  opacity: 0;
+  transform: translateX(-10px);
   transition: var(--transition-smooth);
-  flex-shrink: 0;
 }
-.dataset-item:hover .detail-btn {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: white;
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+.dataset-item:hover .detail-label {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--primary-color);
 }
 
 .pagination-bar {

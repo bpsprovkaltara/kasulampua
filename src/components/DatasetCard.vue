@@ -1,27 +1,33 @@
 <template>
   <div class="dataset-list">
-    <div v-for="(dataset, index) in props.datasets" :key="dataset.id || index"
-      class="dataset-item mb-3">
+    <router-link 
+      v-for="(dataset, index) in props.datasets" 
+      :key="dataset.id || index"
+      :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }"
+      class="dataset-item d-block text-decoration-none mb-3"
+    >
       <div class="card-content p-4">
-        <div class="row align-items-start">
-          <div class="col-md-10 col-12">
+        <div class="row align-items-center">
+          <div class="col-md-9 col-12">
             <div class="d-flex align-items-center mb-2">
               <span class="org-badge">{{ dataset.organization?.title || 'Umum' }}</span>
             </div>
             <h5 class="dataset-title mb-2">
-              <router-link :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }" class="title-link">
-                {{ dataset.title }}
-              </router-link>
+              {{ dataset.title }}
             </h5>
             
             <div class="dataset-meta mb-3">
-              <span class="meta-item me-3">
+              <span class="meta-item me-3" v-if="dataset.metadata_created">
                 <i class="bi bi-calendar3 me-2"></i>
                 {{ formatLongDate(dataset.metadata_created) }}
               </span>
-              <span class="meta-item">
+              <span class="meta-item me-3">
                 <i class="bi bi-building me-2"></i>
                 {{ dataset.organization?.title || 'BPS' }}
+              </span>
+              <span class="meta-item" v-if="getRegionName(dataset)">
+                <i class="bi bi-geo-alt me-2"></i>
+                {{ getRegionName(dataset) }}
               </span>
             </div>
 
@@ -29,27 +35,26 @@
               <p class="dataset-notes mb-0">
                 <template v-if="!expanded[index]">
                   {{ truncateText(dataset.notes) }}
-                  <a class="toggle-link" href="#" @click.prevent="expanded[index] = true">
+                  <span class="toggle-link" @click.prevent.stop="expanded[index] = true">
                     Selengkapnya
-                  </a>
+                  </span>
                 </template>
                 <template v-else>
                   <span v-html="dataset.notes || 'Tanpa deskripsi.'"></span>
-                  <a class="toggle-link ms-2" href="#" @click.prevent="expanded[index] = false">Tutup</a>
+                  <span class="toggle-link ms-2" @click.prevent.stop="expanded[index] = false">Tutup</span>
                 </template>
               </p>
             </div>
           </div>
 
-          <div class="col-md-2 col-12 d-flex justify-content-md-end mt-3 mt-md-0">
-            <router-link :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }"
-              class="btn-detail">
-              Detail Data
-            </router-link>
+          <div class="col-md-3 col-12 d-flex justify-content-md-end mt-3 mt-md-0">
+            <div class="detail-label">
+              Lihat Detail
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </router-link>
   </div>
 </template>
 
@@ -78,6 +83,15 @@ const truncateText = (text) => {
   return plainText.length > 120 ? plainText.slice(0, 120) + '...' : plainText
 }
 const expanded = ref({})
+
+const getRegionName = (dataset) => {
+  const orgName = dataset.organization?.name || ''
+  if (orgName.includes('kaltara')) return 'Kalimantan Utara'
+  if (orgName.includes('sulteng')) return 'Sulawesi Tengah'
+  if (orgName.includes('malut')) return 'Maluku Utara'
+  if (orgName.includes('pabarat')) return 'Papua Barat'
+  return null
+}
 
 onMounted(() => {
   expanded.value[props.index] = false
@@ -113,17 +127,15 @@ onMounted(() => {
   font-size: 1.125rem;
   font-weight: 700;
   line-height: 1.4;
-}
-
-.title-link {
   color: var(--text-primary);
-  text-decoration: none;
   transition: var(--transition-smooth);
 }
 
-.title-link:hover {
+.dataset-item:hover .dataset-title {
   color: var(--primary-color);
 }
+
+
 
 .dataset-meta {
   display: flex;
@@ -150,34 +162,35 @@ onMounted(() => {
 .toggle-link {
   color: var(--primary-color);
   font-weight: 600;
-  text-decoration: none;
+  cursor: pointer;
   font-size: 0.8rem;
 }
 
 .toggle-link:hover {
-  color: var(--primary-hover);
   text-decoration: underline;
 }
 
-.btn-detail {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  background-color: var(--primary-color);
-  color: white;
-  border-radius: 8px;
+.detail-label {
   font-size: 0.8125rem;
-  font-weight: 600;
-  text-decoration: none;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-10px);
   transition: var(--transition-smooth);
-  white-space: nowrap;
 }
 
-.btn-detail:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+.dataset-item:hover .detail-label {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--primary-color);
+}
+
+.dataset-item:hover {
+  border-color: var(--primary-color);
+  background-color: #fffaf0;
+  box-shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.15);
 }
 </style>
 

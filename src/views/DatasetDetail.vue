@@ -7,7 +7,6 @@
 
   </section>
 
-  <Kontak />
   <Footer />
 </template>
 
@@ -15,7 +14,6 @@
 import { ref,computed } from 'vue'
 
 import PageHeader from '../components/BreadcSection.vue'
-import Kontak from '../components/KontakSection.vue'
 import Footer from '../components/FooterSection.vue'
 import Navbar from '../components/NavSection.vue'
 import DatasetDetail from '../components/DatasetDetail.vue'

@@ -94,6 +94,7 @@ import { useRoute } from 'vue-router'
 import ExcelPreview from '../components/ExcelPreview.vue'
 import { DATAHUB_ENDPOINTS } from '@/config/api'
 import DynamicTabelStatistik from '../components/DynamicTabelStatistik.vue'
+import { formatDate } from '../utils/dates'
 
 const route = useRoute()
 const resourceId = route.params.id
@@ -281,7 +282,4 @@ onMounted(async () => {
   }
 })
 
-const formatDate = (isoDate) => {
-  return new Date(isoDate).toLocaleString()
-}
 </script>

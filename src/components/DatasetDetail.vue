@@ -5,7 +5,7 @@
       <p class="detail-notes" v-if="dataset.notes">{{ dataset.notes }}</p>
     </div>
 
-    <div class="info-section">
+    <div class="info-section mb-5">
       <div class="section-header d-flex align-items-center mb-4">
         <div class="header-line me-3"></div>
         <h5 class="fw-bold mb-0">Informasi Umum</h5>
@@ -60,6 +60,51 @@
         </div>
       </div>
     </div>
+
+    <div class="download-section">
+      <div class="section-header d-flex align-items-center mb-4">
+        <div class="header-line me-3"></div>
+        <h5 class="fw-bold mb-0">Unduh Dataset</h5>
+      </div>
+      
+      <div class="download-grid">
+        <div class="download-card" @click="simulateDownload('CSV')">
+          <div class="dc-icon csv"><i class="bi bi-filetype-csv"></i></div>
+          <div class="dc-info">
+            <div class="dc-title">Comma Separated Values</div>
+            <div class="dc-ext">.CSV</div>
+          </div>
+          <div class="dc-action"><i class="bi bi-download"></i></div>
+        </div>
+        
+        <div class="download-card" @click="simulateDownload('Excel')">
+          <div class="dc-icon xlsx"><i class="bi bi-filetype-xlsx"></i></div>
+          <div class="dc-info">
+            <div class="dc-title">Microsoft Excel Spreadsheet</div>
+            <div class="dc-ext">.XLSX</div>
+          </div>
+          <div class="dc-action"><i class="bi bi-download"></i></div>
+        </div>
+        
+        <div class="download-card" @click="simulateDownload('PDF')">
+          <div class="dc-icon pdf"><i class="bi bi-filetype-pdf"></i></div>
+          <div class="dc-info">
+            <div class="dc-title">Portable Document Format</div>
+            <div class="dc-ext">.PDF</div>
+          </div>
+          <div class="dc-action"><i class="bi bi-download"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <Transition name="toast">
+      <div v-if="downloadToast" class="download-toast">
+        <div class="toast-content">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>Dataset berhasil diunduh dalam format <strong>{{ downloadFormat }}</strong>!</span>
+        </div>
+      </div>
+    </Transition>
   </div>
 
   <div v-else class="text-center py-5">
@@ -172,28 +217,120 @@
   .info-row { grid-template-columns: 1fr; gap: 4px; padding: 1rem; }
   .info-label { font-size: 0.75rem; }
 }
+
+/* Download Section Styles */
+.download-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.download-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.download-card:hover {
+  background: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.1);
+  transform: translateY(-2px);
+}
+
+.dc-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+}
+
+.dc-icon.csv { color: #0ea5e9; }
+.dc-icon.xlsx { color: #16a34a; }
+.dc-icon.pdf { color: #dc2626; }
+
+.dc-info { flex: 1; }
+.dc-title { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.02em; }
+.dc-ext { font-size: 1.125rem; font-weight: 800; color: var(--text-primary); }
+
+.dc-action { color: #94a3b8; transition: all 0.3s ease; }
+.download-card:hover .dc-action { color: var(--primary-color); transform: scale(1.1); }
+
+.download-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+}
+
+.toast-content {
+  background: #1e293b;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 100px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  font-size: 0.9375rem;
+}
+
+.toast-content i { color: #22c55e; }
+
+.toast-enter-active, .toast-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
 </style>
 
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { API_ENDPOINTS } from '@/config/api'
+import { useDatasetStore } from '@/composables/useDatasetStore'
 import { formatLongDate } from '../utils/dates'
 
 const route = useRoute()
+const store = useDatasetStore()
+const { allDatasets, categories } = store
 const dataset = ref(null)
+const downloadToast = ref(false)
+const downloadFormat = ref('')
 const emit = defineEmits(['setTitle', 'setOrganizationName'])
+
+const simulateDownload = (format) => {
+  downloadFormat.value = format
+  downloadToast.value = true
+  setTimeout(() => {
+    downloadToast.value = false
+  }, 3000)
+}
 
 
 const fetchDataset = async (id) => {
-  try {
-    const res = await fetch(API_ENDPOINTS.DATASET_DETAIL(id))
-    dataset.value = await res.json()
+  if (!store.hasLoaded.value) {
+    await store.fetchAllData()
+  }
+  
+  const found = allDatasets.value.find(d => String(d.id) === String(id))
+  if (found) {
+    dataset.value = {
+      ...found,
+      category_name: categories.value.find(c => c.id === found.category)?.name || found.category
+    }
     emit('setTitle', dataset.value.title)
-    emit('setOrganizationName', dataset.value.region_name || dataset.value.region || '-')
-  } catch (err) {
-    console.error('Gagal mengambil dataset:', err)
+    emit('setOrganizationName', dataset.value.region_name || '-')
+  } else {
+    console.error('Dataset tidak ditemukan:', id)
   }
 }
 

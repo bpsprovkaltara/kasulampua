@@ -40,14 +40,11 @@
                 </div>
                 <div class="card-content">
                   <h4 class="category-name-v2">{{ kat.name }}</h4>
-                  <p class="category-desc">
-                    Kumpulan dataset strategis terkait {{ kat.name.toLowerCase() }} di wilayah
-                    Kasulampua.
-                  </p>
-                  <div class="card-footer-v2">
-                    <span class="view-data"
-                      >Lihat Dataset <i class="bi bi-arrow-right ms-1"></i
-                    ></span>
+                  <div class="dataset-stats mt-3">
+                    <span class="stats-badge">
+                      <i class="bi bi-database-fill me-1"></i>
+                      {{ getDatasetCount(kat.id) }} Tabel
+                    </span>
                   </div>
                 </div>
               </div>
@@ -82,9 +79,9 @@
               </p>
             </div>
             <div class="col-lg-4 text-lg-end">
-              <router-link to="/dataset" class="btn-premium-cta btn-premium-cta-primary px-5 py-3">
-                Mulai Eksplorasi Data <i class="bi bi-search ms-2"></i>
-              </router-link>
+              <a href ="/dataset" class="btn-premium-cta btn-premium-cta-primary px-5 py-3">
+                Mulai Eksplorasi Data <i class="bi bi-search ms-2"></i>     
+        </a>
             </div>
           </div>
         </div>
@@ -94,41 +91,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted } from 'vue'
-import { API_ENDPOINTS } from '@/config/api'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useDatasetStore } from '@/composables/useDatasetStore'
 
 const carouselRef = ref(null)
-const kategoriList = ref([])
-const activeIndex = ref(0)
-const scrollProgress = ref(0)
-const isAtStart = ref(true)
-const isAtEnd = ref(false)
+const store = useDatasetStore()
+const { allDatasets, categories: kategoriList, isLoading, scrollProgress, isAtStart, isAtEnd, activeIndex } = store
 
 const getCategoryIcon = (name) => {
   const icons = {
     Sosial: 'bi bi-people-fill',
     Kependudukan: 'bi bi-person-vcard-fill',
-    Pertanian: 'bi bi-sun-fill',
+    Pertanian: 'bi bi-flower2',
     Pendidikan: 'bi bi-mortarboard-fill',
-    Transportasi: 'bi bi-truck-front-fill',
+    Transportasi: 'bi bi-bus-front-fill',
     Ekonomi: 'bi bi-graph-up-arrow',
     Iklim: 'bi bi-cloud-sun-fill',
     Kesehatan: 'bi bi-heart-pulse-fill',
-    Perdagangan: 'bi bi-cart-fill',
+    Perdagangan: 'bi bi-shop-window',
     Pemerintahan: 'bi bi-bank2',
     Perkebunan: 'bi bi-tree-fill',
   }
   return icons[name] || 'bi bi-archive-fill'
 }
 
-const fetchData = async () => {
-  try {
-    const res = await fetch(API_ENDPOINTS.DATASET_KATEGORI)
-    const data = await res.json()
-    kategoriList.value = data || []
-  } catch (err) {
-    console.error('API Error:', err)
-  }
+const getDatasetCount = (catId) => {
+  return allDatasets.value.filter((d) => d.category === catId).length
 }
 
 const handleScroll = () => {
@@ -137,8 +125,8 @@ const handleScroll = () => {
   const scrollLeft = el.scrollLeft
   const scrollWidth = el.scrollWidth - el.clientWidth
 
-  scrollProgress.value = (scrollLeft / scrollWidth) * 100
-
+  scrollProgress.value = (scrollLeft / (scrollWidth || 1)) * 100
+  
   const center = scrollLeft + el.clientWidth / 2
   const cardWidth = 290
   const index = Math.floor((center - el.clientWidth / 2) / cardWidth)
@@ -161,7 +149,7 @@ const scrollPrev = () => {
 }
 
 onMounted(() => {
-  fetchData()
+  store.fetchAllData()
   window.addEventListener('resize', handleScroll)
 })
 
@@ -255,49 +243,49 @@ onUnmounted(() => {
 }
 
 .carousel-card-wrapper {
-  flex: 0 0 260px;
+  flex: 0 0 220px;
   scroll-snap-align: center;
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  opacity: 0.7;
-  transform: scale(0.9);
+  opacity: 1;
+  transform: scale(0.95);
 }
 
 .carousel-card-wrapper.is-active {
   opacity: 1;
-  transform: scale(1.08) translateY(-10px);
+  transform: scale(1.05) translateY(-5px);
   z-index: 10;
 }
 
 .dataset-card-premium {
   display: block;
   background: white;
-  border-radius: 28px;
+  border-radius: 24px;
   border: 1px solid #e2e8f0;
-  padding: 2.5rem 2rem;
+  padding: 1.75rem 1.5rem;
   text-decoration: none;
   position: relative;
   overflow: hidden;
   height: 100%;
   transition: all 0.5s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .is-active .dataset-card-premium {
   border-color: #fde68a;
-  box-shadow: 0 25px 50px -12px rgba(217, 119, 6, 0.12);
+  box-shadow: 0 20px 40px -12px rgba(217, 119, 6, 0.15);
 }
 
 .category-icon-main {
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   background: #f8fafc;
-  border-radius: 20px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.75rem;
   color: #d97706;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   transition: all 0.5s ease;
 }
 
@@ -308,44 +296,33 @@ onUnmounted(() => {
 
 .category-name-v2 {
   font-weight: 900;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: #1e293b;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-.category-desc {
-  font-size: 0.95rem;
-  color: #64748b;
-  line-height: 1.6;
-  margin-bottom: 2rem;
+.dataset-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.view-data {
+.stats-badge {
+  font-size: 0.7rem;
   font-weight: 800;
-  font-size: 0.85rem;
   color: #d97706;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.card-reflection {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: 0.5s;
-}
-
-.dataset-card-premium:hover .card-reflection {
-  left: 100%;
+  background: #fffbeb;
+  padding: 4px 12px;
+  border-radius: 10px;
+  border: 1px solid #fde68a;
+  display: inline-flex;
+  align-items: center;
 }
 
 .dataset-card-premium:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 40px -10px rgba(217, 119, 6, 0.15);
-  border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px -10px rgba(217, 119, 6, 0.2);
+  border-color: #d97706;
 }
 
 .progress-nav-container {
@@ -372,21 +349,27 @@ onUnmounted(() => {
 }
 
 .scroll-instruction-v2 {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  color: #94a3b8;
-  letter-spacing: 0.25em;
+  color: var(--primary-color, #d97706);
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
+  animation: pulse-cue 2.5s infinite ease-in-out;
+}
+
+@keyframes pulse-cue {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; transform: scale(1.02); }
 }
 
 .line-dot {
-  width: 40px;
-  height: 1px;
-  background: #e2e8f0;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-color, #d97706), transparent);
 }
 
 .glass-banner {
@@ -396,6 +379,7 @@ onUnmounted(() => {
   box-shadow: 0 15px 35px rgba(217, 119, 6, 0.05);
   position: relative;
   overflow: hidden;
+  z-index: 5;
 }
 
 .glass-banner::before {
@@ -441,7 +425,7 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .carousel-card-wrapper {
-    flex: 0 0 240px;
+    flex: 0 0 200px;
   }
   .carousel-spacer {
     flex: 0 0 10%;
