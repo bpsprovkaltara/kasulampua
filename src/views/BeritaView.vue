@@ -112,7 +112,7 @@
                     }}
                   </div>
                   <h2 class="featured-title mb-3">{{ paginatedList[0].title }}</h2>
-                  <p class="featured-excerpt">{{ paginatedList[0].content?.slice(0, 220) }}...</p>
+                  <p class="featured-excerpt">{{ stripHTMLText(paginatedList[0].content)?.slice(0, 220) }}...</p>
                 </div>
                 <div class="mt-4 d-flex justify-content-between align-items-center">
                   <span class="author-chip" v-if="paginatedList[0].penulis">
@@ -159,7 +159,7 @@
                 <h5 class="nc-title">
                   {{ item.title }}
                 </h5>
-                <p class="nc-excerpt">{{ item.content?.slice(0, 110) }}...</p>
+                <p class="nc-excerpt">{{ stripHTMLText(item.content)?.slice(0, 110) }}...</p>
                 <div class="detail-label mt-3">
                   Baca Berita
                 </div>
@@ -221,7 +221,7 @@ watch(searchQuery, () => {
   currentPage.value = 1
 })
 
-const fetchBerita = async (filter = {}) => {
+const fetchBerita = async () => {
   loading.value = true
   try {
     /*
@@ -243,6 +243,14 @@ function urlImage(image) {
   if (!image) return false
   if (image.startsWith('http')) return image
   return API_ENDPOINTS.BASE_URL + '/uploads/berita/' + image
+}
+
+function stripHTMLText(htmlStr) {
+  if (!htmlStr) return ''
+  let text = htmlStr.replace(/<br\s*\/?>/gi, ' ').replace(/<\/p>/gi, ' ')
+  text = text.replace(/<[^>]*>?/gm, '')
+  text = text.replace(/&nbsp;/g, ' ')
+  return text.trim().replace(/\s+/g, ' ')
 }
 
 function applySearch() {
@@ -631,16 +639,20 @@ const clearSearch = () => {
 
 @media (max-width: 992px) {
   .featured-img-wrapper {
-    min-height: 280px;
+    min-height: 240px;
   }
   .featured-body {
-    padding: 2rem !important;
+    padding: 1.5rem !important;
   }
   .featured-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
   }
-  .hero-title {
-    font-size: 2.5rem;
+  .hero-v2-title {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+  }
+  .hero-v2-subtitle {
+    margin-bottom: 2rem;
   }
   .filter-input {
     min-width: 100%;

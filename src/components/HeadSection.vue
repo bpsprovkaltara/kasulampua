@@ -67,18 +67,18 @@
     <div class="hero-grain"></div>
 
     <div class="hero-floating-elements d-none d-lg-block">
-      <div class="glass-module module-1 fade-in-up" style="animation-delay: 0.2s">
+      <!-- <div class="glass-module module-1 fade-in-up" style="animation-delay: 0.2s">
         <i class="bi bi-database-fill me-2 fs-5"></i>
         <span>Data Repository</span>
       </div>
       <div class="glass-module module-2 fade-in-up" style="animation-delay: 0.4s">
         <i class="bi bi-geo-alt-fill me-2 fs-5"></i>
-        <span>Data Insight</span>
-      </div>
-      <div class="glass-module module-3 fade-in-up" style="animation-delay: 0.6s">
+        <span>Regional Insight</span>
+      </div> -->
+      <!-- <div class="glass-module module-3 fade-in-up" style="animation-delay: 0.6s">
         <i class="bi bi-graph-up-arrow me-2 fs-5"></i>
         <span>Statistical Analytics</span>
-      </div>
+      </div> -->
     </div>
 
     <div class="container hero-container position-relative">
@@ -102,11 +102,11 @@
           Portal Data Terintegrasi Kalimantan, Sulawesi, Maluku &amp; Papua
         </p>
 
-        <div class="hero-actions d-flex flex-wrap justify-content-center gap-4 mb-4">
+        <div class="hero-actions d-flex flex-wrap justify-content-center gap-4 mb-5">
           <a :href="link.href" class="btn btn-hero-primary-v2"> Masuk ke Pusat Informasi </a>
         </div>
 
-        <div class="hero-partners mt-4">
+        <div class="hero-partners mt-3 pt-lg-3 pb-4">
           <p class="partners-label mb-3">DIDUKUNG OLEH</p>
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 gap-md-5">
             <img
@@ -199,7 +199,7 @@ defineProps({
   regions: Object,
 })
 
-function particleStyle(n) {
+function particleStyle() {
   const size = Math.random() * 4 + 2
   const left = Math.random() * 100
   const top = Math.random() * 80
@@ -384,10 +384,10 @@ function particleStyle(n) {
 }
 
 .hero-main-title {
-  font-size: clamp(3rem, 10vw, 7.5rem);
+  font-size: clamp(2.5rem, 8vw, 7.5rem);
   font-weight: 950;
   letter-spacing: -0.06em;
-  line-height: 0.85;
+  line-height: 1;
   background: linear-gradient(135deg, #d97706, #b45309);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -452,12 +452,15 @@ function particleStyle(n) {
   color: #94a3b8;
 }
 .partner-logo {
-  height: 72px;
+  height: 68px;
   width: auto;
+  object-fit: contain;
   transition: all 0.4s ease;
+  opacity: 0.9;
 }
 .partner-logo:hover {
-  transform: scale(1.1);
+  opacity: 1;
+  transform: translateY(-5px) scale(1.05);
   filter: drop-shadow(0 10px 15px rgba(217, 119, 6, 0.2));
 }
 
@@ -697,25 +700,44 @@ function particleStyle(n) {
 }
 
 @media (max-width: 991px) {
+  .hero-premium-v2 {
+    padding-top: 80px;
+    min-height: auto;
+  }
   .hero-container {
-    padding-top: 40px;
+    padding-top: 60px;
+    padding-bottom: 20px;
   }
   .hero-main-title {
-    font-size: 4.5rem;
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    margin-bottom: 0.5rem !important;
+  }
+  .hero-main-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem !important;
   }
   .btn-hero-primary-v2,
   .btn-hero-outline-v2 {
     width: 100%;
-    padding: 1rem;
+    padding: 0.8rem;
+    font-size: 1rem;
   }
   .hero-event-banner {
     flex-wrap: wrap;
     border-radius: 16px;
     text-align: center;
     justify-content: center;
+    padding: 8px 12px;
   }
   .event-text {
     white-space: normal;
+    font-size: 0.75rem;
+  }
+  .partner-logo {
+    height: 42px;
+  }
+  .glass-module {
+    display: none; 
   }
 }
 </style>

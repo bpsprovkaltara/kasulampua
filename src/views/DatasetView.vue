@@ -236,13 +236,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+// import { useRoute } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import PaginationControl from '../components/PaginationControl.vue'
 
-const route = useRoute()
+// const route = useRoute()
 const store = useDatasetStore()
 const { allDatasets, categories, regions, isLoading: loading } = store
 
@@ -719,6 +719,36 @@ onMounted(() => {
   opacity: 1;
   transform: translateX(0);
   color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .dataset-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+  .item-rank {
+    text-align: left;
+    width: auto;
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    background: var(--bg-accent);
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+  }
+  .item-title {
+    font-size: 0.95rem;
+  }
+  .item-action,
+  .detail-label {
+    opacity: 1;
+    transform: none;
+    color: var(--primary-color);
+    font-size: 0.75rem;
+    margin-top: 8px;
+  }
 }
 
 .pagination-bar {

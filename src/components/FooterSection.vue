@@ -159,7 +159,7 @@ const footerSections = [
 </script>
 
 <template>
-  <footer class="main-footer overflow-hidden">
+  <footer class="main-footer overflow-visible">
     <div class="container py-5">
       <div class="row g-4 text-start">
         <div class="col-12 col-lg-3 mb-4 mb-lg-0">
@@ -241,20 +241,20 @@ const footerSections = [
       </div>
     </div>
 
-    <div class="py-5 marquee-bg border-top border-stone">
+    <div class="py-5 marquee-bg border-top border-stone position-relative">
       <h4 class="text-center h6 fw-semibold opacity-50 mb-4 text-white">Didukung Oleh</h4>
 
-      <div v-if="mounted" class="marquee-wrapper overflow-hidden position-relative">
+      <div v-if="mounted" class="marquee-wrapper overflow-visible position-relative">
         <div class="marquee-inner flex-nowrap align-items-center">
           <template v-for="loopIndex in 2" :key="'loop-' + loopIndex">
             <div
               v-for="(partner, i) in allPartnerLogos"
               :key="'partner-' + loopIndex + '-' + i"
-              class="mx-4 flex-shrink-0 logo-container group"
+              class="mx-4 flex-shrink-0 logo-container group position-relative"
             >
-              <a :href="partner.href" target="_blank" class="position-relative d-block">
+              <a :href="partner.href" target="_blank" class="d-block">
                 <div
-                  class="partner-logo-box d-flex align-items-center justify-content-center transition bg-white-opacity-10 overflow-hidden"
+                  class="partner-logo-box d-flex align-items-center justify-content-center transition bg-white-opacity-10"
                 >
                   <img
                     :src="partner.logo"
@@ -263,10 +263,10 @@ const footerSections = [
                     style="max-height: 100%; max-width: 100%; object-fit: contain"
                   />
                 </div>
-                <div class="custom-tooltip">
-                  {{ partner.name }}
-                </div>
               </a>
+              <div class="custom-tooltip">
+                {{ partner.name }}
+              </div>
             </div>
           </template>
         </div>
@@ -386,8 +386,8 @@ const footerSections = [
 }
 
 .partner-logo-box {
-  width: 56px !important;
-  height: 56px !important;
+  width: 72px !important;
+  height: 72px !important;
   transition: all 0.3s ease;
   border: 1px solid transparent;
   border-radius: 12px !important;
@@ -395,8 +395,8 @@ const footerSections = [
 
 @media (min-width: 1024px) {
   .partner-logo-box {
-    width: 72px !important;
-    height: 72px !important;
+    width: 96px !important;
+    height: 96px !important;
   }
 }
 

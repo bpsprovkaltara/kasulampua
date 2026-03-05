@@ -96,7 +96,7 @@ import { useDatasetStore } from '@/composables/useDatasetStore'
 
 const carouselRef = ref(null)
 const store = useDatasetStore()
-const { allDatasets, categories: kategoriList, isLoading, scrollProgress, isAtStart, isAtEnd, activeIndex } = store
+const { allDatasets, categories: kategoriList, scrollProgress, isAtStart, isAtEnd, activeIndex } = store
 
 const getCategoryIcon = (name) => {
   const icons = {
@@ -424,11 +424,20 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .data-repo-premium {
+    padding: 60px 0;
+  }
+  .carousel-wrapper {
+    padding: 20px 0;
+  }
+  .carousel-track-v2 {
+    gap: 16px;
+  }
   .carousel-card-wrapper {
-    flex: 0 0 200px;
+    flex: 0 0 240px;
   }
   .carousel-spacer {
-    flex: 0 0 10%;
+    flex: 0 0 5%;
   }
   .section-title-premium {
     font-size: 1.75rem;
@@ -439,6 +448,15 @@ onUnmounted(() => {
   .btn-banner-action {
     width: 100%;
     justify-content: center;
+  }
+  .btn-premium-cta-primary {
+    width: 100%;
+    text-align: center;
+    padding: 1rem !important;
+  }
+  .glass-banner {
+    border-radius: 20px;
+    padding: 1.5rem !important;
   }
 }
 </style>

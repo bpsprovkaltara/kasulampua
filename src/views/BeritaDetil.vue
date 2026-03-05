@@ -218,7 +218,9 @@ async function copyLink() {
     await navigator.clipboard.writeText(window.location.href)
     copied.value = true
     setTimeout(() => (copied.value = false), 2000)
-  } catch (_) {}
+  } catch (e) {
+    console.error('Failed to copy', e)
+  }
 }
 
 const trackInsight = (label) => {

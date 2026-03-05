@@ -4,9 +4,6 @@ import { useRoute } from 'vue-router'
 import DatasetView from './DatasetView.vue'
 import DatasetGroupView from './DatasetGroupView.vue'
 import DatasetOrganizationView from './DatasetOrganizationView.vue'
-import Footer from '../components/FooterSection.vue'
-import Navbar from '../components/NavSection.vue'
-import Breadcump from '../components/BreadcSection.vue'
 
 const route = useRoute()
 
@@ -16,11 +13,6 @@ const componentToShow = computed(() => {
   return DatasetView
 })
 
-const title_detail = {
-  title: 'Dataset',
-  parent: [
-  ]
-}
 </script>
 
 <template>

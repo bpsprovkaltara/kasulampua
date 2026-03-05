@@ -2,7 +2,7 @@
   <section class="data-story-section py-5">
     <div class="container">
       <div class="d-flex align-items-center mb-5">
-        <div class="section-label me-4">DATA INSIGHT</div>
+        <div class="section-label me-4">REGIONAL INSIGHT</div>
         <div class="flex-grow-1 section-line"></div>
         <!-- <a href="/regional_insight" class="btn-premium-cta btn-premium-cta-outline px-4 py-2 ms-4">
           Semua Insight
@@ -53,7 +53,7 @@
 
           <div class="insight-card p-5 text-center text-muted" v-else>
             <i class="bi bi-bar-chart-line display-1 mb-3 d-block opacity-25"></i>
-            <p>Memuat data insight...</p>
+            <p>Memuat regional insight...</p>
           </div>
         </div>
 
@@ -92,7 +92,7 @@
             <div class="cta-glow"></div>
             <div class="cta-content">
               <p class="cta-eyebrow">KASULAMPUA INSIGHT</p>
-              <h4 class="cta-title">Eksplorasi Data Insight</h4>
+              <h4 class="cta-title">Eksplorasi Regional Insight</h4>
               <p class="cta-text">
                 Temukan visualisasi data mendalam untuk mendukung pengambilan keputusan di wilayah
                 Kasulampua.
@@ -100,14 +100,7 @@
               <div class="data-viz-decoration mb-3">
                 <svg viewBox="0 0 260 100" xmlns="http://www.w3.org/2000/svg" width="100%">
                   <g opacity="0.2">
-                    <circle
-                      v-for="x in [20, 50, 80, 110, 140, 170, 200, 230]"
-                      v-for-inner="y in [15, 35, 55, 75, 95]"
-                      :cx="x"
-                      :cy="y"
-                      r="2"
-                      fill="#f59e0b"
-                    />
+
                     <circle cx="20" cy="15" r="2" fill="#f59e0b" />
                     <circle cx="50" cy="15" r="2" fill="#f59e0b" />
                     <circle cx="80" cy="15" r="2" fill="#f59e0b" />
@@ -500,7 +493,19 @@ defineProps({ dataSection: Object, dataset: Array })
     height: 200px;
   }
   .insight-body {
-    padding: 2rem !important;
+    padding: 1.5rem !important;
+  }
+  .insight-title {
+    font-size: 1.35rem;
+  }
+  .insight-desc {
+    font-size: 1rem;
+  }
+  .cta-content {
+    padding: 1.5rem;
+  }
+  .cta-title {
+    font-size: 1.25rem;
   }
 }
 </style>

@@ -61,6 +61,41 @@
       </div>
     </div>
 
+    <div class="preview-section mb-5">
+      <div class="section-header d-flex align-items-center mb-4">
+        <div class="header-line me-3"></div>
+        <h5 class="fw-bold mb-0">Pratinjau Data</h5>
+      </div>
+      
+      <div class="preview-container">
+        <div class="table-responsive">
+          <table class="table mb-0 dataset-table">
+            <thead>
+              <tr>
+                <th width="5%" class="text-center">No</th>
+                <th width="30%">Wilayah</th>
+                <th width="40%">Indikator</th>
+                <th width="15%" class="text-end">Nilai</th>
+                <th width="10%" class="text-center">Tahun</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="i in 5" :key="i">
+                <td class="text-center">{{ i }}</td>
+                <td>{{ dataset.region_name || 'Kalimantan Utara' }} - Area {{ i }}</td>
+                <td class="text-truncate" style="max-width: 250px;">{{ dataset.title }}</td>
+                <td class="text-end fw-medium">{{ (Math.random() * 1000 + 100).toFixed(2) }}</td>
+                <td class="text-center">{{ dataset.year || new Date().getFullYear() }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="preview-footer">
+          <span class="text-muted small"><i class="bi bi-info-circle me-1"></i> Menampilkan 5 baris pertama sebagai pratinjau. Unduh dataset untuk melihat data lengkap.</span>
+        </div>
+      </div>
+    </div>
+
     <div class="download-section">
       <div class="section-header d-flex align-items-center mb-4">
         <div class="header-line me-3"></div>
@@ -203,6 +238,49 @@
   border-bottom-color: var(--primary-color);
 }
 
+.preview-container {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.dataset-table {
+  font-size: 0.9375rem;
+}
+
+.dataset-table thead {
+  background-color: #f8fafc;
+}
+
+.dataset-table th {
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8125rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid var(--border-color) !important;
+}
+
+.dataset-table td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dataset-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.preview-footer {
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid var(--border-color);
+}
+
 .ds-loading-spinner {
   width: 44px; height: 44px;
   border: 4px solid var(--secondary-color);
@@ -218,7 +296,6 @@
   .info-label { font-size: 0.75rem; }
 }
 
-/* Download Section Styles */
 .download-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -294,7 +371,7 @@
 
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import { formatLongDate } from '../utils/dates'

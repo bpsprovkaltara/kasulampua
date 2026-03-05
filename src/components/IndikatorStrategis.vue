@@ -71,7 +71,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { API_ENDPOINTS } from '@/config/api'
+// import { API_ENDPOINTS } from '@/config/api'
 
 const kategori = ref([])
 const activeTab = ref('')
@@ -91,7 +91,7 @@ const fetchKategori = async () => {
     }
     */
 
-    // DUMMY DATA FOR PRESENTATION
+    // DUMMY DATA 
     kategori.value = ['Sosial', 'Kependudukan', 'Pertanian', 'Ekonomi', 'Kesehatan', 'Pendidikan']
     activeTab.value = kategori.value[0]
   } catch (error) {
@@ -113,7 +113,7 @@ const fetchDataset = async () => {
     allDataset.value = rawData.map((d) => ({ ...d, kategori_nama: catMap[d.category] }))
     */
 
-    // DUMMY DATA FOR PRESENTATION
+    // DUMMY DATA 
     allDataset.value = [
       { id: 1, title: 'Indeks Pembangunan Manusia 2023', year: '2023', kategori_nama: 'Sosial', ckan_resource_id: 'ipm-2023' },
       { id: 2, title: 'Persentase Penduduk Miskin Menurut Kabupaten', year: '2023', kategori_nama: 'Sosial', ckan_resource_id: 'miskin-2023' },

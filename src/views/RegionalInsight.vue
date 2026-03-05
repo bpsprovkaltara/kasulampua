@@ -90,7 +90,6 @@ import RegionalFilter from '../components/RegionalFilter.vue'
 import RegionalCard from '../components/RegionalCard.vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
-import { API_ENDPOINTS } from '../config/api'
 import PaginationControl from '../components/PaginationControl.vue'
 import { DUMMY_INSIGHTS } from '../utils/dummyInsights'
 
@@ -151,18 +150,6 @@ const fetchInsight = async (filter = {}) => {
 const applyFilter = (filter) => {
   currentPage.value = 1
   fetchInsight(filter)
-}
-
-function heroParticleStyle(n) {
-  return {
-    left: `${(n * 13) % 100}%`,
-    top: `${(n * 17) % 80}%`,
-    width: `${3 + (n % 3)}px`,
-    height: `${3 + (n % 3)}px`,
-    animationDelay: `${n * 0.8}s`,
-    animationDuration: `${5 + n}s`,
-    opacity: 0.2 + (n % 3) * 0.1,
-  }
 }
 
 onMounted(() => {

@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
 import './assets/css/main.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
-import { MATOMO_ENDPOINT } from './config/api'
+// import { MATOMO_ENDPOINT } from './config/api'
 
 const app = createApp(App)
 

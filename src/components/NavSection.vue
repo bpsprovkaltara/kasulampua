@@ -49,8 +49,8 @@ const closeMobileMenu = () => {
 
 const linkIcons = {
   'Berita': 'bi bi-newspaper',
-  'Data Insight': 'bi bi-lightbulb-fill',
-  'Datasets': 'bi bi-database-fill',
+  'Regional Insight': 'bi bi-lightbulb-fill',
+  'Data': 'bi bi-database-fill',
   'Visualisasi Data': 'bi bi-bar-chart-line-fill',
   'About': 'bi bi-info-circle-fill'
 }
@@ -87,7 +87,7 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
         </div>
 
         <button
-          class="mobile-toggler d-lg-none"
+          class="mobile-toggler d-flex d-lg-none align-items-center justify-content-center"
           :class="{ 'active': isMobileMenuOpen }"
           @click="toggleMobileMenu"
           aria-label="Toggle navigation"
@@ -196,11 +196,19 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
 }
 
 .mobile-toggler {
-  background: transparent;
-  border: none;
-  padding: 8px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
   z-index: 2100;
   outline: none !important;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.mobile-toggler:hover {
+  border-color: var(--primary-color);
 }
 
 .hamburger {
@@ -222,11 +230,12 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
 }
 
 .navbar-scrolled .hamburger span {
-  background-color: var(--text-secondary);
+  background-color: var(--primary-color);
 }
 
 .mobile-toggler.active .hamburger span:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
+  transform: translateY(7.5px) rotate(45deg);
+  background-color: var(--primary-color);
 }
 .mobile-toggler.active .hamburger span:nth-child(2) {
   opacity: 0;
@@ -234,9 +243,9 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
 }
 .mobile-toggler.active .hamburger span:nth-child(3) {
   transform: translateY(-7.5px) rotate(-45deg);
+  background-color: var(--primary-color);
 }
 
-/* Mobile Overlay */
 .mobile-overlay {
   position: fixed;
   top: 0;

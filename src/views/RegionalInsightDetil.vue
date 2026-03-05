@@ -10,7 +10,7 @@
       <nav class="insight-breadcrumb mb-4">
         <router-link to="/" class="bc-link">Beranda</router-link>
         <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
-        <router-link to="/regional_insight" class="bc-link">Data Insight</router-link>
+        <router-link to="/regional_insight" class="bc-link">Regional Insight</router-link>
         <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
         <span class="bc-current">Detail</span>
       </nav>
@@ -106,7 +106,7 @@
                     <i class="bi bi-graph-up-arrow"></i>
                   </div>
                   <div>
-                    <h6 class="viz-card-title mb-0">Dashboard Visualisasi Interaktif</h6>
+                    <h6 class="viz-card-title mb-0">Dashboard Visualisasi</h6>
                     <p class="viz-card-subtitle mb-0">Analisis Mendalam Berbasis Dataset Regional</p>
                   </div>
                 </div>
@@ -368,7 +368,9 @@ async function copyLink() {
     await navigator.clipboard.writeText(window.location.href)
     copied.value = true
     setTimeout(() => (copied.value = false), 2000)
-  } catch (_) {}
+  } catch (err) {
+    console.error('Failed to copy', err)
+  }
 }
 
 const fetchInsight = async () => {
@@ -414,7 +416,9 @@ const trackInsight = (label) => {
 const handleViews = async () => {
   try {
     await fetch(`${API_ENDPOINTS.INSIGHT}/${route.params.id}/increment-views`, { method: 'POST' })
-  } catch (_) {}
+  } catch (err) {
+    console.error('View error', err)
+  }
 }
 
 onMounted(() => {
@@ -850,7 +854,6 @@ onMounted(() => {
   opacity: 0.3;
 }
 
-/* EXCEL TABLE STYLES */
 .insight-table-card {
   background: white;
   border-radius: var(--border-radius);
@@ -924,7 +927,6 @@ onMounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* VIZ DASHBOARD STYLES */
 .insight-viz-card {
   background: white;
   border-radius: var(--border-radius);

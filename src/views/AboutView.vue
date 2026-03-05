@@ -39,8 +39,15 @@
   <section class="about-section bg-white py-5">
     <div class="container">
       <div class="row align-items-center g-5">
-        <div class="col-lg-6">
-          <div class="section-eyebrow mb-3">APA ITU KASULAMPUA?</div>
+        <div class="col-lg-5 text-center text-lg-start">
+          <div class="about-logo-wrapper">
+             <div class="logo-glow-bg"></div>
+             <img src="/assets/images/logo-nav.png" alt="Logo Kasulampua" class="img-fluid about-kasulampua-logo fade-in-up" />
+          </div>
+        </div>
+        
+        <div class="col-lg-7">
+          <div class="section-eyebrow mb-4">APA ITU KASULAMPUA?</div>
           <h2 class="section-title mb-4">
             Konsultasi Regional <br /><span class="text-amber">Lintas Wilayah</span>
           </h2>
@@ -57,24 +64,10 @@
             dan rencana tindak lanjut untuk menggerakkan perekonomian daerah.
           </p>
         </div>
-        <div class="col-lg-6">
-          <div class="quote-card">
-            <div class="quote-icon">"</div>
-            <p class="quote-text">
-              Kasulampua menjadi landasan dalam penyusunan kesepahaman dan rencana tindak lanjut
-              sekaligus menggerakkan perekonomian daerah sebagai upaya pencapaian pembangunan
-              regional maupun nasional.
-            </p>
-            <div class="quote-divider"></div>
-            <div class="quote-source">
-              <span class="qs-title">Portal Data Kasulampua</span>
-              <span class="qs-sub">Pusat Data Regional Indonesia Timur</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
+
 
   <section class="about-section bg-faint py-5">
     <div class="container">
@@ -173,50 +166,6 @@ const pillars = [
   },
 ]
 
-const regions = [
-  {
-    name: 'Kalimantan',
-    icon: '/assets/images/icon_kalimantan.svg',
-    gradient: 'linear-gradient(135deg, #1c1208, #2d1a0a)',
-    provinsi: ['Kalimantan Utara', 'Kalimantan Timur', 'Kalimantan Tengah', 'Kalimantan Selatan', 'Kalimantan Barat'],
-  },
-  {
-    name: 'Sulawesi',
-    icon: '/assets/images/icon_sulawesi.svg',
-    gradient: 'linear-gradient(135deg, #0c1a2d, #0f2a3d)',
-    provinsi: ['Sulawesi Utara', 'Sulawesi Tengah', 'Sulawesi Selatan', 'Sulawesi Tenggara', 'Gorontalo', 'Sulawesi Barat'],
-  },
-  {
-    name: 'Maluku',
-    icon: '/assets/images/icon_maluku.svg',
-    gradient: 'linear-gradient(135deg, #0d1f12, #132a18)',
-    provinsi: ['Maluku', 'Maluku Utara'],
-  },
-  {
-    name: 'Papua',
-    icon: '/assets/images/icon_papua.svg',
-    gradient: 'linear-gradient(135deg, #1a0c1c, #2a1030)',
-    provinsi: ['Papua', 'Papua Barat', 'Papua Selatan', 'Papua Tengah', 'Papua Pegunungan', 'Papua Barat Daya'],
-  },
-]
-
-const institusi = [
-  {
-    icon: 'bi bi-graph-up-arrow',
-    name: 'Badan Pusat Statistik',
-    desc: 'Lembaga penyedia data statistik resmi sebagai dasar analisis pembangunan regional.',
-  },
-  {
-    icon: 'bi bi-building-fill',
-    name: 'Bappeda',
-    desc: 'Badan Perencanaan Pembangunan Daerah yang mengkoordinasikan arah pembangunan antar wilayah.',
-  },
-  {
-    icon: 'bi bi-bank2',
-    name: 'Bank Indonesia',
-    desc: 'Bank sentral yang berperan memonitor stabilitas ekonomi dan pertumbuhan regional.',
-  },
-]
 </script>
 
 <style scoped>
@@ -281,30 +230,35 @@ const institusi = [
   font-size: 2.2rem; font-weight: 900; color: #1c1917; line-height: 1.2;
 }
 .section-subtitle { color: #78716c; font-size: 0.95rem; max-width: 500px; margin: 0 auto; }
-.section-body { color: #57534e; line-height: 1.8; font-size: 0.95rem; }
-
-.quote-card {
-  background: linear-gradient(135deg, #0c0a09, #1c1208);
-  border: 1px solid rgba(245,158,11,0.2);
-  border-radius: 1.5rem;
-  padding: 2.5rem;
+.section-body { color: #57534e; line-height: 1.8; font-size: 1.05rem; }
+.about-logo-wrapper {
   position: relative;
-  overflow: hidden;
+  display: inline-block;
+  padding: 1rem;
 }
-.quote-card::before {
-  content: '';
+.logo-glow-bg {
   position: absolute;
-  top: -40px; right: -40px;
-  width: 160px; height: 160px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+  z-index: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(245,158,11,0.15), transparent 70%);
-  pointer-events: none;
 }
-.quote-icon { font-size: 4rem; color: #f59e0b; opacity: 0.3; line-height: 1; margin-bottom: -1rem; font-family: Georgia, serif; }
-.quote-text { color: rgba(254,243,199,0.8); font-size: 1rem; line-height: 1.8; font-style: italic; }
-.quote-divider { height: 1px; background: rgba(245,158,11,0.15); margin: 1.5rem 0; }
-.qs-title { display: block; font-weight: 800; color: #f59e0b; font-size: 0.875rem; }
-.qs-sub { display: block; font-size: 0.75rem; color: rgba(254,243,199,0.4); margin-top: 2px; }
+.about-kasulampua-logo {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  width: auto;
+  filter: drop-shadow(0 15px 30px rgba(0,0,0,0.06));
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.about-kasulampua-logo:hover {
+  transform: scale(1.05) translateY(-5px);
+}
+
 
 .pillar-card {
   background: white;

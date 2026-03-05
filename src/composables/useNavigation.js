@@ -26,8 +26,8 @@ export function useNavigation() {
   const navigationLinks = computed(() => [
     { text: 'Beranda', href: '/' },
     { text: 'Pusat Informasi', href: 'https://info.kasulampua.id' },
-    { text: 'Data Insight', href: '/regional_insight' },
-    { text: 'Datasets', href: '/dataset' },
+    { text: 'Regional Insight', href: '/regional_insight' },
+    { text: 'Data', href: '/dataset' },
     { text: 'Berita', href:'/berita'},
     { text: 'Tentang', href: '/about' },
   ])

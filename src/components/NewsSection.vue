@@ -213,14 +213,22 @@ defineProps({ berita: Object })
 }
 
 @media (max-width: 992px) {
+  .news-section {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
   .headline-image-wrapper {
-    min-height: 280px;
+    min-height: 240px;
   }
   .headline-content {
-    padding: 2rem !important;
+    padding: 1.5rem !important;
   }
   .headline-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+  }
+  .headline-excerpt {
+    font-size: 0.95rem;
   }
 }
 </style>

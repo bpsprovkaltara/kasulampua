@@ -13,7 +13,7 @@
 
 <script setup>
 import { ref, reactive,  onMounted, onBeforeUnmount } from 'vue'
-import {API_ENDPOINTS, DATAHUB_ENDPOINTS} from '../config/api'
+// import {API_ENDPOINTS, DATAHUB_ENDPOINTS} from '../config/api'
 
 
 import Navbar from '../components/NavSection.vue'
@@ -198,9 +198,6 @@ const fetchTopInsight = async () => {
   }
 }
 
-const fetchRelatedDatasets = async (id) => {
-  // Ignored in dummy mode
-}
 
 
 

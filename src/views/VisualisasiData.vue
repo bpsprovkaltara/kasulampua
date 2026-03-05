@@ -115,7 +115,7 @@ import { useRoute } from 'vue-router'
 import { onMounted, ref, reactive, watch, nextTick } from 'vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
-import { DATAHUB_ENDPOINTS, API_ENDPOINTS } from '../config/api'
+// import { DATAHUB_ENDPOINTS, API_ENDPOINTS } from '../config/api'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Chart } from 'chart.js/auto'
@@ -160,7 +160,6 @@ const state = reactive({
   judul: '',
 })
 
-// Fetch list dataset
 const fetchDataset = async () => {
   try {
     /*
@@ -172,14 +171,14 @@ const fetchDataset = async () => {
     }))
     */
 
-    // DUMMY DATA FOR PRESENTATION
+    // DUMMY DATA 
     dataOptions.value = [
       { value: 'pdrb-kab-2023', label: 'PDRB Menurut Kabupaten/Kota 2023' },
       { value: 'ipm-regional-2023', label: 'Indeks Pembangunan Manusia Regional' },
       { value: 'inflasi-bulanan', label: 'Tingkat Inflasi Bulanan' },
     ]
 
-    // Set initial data if not in query
+
     if (!route.query.data && !selectedData.value) {
       selectedData.value = dataOptions.value[0]?.value || ''
     }
@@ -188,7 +187,6 @@ const fetchDataset = async () => {
   }
 }
 
-// Fetch data dan siapkan label & data
 const fetchData = async () => {
   if (!selectedData.value) return
 
@@ -343,12 +341,10 @@ const updateData = async () => {
   renderChart()
 }
 
-// Watch for chartRef to render on mount
 watch(chartRef, (newVal) => {
   if (newVal && state.labels.length > 0) renderChart()
 })
 
-// Download chart as PNG
 const downloadChart = () => {
   if (!chartRef.value) return
   const link = document.createElement('a')
@@ -357,7 +353,6 @@ const downloadChart = () => {
   link.click()
 }
 
-// Render atau update Chart
 const renderChart = () => {
   if (!chartRef.value || state.labels.length === 0) return
 
@@ -477,7 +472,6 @@ watch([selectedData], () => {
   min-height: 80vh;
 }
 
-/* Glassmorphism Filter Card */
 .glass-filter-card {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
@@ -540,7 +534,6 @@ watch([selectedData], () => {
   transform: translateY(-1px);
 }
 
-/* Chart Type Toggle */
 .chart-type-toggle {
   display: flex;
   background: white;
@@ -575,7 +568,6 @@ watch([selectedData], () => {
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
 }
 
-/* Chart Container Card */
 .chart-container-card {
   background: white;
   border-radius: 24px;
@@ -605,7 +597,7 @@ watch([selectedData], () => {
   opacity: 0.3;
 }
 
-/* Loading Overlay */
+
 .chart-loading-overlay {
   position: absolute;
   inset: 0;
@@ -631,7 +623,6 @@ watch([selectedData], () => {
   }
 }
 
-/* Animations */
 .fade-in-up {
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -647,7 +638,6 @@ watch([selectedData], () => {
   }
 }
 
-/* Custom Multiselect Overrides */
 :deep(.custom-multiselect) {
   --ms-border-color: var(--border-color);
   --ms-radius: 12px;
@@ -664,14 +654,34 @@ watch([selectedData], () => {
 }
 
 @media (max-width: 768px) {
+  .hero-v2-title {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+  }
+  .hero-v2-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem !important;
+  }
   .chart-container-card {
     padding: 1.5rem;
   }
+  .chart-title {
+    font-size: 1.25rem;
+  }
   .chart-canvas-wrapper {
-    height: 500px;
+    height: 400px;
   }
   .glass-filter-card {
     padding: 1.5rem;
+  }
+  .btn-download-chart {
+    width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+  }
+  .badge-satuan {
+    display: block;
+    width: fit-content;
+    margin-top: 8px;
   }
 }
 </style>
