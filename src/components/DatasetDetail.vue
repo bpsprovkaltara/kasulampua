@@ -16,24 +16,24 @@
           <div class="info-label">Kategori</div>
           <div class="info-value">
             <span class="info-badge-amber">
-              {{ dataset.category_name || dataset.category || '-' }}
+              {{ dataset.category_name || dataset.category || 'Tidak tersedia' }}
             </span>
           </div>
         </div>
         
         <div class="info-row">
           <div class="info-label">Wilayah</div>
-          <div class="info-value">{{ dataset.region_name || dataset.region || '-' }}</div>
+          <div class="info-value">{{ dataset.region_name || dataset.region || 'Tidak tersedia' }}</div>
         </div>
         
         <div class="info-row">
           <div class="info-label">Tahun</div>
-          <div class="info-value fw-bold">{{ dataset.year || '-' }}</div>
+          <div class="info-value fw-bold">{{ dataset.year || 'Tidak tersedia' }}</div>
         </div>
         
         <div class="info-row">
           <div class="info-label">Tanggal</div>
-          <div class="info-value">{{ formatLongDate(dataset.date) || '-' }}</div>
+          <div class="info-value">{{ formatLongDate(dataset.date) || 'Tidak tersedia' }}</div>
         </div>
         
         <div class="info-row">
@@ -131,15 +131,15 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <Transition name="toast">
-      <div v-if="downloadToast" class="download-toast">
-        <div class="toast-content">
-          <i class="bi bi-check-circle-fill me-2"></i>
-          <span>Dataset berhasil diunduh dalam format <strong>{{ downloadFormat }}</strong>!</span>
-        </div>
-      </div>
-    </Transition>
+  <div v-else-if="notFound" class="text-center py-5">
+    <i class="bi bi-database-slash" style="font-size: 3rem; color: var(--text-secondary);"></i>
+    <h5 class="mt-3 fw-bold">Dataset Tidak Ditemukan</h5>
+    <p class="text-muted small">Dataset yang Anda cari tidak tersedia atau telah dihapus.</p>
+    <router-link to="/dataset" class="btn btn-outline-secondary btn-sm rounded-pill mt-2">
+      Kembali ke Daftar Dataset
+    </router-link>
   </div>
 
   <div v-else class="text-center py-5">
@@ -375,21 +375,20 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import { formatLongDate } from '../utils/dates'
+import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
 const store = useDatasetStore()
 const { allDatasets, categories } = store
+const { error: toastError, success: toastSuccess } = useToast()
 const dataset = ref(null)
-const downloadToast = ref(false)
+const notFound = ref(false)
 const downloadFormat = ref('')
 const emit = defineEmits(['setTitle', 'setOrganizationName'])
 
 const simulateDownload = (format) => {
   downloadFormat.value = format
-  downloadToast.value = true
-  setTimeout(() => {
-    downloadToast.value = false
-  }, 3000)
+  toastSuccess(`Dataset berhasil diunduh dalam format ${format}!`)
 }
 
 
@@ -405,9 +404,10 @@ const fetchDataset = async (id) => {
       category_name: categories.value.find(c => c.id === found.category)?.name || found.category
     }
     emit('setTitle', dataset.value.title)
-    emit('setOrganizationName', dataset.value.region_name || '-')
+    emit('setOrganizationName', dataset.value.region_name || 'Tidak tersedia')
   } else {
-    console.error('Dataset tidak ditemukan:', id)
+    notFound.value = true
+    toastError('Dataset tidak ditemukan.')
   }
 }
 
