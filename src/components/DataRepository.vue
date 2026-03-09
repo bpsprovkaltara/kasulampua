@@ -10,11 +10,11 @@
             <h2 class="section-title-premium">Katalog Data Terintegrasi</h2>
           </div>
           <div class="nav-controls d-flex align-items-center gap-3">
-            <button @click="scrollPrev" class="btn-scroll" :disabled="isAtStart">
-              <i class="bi bi-chevron-left"></i>
+            <button @click="scrollPrev" class="btn-scroll" :disabled="isAtStart" aria-label="Geser katalog ke kiri">
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
             </button>
-            <button @click="scrollNext" class="btn-scroll" :disabled="isAtEnd">
-              <i class="bi bi-chevron-right"></i>
+            <button @click="scrollNext" class="btn-scroll" :disabled="isAtEnd" aria-label="Geser katalog ke kanan">
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
             </button>
           </div>
         </div>
@@ -96,7 +96,12 @@ import { useDatasetStore } from '@/composables/useDatasetStore'
 
 const carouselRef = ref(null)
 const store = useDatasetStore()
-const { allDatasets, categories: kategoriList, scrollProgress, isAtStart, isAtEnd, activeIndex } = store
+const { allDatasets, categories: kategoriList } = store
+
+const scrollProgress = ref(0)
+const isAtStart = ref(true)
+const isAtEnd = ref(false)
+const activeIndex = ref(0)
 
 const getCategoryIcon = (name) => {
   const icons = {

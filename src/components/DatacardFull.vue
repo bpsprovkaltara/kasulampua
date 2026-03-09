@@ -102,7 +102,7 @@
 }
 
 .btn-download {
-  background-color: var(--primary-color);
+  background-color: var(--amber-600);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -113,7 +113,7 @@
 }
 
 .btn-download:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--amber-700);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
 }

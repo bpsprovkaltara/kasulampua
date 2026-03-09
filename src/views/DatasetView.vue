@@ -141,8 +141,9 @@
                   v-if="search"
                   class="search-clear"
                   @click="search = ''; applySearch()"
+                  aria-label="Hapus pencarian"
                 >
-                  <i class="bi bi-x"></i>
+                  <i class="bi bi-x" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
@@ -286,7 +287,7 @@ const filteredRegions = computed(() => {
   return regions.value
 })
 
-const getCategoryName = (id) => categories.value.find((c) => c.id === id)?.name || '-'
+const getCategoryName = (id) => categories.value.find((c) => c.id === id)?.name || 'Tidak tersedia'
 const getRegionName = (dataset) => {
   // If explicitly set (dummy data)
   if (dataset.region) {
@@ -440,7 +441,7 @@ onMounted(() => {
   padding: 0 10px;
 }
 .sidebar-card-body.collapsible.expanded {
-  max-height: 1000px; /* Large enough to fit content */
+  max-height: 1000px; 
   padding: 10px;
 }
 

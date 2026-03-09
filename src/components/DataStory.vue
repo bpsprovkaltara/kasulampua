@@ -65,7 +65,7 @@
               </div>
               <div>
                 <div class="meta-label">Topik</div>
-                <div class="meta-value">{{ dataSection.topik || '-' }}</div>
+                <div class="meta-value">{{ dataSection.topik || 'Tidak tersedia' }}</div>
               </div>
             </div>
             <div class="meta-item">
@@ -74,7 +74,7 @@
               </div>
               <div>
                 <div class="meta-label">Regional</div>
-                <div class="meta-value">{{ dataSection.region || '-' }}</div>
+                <div class="meta-value">{{ dataSection.region || 'Tidak tersedia' }}</div>
               </div>
             </div>
             <div class="meta-item">
@@ -83,7 +83,7 @@
               </div>
               <div>
                 <div class="meta-label">Wilayah</div>
-                <div class="meta-value">{{ dataSection.wilayah || '-' }}</div>
+                <div class="meta-value">{{ dataSection.wilayah || 'Tidak tersedia' }}</div>
               </div>
             </div>
           </div>
