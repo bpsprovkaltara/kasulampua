@@ -243,7 +243,7 @@ onMounted(async () => {
         format: 'Xlsx',
         created: json.last_update,
         last_modified: json.last_update,
-        url: json.url || '-'
+        url: json.url || 'Tidak tersedia'
       }
       //emitData('emitJudul', json.var[0].label)
       tahunOptions.value = json.tahun

@@ -90,7 +90,7 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
           class="mobile-toggler d-flex d-lg-none align-items-center justify-content-center"
           :class="{ 'active': isMobileMenuOpen }"
           @click="toggleMobileMenu"
-          aria-label="Toggle navigation"
+          aria-label="Buka atau tutup menu navigasi"
         >
           <div class="hamburger">
             <span></span>

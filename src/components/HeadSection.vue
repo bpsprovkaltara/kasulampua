@@ -402,7 +402,7 @@ function particleStyle() {
 }
 
 .btn-hero-primary-v2 {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  background: var(--amber-600);
   color: white;
   font-weight: 700;
   padding: 1.1rem 2.75rem;
@@ -416,7 +416,7 @@ function particleStyle() {
   letter-spacing: 0.01em;
 }
 .btn-hero-primary-v2:hover {
-  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+  background: var(--amber-700);
   transform: translateY(-5px);
   box-shadow:
     0 20px 40px -12px rgba(217, 119, 6, 0.55),
@@ -436,8 +436,8 @@ function particleStyle() {
 }
 .btn-hero-outline-v2:hover {
   background: white;
-  border-color: #d97706;
-  color: #d97706;
+  border-color: var(--amber-600);
+  color: var(--amber-600);
   transform: translateY(-5px);
 }
 

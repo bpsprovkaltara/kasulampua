@@ -43,7 +43,7 @@ const bpsLinks = [
   { name: 'BPS Provinsi Maluku', href: 'https://maluku.bps.go.id' },
   { name: 'BPS Provinsi Maluku Utara', href: 'https://malut.bps.go.id' },
   { name: 'BPS Provinsi Papua', href: 'https://papua.bps.go.id' },
-  { name: 'BPS Provinsi Papua Barat', href: 'https://papuabar.bps.go.id' },
+  { name: 'BPS Provinsi Papua Barat', href: 'https://papuabarat.bps.go.id' },
 ]
 
 const biLinks = [
@@ -93,7 +93,7 @@ const biLinks = [
   },
   {
     name: 'BI KP Maluku Utara',
-    href: 'https://www.bi.go.id/id/tentang-bi/profil/organisasi/Pages/Kantor-Perwakilan-Provinsi-Maluku-Utara.aspx',
+    href: 'https://www.bi.go.id/id/tentang-bi/profil/organisasi/Pages/Kantor-Perwakilan-Maluku-Utara.aspx',
   },
   {
     name: 'BI KP Papua',
