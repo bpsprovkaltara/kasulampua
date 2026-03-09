@@ -25,7 +25,7 @@
       </div>
 
       <h1 class="insight-hero-title">
-        {{ state.insight?.title || 'Memuat insight...' }}
+        {{ state.insight?.title || 'Tidak tersedia' }}
       </h1>
       <div class="insight-hero-meta mt-4" v-if="state.insight">
         <span class="meta-chip">
@@ -50,17 +50,28 @@
 
   <section class="insight-content-section">
     <div class="container">
-      <div v-if="!state.insight" class="text-center py-5">
+      <div v-if="loading" class="text-center py-5">
         <div class="insight-spinner mx-auto mb-3"></div>
         <p class="text-muted small">Memuat insight...</p>
       </div>
 
-      <template v-else>
+      <div v-else-if="error" class="text-center py-5">
+        <div class="mb-4">
+          <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i>
+        </div>
+        <h4 class="fw-bold mb-3">{{ error }}</h4>
+        <p class="text-muted mb-4">Kami tidak dapat menemukan data yang Anda cari.</p>
+        <router-link to="/regional_insight" class="btn btn-outline-amber rounded-pill px-4">
+          Kembali ke Daftar Insight
+        </router-link>
+      </div>
+
+      <template v-else-if="state.insight">
         <div class="row g-5">
           <div class="col-lg-8">
             <div class="insight-desc-card mb-5">
               <div class="desc-eyebrow"><span class="eyebrow-dot"></span> RINGKASAN INSIGHT</div>
-              <p class="desc-body">{{ state.insight.description }}</p>
+              <p class="desc-body">{{ state.insight.description || 'Tidak tersedia' }}</p>
             </div>
 
             <!-- TABLE DATA (EXCEL STYLE) -->
@@ -71,8 +82,8 @@
                   <h6 class="mb-0 fw-bold">Dataset Pendukung (Tabel Data)</h6>
                 </div>
                 <div class="table-actions">
-                  <button class="btn-table-action" title="Download Excel"><i class="bi bi-file-earmark-excel"></i></button>
-                  <button class="btn-table-action" title="Copy Data"><i class="bi bi-copy"></i></button>
+                  <button class="btn-table-action" title="Download Excel" aria-label="Unduh tabel dalam format Excel"><i class="bi bi-file-earmark-excel" aria-hidden="true"></i></button>
+                  <button class="btn-table-action" title="Copy Data" aria-label="Salin data"><i class="bi bi-copy" aria-hidden="true"></i></button>
                 </div>
               </div>
               <div class="table-responsive excel-style-wrapper">
@@ -121,8 +132,10 @@
                     class="toggle-btn" 
                     :class="{ active: activeChartType === btn.type }"
                     @click="updateChartType(btn.type)"
+                    :aria-label="`Tampilkan grafik ${btn.label}`"
+                    :aria-pressed="activeChartType === btn.type"
                   >
-                    <i :class="btn.icon" class="me-2"></i>
+                    <i :class="btn.icon" class="me-2" aria-hidden="true"></i>
                     <span>{{ btn.label }}</span>
                   </button>
                 </div>
@@ -153,33 +166,40 @@
                 <a
                   :href="`https://twitter.com/intent/tweet?text=${encodeURIComponent(state.insight.title)}&url=${pageUrl}`"
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="share-btn twitter"
                   title="Twitter/X"
+                  aria-label="Bagikan ke Twitter/X"
                 >
-                  <i class="bi bi-twitter-x"></i>
+                  <i class="bi bi-twitter-x" aria-hidden="true"></i>
                 </a>
                 <a
                   :href="`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`"
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="share-btn facebook"
                   title="Facebook"
+                  aria-label="Bagikan ke Facebook"
                 >
-                  <i class="bi bi-facebook"></i>
+                  <i class="bi bi-facebook" aria-hidden="true"></i>
                 </a>
                 <a
                   :href="`https://api.whatsapp.com/send?text=${encodeURIComponent(state.insight.title + ' ' + pageUrl)}`"
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="share-btn whatsapp"
                   title="WhatsApp"
+                  aria-label="Bagikan via WhatsApp"
                 >
-                  <i class="bi bi-whatsapp"></i>
+                  <i class="bi bi-whatsapp" aria-hidden="true"></i>
                 </a>
                 <button
                   class="share-btn copy"
                   @click="copyLink"
                   :title="copied ? 'Tersalin!' : 'Salin tautan'"
+                  :aria-label="copied ? 'Tersalin!' : 'Salin tautan ke clipboard'"
                 >
-                  <i :class="copied ? 'bi bi-check2' : 'bi bi-link-45deg'"></i>
+                  <i :class="copied ? 'bi bi-check2' : 'bi bi-link-45deg'" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
@@ -190,31 +210,31 @@
               <div class="sidebar-card mb-4">
                 <h6 class="sidebar-title">Informasi Insight</h6>
                 <div class="meta-stack">
-                  <div class="meta-row" v-if="state.insight.topic">
+                  <div class="meta-row">
                     <div class="meta-icon-box amber">
                       <i class="bi bi-journal-text"></i>
                     </div>
                     <div>
                       <div class="meta-row-label">Topik</div>
-                      <div class="meta-row-value">{{ state.insight.topic }}</div>
+                      <div class="meta-row-value">{{ state.insight.topic || 'Tidak tersedia' }}</div>
                     </div>
                   </div>
-                  <div class="meta-row" v-if="state.insight.region">
+                  <div class="meta-row">
                     <div class="meta-icon-box stone">
                       <i class="bi bi-building"></i>
                     </div>
                     <div>
                       <div class="meta-row-label">Regional</div>
-                      <div class="meta-row-value text-capitalize">{{ state.insight.region }}</div>
+                      <div class="meta-row-value text-capitalize">{{ state.insight.region || 'Tidak tersedia' }}</div>
                     </div>
                   </div>
-                  <div class="meta-row" v-if="state.insight.region_name">
+                  <div class="meta-row">
                     <div class="meta-icon-box amber">
                       <i class="bi bi-geo-alt-fill"></i>
                     </div>
                     <div>
                       <div class="meta-row-label">Wilayah</div>
-                      <div class="meta-row-value">{{ state.insight.region_name }}</div>
+                      <div class="meta-row-value">{{ state.insight.region_name || 'Tidak tersedia' }}</div>
                     </div>
                   </div>
                 </div>
@@ -261,8 +281,12 @@ import { API_ENDPOINTS } from '@/config/api'
 import { formatLongDate } from '@/utils/dates'
 import { DUMMY_INSIGHTS } from '@/utils/dummyInsights'
 import { Chart } from 'chart.js/auto'
+import { useMeta } from '@/composables/useMeta'
+import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
+const { updateMeta } = useMeta()
+const { error: toastError } = useToast()
 const copied = ref(false)
 const pageUrl = computed(() => window.location.href)
 
@@ -271,9 +295,34 @@ const state = reactive({
   dataset: [],
 })
 
+const loading = ref(true)
+const error = ref(null)
+
+watch(() => state.insight, (newInsight) => {
+  if (newInsight) {
+    updateMeta({
+      title: newInsight.title,
+      description: newInsight.description?.slice(0, 160) || '',
+      image: imgUrl(newInsight.image)
+    })
+  }
+})
+
 const chartRef = ref(null)
 const activeChartType = ref('bar')
 let chartInstance = null
+
+const CHART_PALETTE = [
+  'rgba(217, 119, 6, 0.8)',   // Amber
+  'rgba(20, 184, 166, 0.8)',  // Teal
+  'rgba(56, 189, 248, 0.8)',  // Sky
+  'rgba(244, 63, 94, 0.8)',   // Rose
+  'rgba(139, 92, 246, 0.8)',  // Violet
+  'rgba(249, 115, 22, 0.8)',  // Orange
+  'rgba(16, 185, 129, 0.8)',  // Emerald
+  'rgba(99, 102, 241, 0.8)',  // Indigo
+  'rgba(236, 72, 153, 0.8)'   // Pink
+]
 
 watch(chartRef, (newVal) => {
   if (newVal) {
@@ -290,10 +339,23 @@ const initChart = async () => {
     chartInstance.destroy()
   }
   
+  const chartData = JSON.parse(JSON.stringify(state.insight.chart_data))
+  
+  if (activeChartType.value === 'doughnut') {
+    chartData.datasets.forEach(dataset => {
+      if (dataset.data.length > 1) {
+        dataset.backgroundColor = CHART_PALETTE.slice(0, dataset.data.length)
+        dataset.hoverBackgroundColor = CHART_PALETTE.slice(0, dataset.data.length)
+        dataset.borderColor = '#ffffff'
+        dataset.borderWidth = 2
+      }
+    })
+  }
+
   const ctx = chartRef.value.getContext('2d')
   chartInstance = new Chart(ctx, {
     type: activeChartType.value,
-    data: state.insight.chart_data,
+    data: chartData,
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -374,9 +436,12 @@ async function copyLink() {
 }
 
 const fetchInsight = async () => {
+  loading.value = true
+  error.value = null
   try {
     /*
     const res = await fetch(API_ENDPOINTS.INSIGHT_SLUG(route.params.id))
+    if (!res.ok) throw new Error('Insight tidak ditemukan')
     state.insight = await res.json()
     */
     
@@ -386,9 +451,15 @@ const fetchInsight = async () => {
       state.insight = found
       trackInsight(state.insight?.title)
       initChart()
+    } else {
+      error.value = 'Insight tidak ditemukan'
     }
   } catch (e) {
     console.error('Gagal memuat insight:', e)
+    error.value = 'Gagal memuat data insight. Silakan coba lagi nanti.'
+    toastError('Gagal memuat data insight. Silakan coba lagi nanti.')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -998,7 +1069,7 @@ onMounted(() => {
 }
 .toggle-btn.active {
   background: white;
-  color: var(--primary-color);
+  color: var(--amber-600);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }

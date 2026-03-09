@@ -19,7 +19,7 @@
         <span class="label-dot"></span>
         BERITA
       </div>
-      <h1 class="article-hero-title">{{ news.title || 'Memuat...' }}</h1>
+      <h1 class="article-hero-title">{{ news.title || 'Tidak tersedia' }}</h1>
 
       <div class="article-hero-meta mt-4" v-if="news.created_at">
         <span class="meta-chip">
@@ -59,33 +59,40 @@
                   <a
                     :href="`https://twitter.com/intent/tweet?text=${encodeURIComponent(news.title)}&url=${pageUrl}`"
                     target="_blank"
+                    rel="noopener noreferrer"
                     class="share-btn twitter"
                     title="Bagikan ke Twitter"
+                    aria-label="Bagikan ke Twitter"
                   >
-                    <i class="bi bi-twitter-x"></i>
+                    <i class="bi bi-twitter-x" aria-hidden="true"></i>
                   </a>
                   <a
                     :href="`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`"
                     target="_blank"
+                    rel="noopener noreferrer"
                     class="share-btn facebook"
                     title="Bagikan ke Facebook"
+                    aria-label="Bagikan ke Facebook"
                   >
-                    <i class="bi bi-facebook"></i>
+                    <i class="bi bi-facebook" aria-hidden="true"></i>
                   </a>
                   <a
                     :href="`https://api.whatsapp.com/send?text=${encodeURIComponent(news.title + ' ' + pageUrl)}`"
                     target="_blank"
+                    rel="noopener noreferrer"
                     class="share-btn whatsapp"
                     title="Bagikan via WhatsApp"
+                    aria-label="Bagikan via WhatsApp"
                   >
-                    <i class="bi bi-whatsapp"></i>
+                    <i class="bi bi-whatsapp" aria-hidden="true"></i>
                   </a>
                   <button
                     class="share-btn copy"
                     @click="copyLink"
                     :title="copied ? 'Tersalin!' : 'Salin tautan'"
+                    :aria-label="copied ? 'Tersalin!' : 'Salin tautan ke clipboard'"
                   >
-                    <i :class="copied ? 'bi bi-check2' : 'bi bi-link-45deg'"></i>
+                    <i :class="copied ? 'bi bi-check2' : 'bi bi-link-45deg'" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
@@ -156,6 +163,8 @@ import Navbar from '../components/NavSection.vue'
 import { API_ENDPOINTS } from '../config/api'
 import { formatLongDate } from '../utils/dates'
 import { DUMMY_BERITA } from '../utils/dummyBerita'
+import { useMeta } from '../composables/useMeta'
+import { useToast } from '../composables/useToast'
 
 const beritaList = ref([])
 const route = useRoute()
@@ -164,6 +173,9 @@ const search = ref('')
 const loading = ref(true)
 const copied = ref(false)
 const news = ref({ title: '', image: '', created_at: '', content: '' })
+
+const { updateMeta } = useMeta()
+const { error: toastError, warning: toastWarning } = useToast()
 
 const currentSlug = computed(() => route.params.id)
 const pageUrl = computed(() => window.location.href)
@@ -193,11 +205,19 @@ const fetchBeritaSlug = async () => {
     if (found) {
       news.value = found
       trackInsight(news.value.title)
+      
+      updateMeta({
+        title: news.value.title,
+        description: news.value.content?.replace(/<[^>]*>?/gm, '').slice(0, 160) || '',
+        image: urlImage(news.value.image)
+      })
     } else {
       news.value = { title: 'Berita tidak ditemukan', image: '', created_at: '', content: '' }
+      toastWarning('Berita tidak ditemukan atau telah dihapus.')
     }
   } catch (e) {
     console.error('Gagal memuat berita:', e)
+    toastError('Gagal memuat berita. Silakan coba lagi nanti.')
   } finally {
     loading.value = false
   }
@@ -546,7 +566,7 @@ watch(
   align-items: center;
   justify-content: center;
   padding: 10px;
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  background: var(--amber-600);
   color: white;
   border: none;
   border-radius: 10px;
@@ -558,7 +578,7 @@ watch(
   letter-spacing: 0.01em;
 }
 .btn-search:hover {
-  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+  background: var(--amber-700);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px -5px rgba(217, 119, 6, 0.45);
 }
