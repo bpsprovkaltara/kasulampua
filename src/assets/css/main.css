@@ -1,4 +1,6 @@
 :root {
+  --amber-600: #d97706;
+  --amber-700: #b45309;
   --primary-color: #d97706;
   --primary-hover: #b45309;
   --secondary-color: #fef3c7;
@@ -84,8 +86,8 @@ h1 {
 }
 
 .btn-primary {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
+  background-color: var(--amber-600) !important;
+  border-color: var(--amber-600) !important;
   border-radius: var(--border-radius) !important;
   color: white !important;
   font-weight: 600 !important;
@@ -95,15 +97,15 @@ h1 {
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover) !important;
-  border-color: var(--primary-hover) !important;
+  background-color: var(--amber-700) !important;
+  border-color: var(--amber-700) !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 15px rgba(217, 119, 6, 0.2);
 }
 
 .btn-outline-primary {
-  color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
+  color: var(--amber-600) !important;
+  border-color: var(--amber-600) !important;
   background-color: transparent !important;
   border-radius: var(--border-radius) !important;
   font-weight: 600 !important;
@@ -113,7 +115,7 @@ h1 {
 }
 
 .btn-outline-primary:hover {
-  background-color: var(--primary-color) !important;
+  background-color: var(--amber-600) !important;
   color: white !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 15px rgba(217, 119, 6, 0.2);
@@ -145,13 +147,13 @@ h1 {
 }
 
 .btn-premium-cta-primary {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  background: var(--amber-600);
   color: white !important;
   box-shadow: 0 4px 15px -3px rgba(217, 119, 6, 0.35);
 }
 
 .btn-premium-cta-primary:hover {
-  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+  background: var(--amber-700);
   transform: translateY(-3px);
   box-shadow: 0 12px 24px -6px rgba(217, 119, 6, 0.45);
   color: white !important;
@@ -159,13 +161,13 @@ h1 {
 
 .btn-premium-cta-outline {
   background: transparent;
-  color: var(--primary-color) !important;
-  border: 1.5px solid var(--primary-color);
+  color: var(--amber-600) !important;
+  border: 1.5px solid var(--amber-600);
   box-shadow: none;
 }
 
 .btn-premium-cta-outline:hover {
-  background: var(--primary-color);
+  background: var(--amber-600);
   color: white !important;
   transform: translateY(-3px);
   box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.3);
