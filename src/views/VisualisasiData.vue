@@ -1,7 +1,7 @@
 <template>
   <Navbar />
 
-  <header class="hero-v2">
+  <header class="hero-v2 hero-v2-sm">
     <div class="hero-v2-glow" aria-hidden="true"></div>
     <div class="hero-v2-dots" aria-hidden="true"></div>
 
@@ -10,12 +10,12 @@
         <div class="col-lg-8">
           <div class="hero-v2-badge">
             <span class="badge-dot"></span>
-            DATA ANALYTICS
+            VISUALISASI DATA
           </div>
 
           <h1 class="hero-v2-title">
-            Data <br />
-            <em>Insight</em>
+            Grafik <br />
+            <em>&amp; Peta</em>
           </h1>
 
           <p class="hero-v2-subtitle">
@@ -27,80 +27,90 @@
     </div>
   </header>
 
-  <main class="visualisasi-wrapper py-5">
-    <div class="container">
-      <div class="glass-filter-card mb-4 fade-in-up">
-        <div class="row g-4 align-items-end">
-          <div class="col-lg-4 col-md-6">
-            <label class="filter-label mb-2"
-              ><i class="bi bi-geo-alt-fill me-2"></i>Pilih Regional</label
-            >
-            <Multiselect
-              v-model="selectedRegion"
-              :options="regionOptions"
-              track-by="value"
-              :search="true"
-              label="label"
-              placeholder="Pilih Regional"
-              class="custom-multiselect"
-            />
-          </div>
-
-          <div class="col-lg-5 col-md-6">
-            <label class="filter-label mb-2"
-              ><i class="bi bi-database-fill me-2"></i>Pilih Dataset</label
-            >
-            <Multiselect
-              v-model="selectedData"
-              :options="dataOptions"
-              :search="true"
-              label="label"
-              track-by="value"
-              placeholder="Pilih Dataset"
-              class="custom-multiselect"
-            />
-          </div>
-
-          <div class="col-lg-3 col-md-12">
-            <label class="filter-label mb-2"
-              ><i class="bi bi-palette-fill me-2"></i>Tipe Visualisasi</label
-            >
-            <div class="chart-type-toggle">
-              <button
-                v-for="type in chartTypes"
-                :key="type.id"
-                @click="selectedChartType = type.id"
-                :class="['type-btn', { active: selectedChartType === type.id }]"
-                :title="type.label"
+  <main class="visualisasi-wrapper py-4">
+    <div class="container container-viz">
+      <aside class="viz-sidebar">
+        <div class="glass-filter-card">
+          <div class="filter-fields">
+            <div class="filter-group">
+              <label class="filter-label"
+                ><i class="bi bi-geo-alt-fill me-2"></i>Regional</label
               >
-                <i :class="type.icon"></i>
-              </button>
+              <Multiselect
+                v-model="selectedRegion"
+                :options="regionOptions"
+                track-by="value"
+                :search="true"
+                label="label"
+                placeholder="Pilih Regional"
+                class="custom-multiselect"
+              />
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label"
+                ><i class="bi bi-database-fill me-2"></i>Dataset</label
+              >
+              <Multiselect
+                v-model="selectedData"
+                :options="dataOptions"
+                :search="true"
+                label="label"
+                track-by="value"
+                placeholder="Pilih Dataset"
+                class="custom-multiselect"
+              />
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label"
+                ><i class="bi bi-palette-fill me-2"></i>Tipe Grafik</label
+              >
+              <div class="chart-type-toggle">
+                <button
+                  v-for="type in chartTypes"
+                  :key="type.id"
+                  @click="selectedChartType = type.id"
+                  :class="['type-btn', { active: selectedChartType === type.id }]"
+                  :title="type.label"
+                  :aria-label="`Tipe grafik: ${type.label}`"
+                  :aria-pressed="selectedChartType === type.id"
+                >
+                  <i :class="type.icon" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <div class="row">
-        <div class="col-12">
-          <div class="chart-container-card fade-in-up" style="animation-delay: 0.2s">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-              <div class="flex-grow-1">
-                <h3 class="chart-title mb-1">{{ state.judul }}</h3>
-                <div class="badge-satuan">Satuan: {{ state.satuan }}</div>
-              </div>
-              <button @click="downloadChart" class="btn-download-chart">
-                <i class="bi bi-download me-2"></i>Unduh PNG
-              </button>
+      <div class="viz-main">
+        <div class="chart-container-card">
+          <div class="chart-header-row">
+            <div class="chart-header-text">
+              <h3 class="chart-title">{{ state.judul || 'Tidak tersedia' }}</h3>
+              <div class="badge-satuan">Satuan: {{ state.satuan || 'Tidak tersedia' }}</div>
             </div>
+            <button @click="downloadChart" class="btn-download-chart" aria-label="Unduh grafik sebagai gambar PNG">
+              <i class="bi bi-download me-2" aria-hidden="true"></i>Unduh PNG
+            </button>
+          </div>
 
-            <div class="chart-body">
-              <div v-if="loading" class="chart-loading-overlay">
-                <div class="loading-spinner"></div>
-                <p class="mt-3 text-muted fw-medium">Menyiapkan visualisasi...</p>
-              </div>
-              <div class="chart-canvas-wrapper" :class="{ faded: loading }">
-                <canvas ref="chartRef"></canvas>
-              </div>
+          <div class="chart-body">
+            <div v-if="loading" class="chart-loading-overlay">
+              <div class="loading-spinner"></div>
+              <p class="mt-3 text-muted fw-medium">Menyiapkan visualisasi...</p>
+            </div>
+            <div class="chart-canvas-wrapper" :class="{ faded: loading }">
+              <canvas v-if="selectedChartType !== 'map'" ref="chartRef"></canvas>
+              <MapVisualisasi 
+                 v-if="selectedChartType === 'map'"
+                 :labels="state.labels"
+                 :dataValues="state.dataValues"
+                 :unit="state.satuan"
+                 :title="state.judul"
+                 :region="selectedRegion"
+              />
             </div>
           </div>
         </div>
@@ -115,6 +125,7 @@ import { useRoute } from 'vue-router'
 import { onMounted, ref, reactive, watch, nextTick } from 'vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
+import MapVisualisasi from '../components/MapVisualisasi.vue'
 // import { DATAHUB_ENDPOINTS, API_ENDPOINTS } from '../config/api'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
@@ -132,6 +143,7 @@ const selectedChartType = ref('bar')
 const chartTypes = [
   { id: 'bar', label: 'Batang', icon: 'bi bi-bar-chart-fill' },
   { id: 'line', label: 'Garis', icon: 'bi bi-graph-up' },
+  { id: 'map', label: 'Peta', icon: 'bi bi-globe-asia-australia' },
   { id: 'doughnut', label: 'Lingkaran', icon: 'bi bi-pie-chart-fill' },
 ]
 
@@ -472,19 +484,56 @@ watch([selectedData], () => {
   min-height: 80vh;
 }
 
-.glass-filter-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(217, 119, 6, 0.15);
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px -4px rgba(217, 119, 6, 0.08);
-  position: relative;
+.container-viz {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.viz-sidebar {
+  position: sticky;
+  top: 80px;
   z-index: 100;
 }
 
+.viz-main {
+  min-width: 0;
+}
+
+.glass-filter-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 8px 32px -4px rgba(217, 119, 6, 0.12);
+}
+
+.filter-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hero-v2-sm {
+  min-height: auto !important;
+  padding: 2rem 0 !important;
+}
+
 .filter-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -492,12 +541,27 @@ watch([selectedData], () => {
   display: block;
 }
 
+.chart-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.chart-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
 .chart-title {
   color: var(--text-primary);
   font-weight: 800;
-  font-size: 1.5rem;
-  margin: 0;
-  text-align: left;
+  font-size: 1.35rem;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 
 .badge-satuan {
@@ -505,12 +569,11 @@ watch([selectedData], () => {
   color: #d97706;
   padding: 4px 12px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: inline-block;
-  margin-top: 4px;
 }
 
 .btn-download-chart {
@@ -524,31 +587,33 @@ watch([selectedData], () => {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .btn-download-chart:hover {
   background: #f8fafc;
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  border-color: var(--amber-600);
+  color: var(--amber-600);
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1);
   transform: translateY(-1px);
 }
 
 .chart-type-toggle {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   background: white;
-  padding: 4px;
+  padding: 6px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  gap: 4px;
 }
 
 .type-btn {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 42px;
+  aspect-ratio: 1;
+  min-height: 44px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -563,7 +628,7 @@ watch([selectedData], () => {
 }
 
 .type-btn.active {
-  background: var(--primary-color);
+  background: var(--amber-600);
   color: white;
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
 }
@@ -572,24 +637,22 @@ watch([selectedData], () => {
   background: white;
   border-radius: 24px;
   border: 1px solid var(--border-color);
-  padding: 3rem;
+  padding: 1.5rem;
+  overflow: hidden;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.02),
     0 20px 40px -20px rgba(0, 0, 0, 0.05);
 }
 
-.chart-title {
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-}
-
 .chart-body {
   position: relative;
-  min-height: 500px;
+  min-height: 380px;
 }
 
 .chart-canvas-wrapper {
-  height: 600px;
+  height: 380px;
+  overflow: hidden;
+  position: relative;
   transition: opacity 0.3s ease;
 }
 
@@ -642,8 +705,8 @@ watch([selectedData], () => {
   --ms-border-color: var(--border-color);
   --ms-radius: 12px;
   --ms-dropdown-radius: 12px;
-  --ms-py: 12px;
-  --ms-font-size: 0.9375rem;
+  --ms-py: 10px;
+  --ms-font-size: 0.9rem;
   --ms-ring-color: rgba(217, 119, 6, 0.1);
   --ms-option-bg-selected: var(--primary-color);
   --ms-option-bg-selected-pointed: var(--primary-hover);
@@ -653,35 +716,90 @@ watch([selectedData], () => {
   border-color: var(--primary-color);
 }
 
+@media (max-width: 991px) {
+  .container-viz {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .viz-sidebar {
+    position: sticky;
+    top: 72px;
+  }
+
+  .glass-filter-card {
+    padding: 1rem 1.25rem;
+  }
+
+  .filter-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .filter-group:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .chart-type-toggle {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .hero-v2-title {
-    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-size: clamp(2rem, 7vw, 3.5rem);
   }
   .hero-v2-subtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem !important;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem !important;
+  }
+  .hero-v2-sm {
+    padding: 1.5rem 0 !important;
+  }
+  .visualisasi-wrapper {
+    padding-top: 0.5rem !important;
+  }
+  .container-viz {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .filter-fields {
+    grid-template-columns: 1fr;
+  }
+  .filter-group:last-child {
+    grid-column: 1;
+  }
+  .chart-type-toggle {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 4px;
+  }
+  .type-btn {
+    min-height: 36px;
+    font-size: 0.95rem;
+    border-radius: 6px;
   }
   .chart-container-card {
-    padding: 1.5rem;
+    padding: 1rem;
   }
   .chart-title {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+  }
+  .chart-body {
+    min-height: 320px;
   }
   .chart-canvas-wrapper {
-    height: 400px;
-  }
-  .glass-filter-card {
-    padding: 1.5rem;
+    height: 320px;
   }
   .btn-download-chart {
     width: 100%;
-    margin-top: 10px;
     justify-content: center;
   }
   .badge-satuan {
     display: block;
     width: fit-content;
-    margin-top: 8px;
+    margin-top: 4px;
   }
 }
 </style>
