@@ -10,11 +10,11 @@
         <div class="col-lg-8">
           <div class="hero-v2-badge">
             <span class="badge-dot"></span>
-            DATA ANALYTICS
+            REGIONAL INSIGHT
           </div>
 
           <h1 class="hero-v2-title">
-            Data <br />
+            Regional <br />
             <em>Insight</em>
           </h1>
 

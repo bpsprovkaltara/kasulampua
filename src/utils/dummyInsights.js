@@ -87,7 +87,7 @@ export const DUMMY_INSIGHTS = [
     region_name: 'Maluku',
     topic: 'Pertanian',
     created_at: '2024-02-05T00:00:00.000Z',
-    author: 'Data Insight Pangan',
+    author: 'Regional Insight Pangan',
     slug: 'pangan-maluku',
     views: 670,
     table_data: [
