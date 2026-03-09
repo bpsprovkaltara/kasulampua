@@ -66,52 +66,17 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import {
+  KASULAMPUA_REGIONS,
+  getFeatureProvinceName,
+  getRegionKeyWithRegex,
+  GEOJSON_URLS,
+} from '../utils/kasulampuaProvinces'
 
-const regionInfo = [
-  { key: 'kalimantan', label: 'Kalimantan', color: '#16a34a', count: 5, provinces: 'Kaltara · Kaltim · Kalteng · Kalsel · Kalbar',
-    bounds: [[-4.2, 108.2], [4.2, 118.8]] },
-  { key: 'sulawesi',   label: 'Sulawesi',   color: '#dc2626', count: 6, provinces: 'Sulut · Sulteng · Sulsel · Sultra · Gorontalo · Sulbar',
-    bounds: [[-6, 119.3], [2, 125.3]] },
-  { key: 'maluku',     label: 'Maluku',     color: '#2563eb', count: 2, provinces: 'Maluku · Maluku Utara',
-    bounds: [[-9, 123], [2.5, 135.5]] },
-  { key: 'papua',      label: 'Papua',      color: '#ca8a04', count: 6, provinces: 'Papua · Papua Barat · Papua Selatan · Papua Tengah · Papua Pegunungan · Papua Barat Daya',
-    bounds: [[-9, 130.5], [0, 141.1]] },
-]
-
-const kasulampuaRegex = {
-  kalimantan: /\b(kalimantan|kaltim|kaltara|kalteng|kalsel|kalbar|north kalimantan|east kalimantan|south kalimantan|west kalimantan|central kalimantan|tarakan|bulungan|malinau|nunukan|tana tidung|pontianak|singkawang|bengkayang|kapuas hulu|kayong utara|ketapang|kubu raya|landak|melawi|mempawah|sambas|sanggau|sekadau|sintang|palangka raya|barito|kotawaringin|gunung mas|katingan|lamandau|murung raya|pulang pisau|seruyan|banjarmasin|banjarbaru|balangan|banjar|hulu sungai|kotabaru|tabalong|tanah bumbu|tanah laut|tapin|samarinda|balikpapan|bontang|berau|kutai|mahakam ulu|paser|penajam)\b/i,
-  sulawesi: /\b(sulawesi|sulut|sulteng|sulbar|sulsel|sultra|north sulawesi|south sulawesi|central sulawesi|southeast sulawesi|west sulawesi|manado|bitung|tomohon|kotamobagu|bolaang|sangihe|talaud|minahasa|gorontalo|bone bolango|boalemo|pohuwato|palu|banggai|buol|donggala|morowali|parigi|sigi|tojo|toli-toli|poso|mamuju|majene|mamasa|polewali|pasangkayu|makassar|palopo|parepare|bantaeng|barru|bulukumba|enrekang|gowa|jeneponto|luwu|toraja|maros|pangkajene|pinrang|selayar|sinjai|sidenreng|soppeng|takalar|wajo|kendari|bau-bau|bombana|buton|konawe|kolaka|wakatobi)\b/i,
-  maluku: /\b(maluku|north maluku|ternate|tidore|halmahera|sula|taliabu|ambon|tual|aru|buru|seram)\b/i,
-  papua: /\b(papua|irian|west papua|highland papua|manokwari|sorong|fak[- ]?fak|kaimana|bintuni|wondama|raja ampat|maybrat|tambrauw|jayawijaya|pegunungan bintang|yahukimo|tolikara|mamberamo|yalimo|lani jaya|nduga|wamena|nabire|paniai|mimika|puncak|dogiyai|intan jaya|deiyai|merauke|boven digoel|mappi|asmat|jayapura|biak|keerom|sarmi|yapen)\b/i
-}
-
-function getRegionKey(name) {
-  if (!name) return null
-  const lower = name.toLowerCase().trim()
-  
-  if (lower.includes('palembang') || lower.includes('sumatera') || lower.includes('jawa') || lower.includes('bali') || lower.includes('nusa tenggara')) {
-    return null
-  }
-
-  for (const [key, regex] of Object.entries(kasulampuaRegex)) {
-    if (regex.test(lower)) return key
-  }
-  return null
-}
-
+const regionInfo = KASULAMPUA_REGIONS.filter((r) => r.key !== 'kasulampua')
 
 function getRegionInfo(key) {
-  return regionInfo.find(r => r.key === key)
-}
-
-function getProvinceLabel(feature) {
-  const p = feature?.properties || {}
-  return p.NAME_1 || p.name || p.NAMA_PROP || p.PROPINSI || p.Propinsi
-    || p.PROVINSI || p.provinsi || p.province || ''
-}
-
-function getFeatureName(feature) {
-  return getProvinceLabel(feature)
+  return regionInfo.find((r) => r.key === key)
 }
 
 const mapContainer = ref(null)
@@ -133,10 +98,13 @@ onUnmounted(() => {
 
 async function initMap() {
   map = L.map(mapContainer.value, {
-    center: [-2, 118],
-    zoom: 4,
-    minZoom: 3,
+    center: [-2, 117],
+    zoom: 5,
+    minZoom: 4,
     maxZoom: 10,
+    maxBounds: [[-12, 90], [7, 142]],
+    maxBoundsViscosity: 1.0,
+    worldCopyJump: false,
     zoomControl: false,
     attributionControl: false,
   })
@@ -163,27 +131,34 @@ async function initMap() {
 }
 
 async function loadGeoJSON() {
-  let data
-  try {
-    const res = await fetch(
-      'https://raw.githubusercontent.com/JfrAziz/indonesia-district/master/prov%2034%20simplified.geojson'
-    )
-    if (!res.ok) throw new Error()
-    data = await res.json()
-  } catch {
+  let data = null
+  for (const url of GEOJSON_URLS) {
     try {
-      const res2 = await fetch(
-        'https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-edit.geojson'
-      )
-      data = await res2.json()
+      const res = await fetch(url)
+      if (!res.ok) continue
+      data = await res.json()
+      if (data?.features?.length) break
     } catch {
-      loading.value = false
-      return
+      continue
     }
+  }
+  if (!data?.features?.length) {
+    try {
+      const res = await fetch(
+        'https://raw.githubusercontent.com/JfrAziz/indonesia-district/master/prov%2034%20simplified.geojson'
+      )
+      if (res.ok) data = await res.json()
+    } catch {
+      // ignore
+    }
+  }
+  if (!data?.features?.length) {
+    loading.value = false
+    return
   }
 
   geojsonLayer = L.geoJSON(data, {
-    style: feature => styleFeature(feature),
+    style: (feature) => styleFeature(feature),
     onEachFeature: (feature, layer) => bindEvents(feature, layer),
   }).addTo(map)
 
@@ -194,9 +169,10 @@ async function loadGeoJSON() {
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         map.invalidateSize()
-        map.flyToBounds([[-11.5, 94.5], [6.5, 141.5]], { 
-          padding: [20, 20], 
-          duration: 1.8
+        map.flyToBounds([[-11, 92], [6, 141]], {
+          padding: [24, 24],
+          duration: 1.8,
+          maxZoom: 5
         })
         observer.disconnect()
       }
@@ -206,8 +182,8 @@ async function loadGeoJSON() {
 }
 
 function styleFeature(feature, highlightKey = null) {
-  const name = getProvinceLabel(feature)
-  const regionKey = getRegionKey(name)
+  const name = getFeatureProvinceName(feature)
+  const regionKey = getRegionKeyWithRegex(name)
   const info = regionKey ? getRegionInfo(regionKey) : null
 
   const isKasulampua = !!regionKey
@@ -233,8 +209,8 @@ function styleFeature(feature, highlightKey = null) {
 }
 
 function bindEvents(feature, layer) {
-  const name = getFeatureName(feature)
-  const regionKey = getRegionKey(name)
+  const name = getFeatureProvinceName(feature)
+  const regionKey = getRegionKeyWithRegex(name)
   if (!regionKey) return
 
   const info = getRegionInfo(regionKey)
