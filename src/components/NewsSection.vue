@@ -181,7 +181,7 @@ defineProps({ berita: Object })
 }
 
 .btn-amber-solid {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  background: var(--amber-600);
   color: white;
   font-weight: 700;
   border: none;
@@ -191,22 +191,22 @@ defineProps({ berita: Object })
   letter-spacing: 0.01em;
 }
 .btn-amber-solid:hover {
-  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+  background: var(--amber-700);
   transform: translateY(-3px);
   color: white;
   box-shadow: 0 12px 24px -6px rgba(217, 119, 6, 0.45);
 }
 
 .btn-outline-amber {
-  color: var(--primary-color);
-  border: 1.5px solid var(--primary-color);
+  color: var(--amber-600);
+  border: 1.5px solid var(--amber-600);
   background: transparent;
   border-radius: 12px;
   font-weight: 700;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-outline-amber:hover {
-  background: var(--primary-color);
+  background: var(--amber-600);
   color: white;
   transform: translateY(-3px);
   box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.3);

@@ -147,8 +147,8 @@ const visiblePages = computed(() => {
 }
 
 .page-num.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: var(--amber-600);
+  border-color: var(--amber-600);
   color: white;
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
 }

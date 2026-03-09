@@ -53,8 +53,9 @@
             class="search-clear"
             v-if="searchQuery"
             @click="clearSearch"
+            aria-label="Hapus pencarian"
           >
-            <i class="bi bi-x"></i>
+            <i class="bi bi-x" aria-hidden="true"></i>
           </button>
         </div>
         <div class="filter-result-info d-none d-md-block" v-if="!loading">
