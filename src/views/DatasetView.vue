@@ -236,14 +236,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-// import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import PaginationControl from '../components/PaginationControl.vue'
 
-// const route = useRoute()
+const route = useRoute()
 const store = useDatasetStore()
 const { allDatasets, categories, regions, isLoading: loading } = store
 
@@ -356,8 +356,24 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
-onMounted(() => {
-  store.fetchAllData()
+const applyQueryFilters = () => {
+  if (route.query.kategori && categories.value.length > 0) {
+    const cat = categories.value.find(c => c.name.toLowerCase() === route.query.kategori.toLowerCase())
+    if (cat) {
+      selectedCategory.value = cat.id
+      categoryExpanded.value = true
+      currentPage.value = 1
+    }
+  }
+}
+
+watch(() => route.query.kategori, () => {
+  applyQueryFilters()
+})
+
+onMounted(async () => {
+  await store.fetchAllData()
+  applyQueryFilters()
 })
 </script>
 

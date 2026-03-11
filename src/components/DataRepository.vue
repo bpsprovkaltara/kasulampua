@@ -35,7 +35,7 @@
               class="dataset-card-premium"
             >
               <div class="card-inner">
-                <div class="category-icon-main">
+                <div class="category-icon-main" :class="'cat-color-' + getCategoryColor(kat.name)">
                   <i :class="getCategoryIcon(kat.name)"></i>
                 </div>
                 <div class="card-content">
@@ -118,6 +118,23 @@ const getCategoryIcon = (name) => {
     Perkebunan: 'bi bi-tree-fill',
   }
   return icons[name] || 'bi bi-archive-fill'
+}
+
+const getCategoryColor = (name) => {
+  const colors = {
+    Sosial: 'teal',
+    Kependudukan: 'cyan',
+    Pertanian: 'green',
+    Pendidikan: 'indigo',
+    Transportasi: 'slate',
+    Ekonomi: 'amber',
+    Iklim: 'blue',
+    Kesehatan: 'rose',
+    Perdagangan: 'orange',
+    Pemerintahan: 'slate',
+    Perkebunan: 'emerald',
+  }
+  return colors[name] || 'amber'
 }
 
 const getDatasetCount = (catId) => {
@@ -283,19 +300,38 @@ onUnmounted(() => {
 .category-icon-main {
   width: 60px;
   height: 60px;
-  background: #f8fafc;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
-  color: #d97706;
   margin-bottom: 1.5rem;
   transition: all 0.5s ease;
 }
 
+.cat-color-teal { background: #f0fdfa; color: #0d9488; }
+.cat-color-cyan { background: #ecfeff; color: #0891b2; }
+.cat-color-green { background: #f0fdf4; color: #16a34a; }
+.cat-color-emerald { background: #ecfdf5; color: #059669; }
+.cat-color-indigo { background: #eef2ff; color: #4f46e5; }
+.cat-color-slate { background: #f8fafc; color: #475569; }
+.cat-color-amber { background: #fffbeb; color: #d97706; }
+.cat-color-blue { background: #eff6ff; color: #2563eb; }
+.cat-color-rose { background: #fff1f2; color: #e11d48; }
+.cat-color-orange { background: #fff7ed; color: #ea580c; }
+
+.is-active .cat-color-teal { background: #ccfbf1; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2); }
+.is-active .cat-color-cyan { background: #cffafe; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.2); }
+.is-active .cat-color-green { background: #dcfce7; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
+.is-active .cat-color-emerald { background: #d1fae5; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2); }
+.is-active .cat-color-indigo { background: #e0e7ff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+.is-active .cat-color-slate { background: #f1f5f9; box-shadow: 0 4px 12px rgba(71, 85, 105, 0.2); }
+.is-active .cat-color-amber { background: #fef3c7; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2); }
+.is-active .cat-color-blue { background: #dbeafe; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+.is-active .cat-color-rose { background: #ffe4e6; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2); }
+.is-active .cat-color-orange { background: #ffedd5; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2); }
+
 .is-active .category-icon-main {
-  background: #fffbeb;
   transform: scale(1.1) rotate(5deg);
 }
 
