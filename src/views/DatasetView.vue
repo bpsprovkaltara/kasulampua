@@ -27,7 +27,7 @@
         <div class="col-lg-4 d-none d-lg-flex justify-content-end">
           <div class="hero-meta-card">
             <div class="hero-meta-item">
-              <span class="hm-num">{{ allDatasets.length }}</span>
+              <span class="hm-num">{{ total }}</span>
               <span class="hm-label">Dataset</span>
             </div>
             <div class="hm-divider"></div>
@@ -76,7 +76,6 @@
                 >
                   <span class="si-icon"><i class="bi bi-archive-fill"></i></span>
                   <span class="si-label">Semua Kategori</span>
-                  <span class="si-badge">{{ allDatasets.length }}</span>
                 </button>
                 <button
                   v-for="cat in categories"
@@ -87,38 +86,7 @@
                 >
                   <span class="si-icon"><i :class="getCategoryIcon(cat.name)"></i></span>
                   <span class="si-label">{{ cat.name }}</span>
-                  <span class="si-badge">{{ countByCategory(cat.id) }}</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="sidebar-card">
-              <div class="sidebar-card-header clickable" @click="toggleRegion">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-geo-alt-fill text-amber me-2"></i>
-                  <span>Wilayah</span>
-                </div>
-                <i class="bi bi-chevron-down ms-auto transition-smooth" :class="{ 'rotate-180': regionExpanded }"></i>
-              </div>
-              <div class="sidebar-card-body collapsible" :class="{ 'expanded': regionExpanded }">
-                <button
-                  class="sidebar-item"
-                  :class="{ active: selectedRegion === null }"
-                  @click="selectRegion(null)"
-                >
-                  <span class="si-icon"><i class="bi bi-globe2"></i></span>
-                  <span class="si-label">Semua Wilayah</span>
-                </button>
-                <button
-                  v-for="reg in filteredRegions"
-                  :key="reg.id"
-                  class="sidebar-item"
-                  :class="{ active: selectedRegion === reg.id }"
-                  @click="selectRegion(reg.id)"
-                >
-                  <span class="si-icon"><i class="bi bi-pin-map-fill"></i></span>
-                  <span class="si-label">{{ reg.name }}</span>
-                  <span class="si-badge">{{ countByRegion(reg.id) }}</span>
+                  <span class="si-badge">{{ cat.count }}</span>
                 </button>
               </div>
             </div>
@@ -150,16 +118,8 @@
             <div class="result-info d-flex align-items-center">
               <span class="result-count me-auto" v-if="!loading">
                 <i class="bi bi-database-fill text-amber me-2"></i>
-                Menampilkan <strong>{{ filteredDatasets.length }}</strong> dataset
+                Menampilkan <strong>{{ datasets.length }}</strong> dari <strong>{{ total }}</strong> dataset
               </span>
-              
-              <div class="sort-select-wrapper ms-3" v-if="!loading && filteredDatasets.length">
-                <span class="small text-muted fw-bold me-2 d-none d-sm-inline">Urutkan:</span>
-                <select v-model="sortBy" class="sort-select">
-                  <option value="newest">Terbaru</option>
-                  <option value="alphabetical">A-Z</option>
-                </select>
-              </div>
             </div>
           </div>
 
@@ -167,7 +127,7 @@
             <div class="ds-loading-spinner mx-auto mb-3"></div>
             <p class="text-muted small">Memuat dataset...</p>
           </div>
-          <div v-else-if="!filteredDatasets.length" class="empty-card">
+          <div v-else-if="!datasets.length" class="empty-card">
             <i class="bi bi-inbox empty-icon"></i>
             <h5 class="fw-bold mt-3 mb-1">Tidak ada dataset</h5>
             <p class="text-muted small">Coba ubah filter atau kata kunci pencarian.</p>
@@ -181,37 +141,34 @@
 
           <div v-else class="dataset-list">
             <router-link
-              v-for="(dataset, index) in paginatedDatasets"
+              v-for="(dataset, index) in datasets"
               :key="dataset.id || index"
-              :to="{ path: `/dataset/${dataset.id}`, query: { from: $route.fullPath } }"
+              :to="{ path: `/dataset/${dataset.name || dataset.id}`, query: { from: $route.fullPath } }"
               class="dataset-item text-decoration-none"
             >
               <div class="item-rank">{{ (currentPage - 1) * limit + index + 1 }}</div>
 
               <div class="item-content flex-grow-1 min-w-0">
                 <div class="item-tags mb-1">
-                  <span class="item-cat-tag">
-                    <i :class="getCategoryIcon(getCategoryName(dataset.category))" class="me-1"></i>
-                    {{ getCategoryName(dataset.category) }}
-                  </span>
-                  <span 
-                    class="item-region-tag clickable" 
-                    v-if="getRegionName(dataset)"
-                    @click.prevent.stop="selectRegionByRef(dataset)"
-                  >
-                    <i class="bi bi-geo-alt me-1"></i>
-                    {{ getRegionName(dataset) }}
-                  </span>
-                  <span class="item-year-tag" v-if="dataset.year">{{ dataset.year }}</span>
                   <span
-                    class="item-status-tag"
-                    :class="dataset.status === 'active' ? 'active' : 'inactive'"
+                    class="item-cat-tag"
+                    v-for="group in (dataset.groups || []).slice(0, 2)"
+                    :key="group.name"
                   >
-                    {{ dataset.status === 'active' ? '● Aktif' : '○ Tidak Aktif' }}
+                    <i :class="getCategoryIcon(group.display_name || group.title)" class="me-1"></i>
+                    {{ group.display_name || group.title }}
                   </span>
+                  <span
+                    class="item-region-tag"
+                    v-if="dataset.organization"
+                  >
+                    <i class="bi bi-building me-1"></i>
+                    {{ dataset.organization.title || dataset.organization.name }}
+                  </span>
+                  <span class="item-status-tag active">● Aktif</span>
                 </div>
                 <h6 class="item-title">{{ dataset.title }}</h6>
-                <p class="item-notes" v-if="dataset.notes">{{ dataset.notes }}</p>
+                <p class="item-notes" v-if="dataset.notes">{{ stripHtml(dataset.notes) }}</p>
               </div>
 
               <div class="item-action flex-shrink-0">
@@ -241,82 +198,64 @@ import { useRoute } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { useDatasetStore } from '@/composables/useDatasetStore'
+import { CKAN_ACTION_API } from '@/config/api'
 import PaginationControl from '../components/PaginationControl.vue'
 
 const route = useRoute()
 const store = useDatasetStore()
-const { allDatasets, categories, regions, isLoading: loading } = store
+const { categories, isLoading: storeLoading } = store
 
 const search = ref('')
 const selectedCategory = ref(null)
-const selectedRegion = ref(null)
-const sortBy = ref('newest') 
 const currentPage = ref(1)
 const limit = 12
 const categoryExpanded = ref(false)
-const regionExpanded = ref(false)
+
+const datasets = ref([])
+const total = ref(0)
+const loading = ref(true)
+
+let searchDebounce = null
+
+const totalPages = computed(() => Math.ceil(total.value / limit))
 
 const toggleCategory = () => (categoryExpanded.value = !categoryExpanded.value)
-const toggleRegion = () => (regionExpanded.value = !regionExpanded.value)
 
-const filteredDatasets = computed(() => {
-  let result = [...allDatasets.value]
-  
-  if (selectedCategory.value !== null)
-    result = result.filter((d) => d.category === selectedCategory.value)
-  if (selectedRegion.value !== null)
-    result = result.filter((d) => d.region === selectedRegion.value)
-  if (search.value.trim())
-    result = result.filter((d) => d.title.toLowerCase().includes(search.value.toLowerCase()))
-    
-  if (sortBy.value === 'newest') {
-    result.sort((a, b) => new Date(b.date) - new Date(a.date))
-  } else if (sortBy.value === 'alphabetical') {
-    result.sort((a, b) => a.title.localeCompare(b.title))
-  }
-  
-  return result
-})
-
-const totalPages = computed(() => Math.ceil(filteredDatasets.value.length / limit))
-const paginatedDatasets = computed(() =>
-  filteredDatasets.value.slice((currentPage.value - 1) * limit, currentPage.value * limit),
-)
-
-const filteredRegions = computed(() => {
-  return regions.value
-})
-
-const getCategoryName = (id) => categories.value.find((c) => c.id === id)?.name || 'Tidak tersedia'
-const getRegionName = (dataset) => {
-  // If explicitly set (dummy data)
-  if (dataset.region) {
-    const reg = regions.value.find((r) => String(r.id) === String(dataset.region))
-    if (reg) return reg.name
-  }
-  
-  // Mapping from organization name (CKAN data)
-  const orgName = dataset.organization?.name || ''
-  if (orgName.includes('kaltara')) return 'Kalimantan Utara'
-  if (orgName.includes('sulteng')) return 'Sulawesi Tengah'
-  if (orgName.includes('malut')) return 'Maluku Utara'
-  if (orgName.includes('pabarat')) return 'Papua Barat'
-  
-  return null
+const stripHtml = (html) => {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').substring(0, 200)
 }
 
-const selectRegionByRef = (dataset) => {
-  const name = getRegionName(dataset)
-  if (!name) return
-  const reg = regions.value.find(r => r.name === name)
-  if (reg) selectRegion(reg.id)
-}
+const fetchDatasets = async () => {
+  loading.value = true
+  try {
+    const params = new URLSearchParams()
+    params.set('rows', limit)
+    params.set('start', (currentPage.value - 1) * limit)
 
-const countByCategory = (id) => allDatasets.value.filter((d) => d.category === id).length
-const countByRegion = (id) => {
-  const regionName = regions.value.find(r => r.id === id)?.name
-  if (!regionName) return 0
-  return allDatasets.value.filter((d) => getRegionName(d) === regionName).length
+    // Build Solr query
+    const qParts = []
+    if (search.value.trim()) qParts.push(search.value.trim())
+    if (selectedCategory.value) params.set('fq', `groups:${selectedCategory.value}`)
+    params.set('q', qParts.length ? qParts.join(' ') : '*:*')
+
+    const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
+    const data = await res.json()
+
+    if (data.success && data.result) {
+      datasets.value = data.result.results || []
+      total.value = data.result.count || 0
+    } else {
+      datasets.value = []
+      total.value = 0
+    }
+  } catch (err) {
+    console.error('Gagal memuat dataset:', err)
+    datasets.value = []
+    total.value = 0
+  } finally {
+    loading.value = false
+  }
 }
 
 const categoryIcons = {
@@ -337,43 +276,51 @@ const getCategoryIcon = (name) => categoryIcons[name] || 'bi bi-archive-fill'
 const selectCategory = (id) => {
   selectedCategory.value = id
   currentPage.value = 1
+  fetchDatasets()
 }
-const selectRegion = (id) => {
-  selectedRegion.value = id
-  currentPage.value = 1
-}
+
 const applySearch = () => {
-  currentPage.value = 1
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    currentPage.value = 1
+    fetchDatasets()
+  }, 400)
 }
+
 const goToPage = (p) => {
-  if (p >= 1 && p <= totalPages.value) currentPage.value = p
+  if (p >= 1 && p <= totalPages.value) {
+    currentPage.value = p
+    fetchDatasets()
+  }
 }
+
 const resetFilters = () => {
   selectedCategory.value = null
-  selectedRegion.value = null
   search.value = ''
-  sortBy.value = 'newest'
   currentPage.value = 1
+  fetchDatasets()
 }
 
 const applyQueryFilters = () => {
-  if (route.query.kategori && categories.value.length > 0) {
-    const cat = categories.value.find(c => c.name.toLowerCase() === route.query.kategori.toLowerCase())
+  if (route.query.group && categories.value.length > 0) {
+    const cat = categories.value.find(c => c.id === route.query.group)
     if (cat) {
       selectedCategory.value = cat.id
       categoryExpanded.value = true
-      currentPage.value = 1
     }
   }
 }
 
-watch(() => route.query.kategori, () => {
+watch(() => route.query.group, () => {
   applyQueryFilters()
+  currentPage.value = 1
+  fetchDatasets()
 })
 
 onMounted(async () => {
   await store.fetchAllData()
   applyQueryFilters()
+  await fetchDatasets()
 })
 </script>
 
@@ -457,7 +404,7 @@ onMounted(async () => {
   padding: 0 10px;
 }
 .sidebar-card-body.collapsible.expanded {
-  max-height: 1000px; 
+  max-height: 1000px;
   padding: 10px;
 }
 
@@ -552,22 +499,6 @@ onMounted(async () => {
   border-radius: 12px;
   border: 1px solid var(--border-color);
   flex: 1;
-}
-
-.sort-select {
-  border: none;
-  background: transparent;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  outline: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: var(--transition-smooth);
-}
-.sort-select:hover {
-  background: var(--bg-accent);
 }
 
 .search-box {
@@ -678,20 +609,6 @@ onMounted(async () => {
   background: #f0fdf4;
   color: #16a34a;
   border: 1px solid #bbf7d0;
-  transition: all 0.2s ease;
-}
-.item-region-tag.clickable {
-  cursor: pointer;
-}
-.item-region-tag.clickable:hover {
-  background: #dcfce7;
-  border-color: #16a34a;
-  transform: translateY(-1px);
-}
-.item-year-tag {
-  background: var(--bg-color);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
 }
 .item-status-tag.active {
   background: #f0fdf4;
@@ -766,66 +683,6 @@ onMounted(async () => {
     font-size: 0.75rem;
     margin-top: 8px;
   }
-}
-
-.pagination-bar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-}
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: white;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.page-btn:hover:not(:disabled) {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  background: var(--bg-accent-light);
-}
-.page-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-.page-numbers {
-  display: flex;
-  gap: 6px;
-}
-.page-num {
-  min-width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  transition: var(--transition-smooth);
-  padding: 0 12px;
-}
-.page-num:hover:not(.ellipsis) {
-  background: var(--bg-accent-light);
-  border-color: var(--border-amber-20);
-  color: var(--primary-color);
-}
-.page-num.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: white;
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
-}
-.page-num.ellipsis {
-  cursor: default;
 }
 
 .ds-loading-spinner {

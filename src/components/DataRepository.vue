@@ -31,7 +31,7 @@
             :class="{ 'is-active': activeIndex === idx }"
           >
             <router-link
-              :to="{ path: '/dataset', query: { kategori: kat.name } }"
+              :to="{ path: '/dataset', query: { group: kat.id } }"
               class="dataset-card-premium"
             >
               <div class="card-inner">
@@ -43,7 +43,7 @@
                   <div class="dataset-stats mt-3">
                     <span class="stats-badge">
                       <i class="bi bi-database-fill me-1"></i>
-                      {{ getDatasetCount(kat.id) }} Tabel
+                      {{ getDatasetCount(kat) }} Tabel
                     </span>
                   </div>
                 </div>
@@ -96,7 +96,7 @@ import { useDatasetStore } from '@/composables/useDatasetStore'
 
 const carouselRef = ref(null)
 const store = useDatasetStore()
-const { allDatasets, categories: kategoriList } = store
+const { categories: kategoriList } = store
 
 const scrollProgress = ref(0)
 const isAtStart = ref(true)
@@ -137,8 +137,8 @@ const getCategoryColor = (name) => {
   return colors[name] || 'amber'
 }
 
-const getDatasetCount = (catId) => {
-  return allDatasets.value.filter((d) => d.category === catId).length
+const getDatasetCount = (cat) => {
+  return cat.count || 0
 }
 
 const handleScroll = () => {

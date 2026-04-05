@@ -1,5 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const DATAHUB_BASE_URL = import.meta.env.VITE_DATAHUB_BASE_URL
+const CKAN_BASE_URL = import.meta.env.VITE_CKAN_BASE_URL
+const CKAN_FILE_BASE = import.meta.env.VITE_CKAN_FILE_BASE_URL
 const MATOMO_BASE_URL = import.meta.env.VITE_MATOMO_URL
 
 
@@ -60,3 +62,14 @@ export const DATAHUB_ENDPOINTS = {
   CEK_URL_DATA_GO_ID:`${DATAHUB_BASE_URL}/ckan/cek-url`
 
 }
+
+export const CKAN_ACTION_API = {
+  GROUP_LIST: `${CKAN_BASE_URL}/group_list`,
+  ORGANIZATION_LIST: `${CKAN_BASE_URL}/organization_list`,
+  PACKAGE_SEARCH: `${CKAN_BASE_URL}/package_search`,
+  PACKAGE_SHOW: `${CKAN_BASE_URL}/package_show`,
+  RESOURCE_SHOW: `${CKAN_BASE_URL}/resource_show`,
+  DATASTORE_SEARCH: `${CKAN_BASE_URL}/datastore_search`,
+}
+
+export const CKAN_FILE_BASE_URL = CKAN_FILE_BASE || ''

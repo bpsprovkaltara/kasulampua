@@ -2,7 +2,7 @@
   <div v-if="dataset" class="dataset-detail-card mb-5">
     <div class="detail-header mb-5">
       <h1 class="detail-title mb-3">{{ dataset.title }}</h1>
-      <p class="detail-notes" v-if="dataset.notes">{{ dataset.notes }}</p>
+      <p class="detail-notes" v-if="dataset.notes">{{ stripHtml(dataset.notes) }}</p>
     </div>
 
     <div class="info-section mb-5">
@@ -10,126 +10,105 @@
         <div class="header-line me-3"></div>
         <h5 class="fw-bold mb-0">Informasi Umum</h5>
       </div>
-      
+
       <div class="info-grid">
-        <div class="info-row">
+        <div class="info-row" v-if="dataset.organization">
+          <div class="info-label">Organisasi</div>
+          <div class="info-value">{{ dataset.organization.title || dataset.organization.name }}</div>
+        </div>
+
+        <div class="info-row" v-if="dataset.groups && dataset.groups.length">
           <div class="info-label">Kategori</div>
           <div class="info-value">
-            <span class="info-badge-amber">
-              {{ dataset.category_name || dataset.category || 'Tidak tersedia' }}
+            <span
+              v-for="group in dataset.groups"
+              :key="group.name"
+              class="info-badge-amber me-2 mb-1"
+            >
+              {{ group.display_name || group.title }}
             </span>
           </div>
         </div>
-        
-        <div class="info-row">
-          <div class="info-label">Wilayah</div>
-          <div class="info-value">{{ dataset.region_name || dataset.region || 'Tidak tersedia' }}</div>
+
+        <div class="info-row" v-if="dataset.license_title">
+          <div class="info-label">Lisensi</div>
+          <div class="info-value">{{ dataset.license_title }}</div>
         </div>
-        
-        <div class="info-row">
-          <div class="info-label">Tahun</div>
-          <div class="info-value fw-bold">{{ dataset.year || 'Tidak tersedia' }}</div>
+
+        <div class="info-row" v-if="dataset.metadata_created">
+          <div class="info-label">Dibuat</div>
+          <div class="info-value">{{ formatLongDate(dataset.metadata_created) }}</div>
         </div>
-        
-        <div class="info-row">
-          <div class="info-label">Tanggal</div>
-          <div class="info-value">{{ formatLongDate(dataset.date) || 'Tidak tersedia' }}</div>
+
+        <div class="info-row" v-if="dataset.metadata_modified">
+          <div class="info-label">Diperbarui</div>
+          <div class="info-value">{{ formatLongDate(dataset.metadata_modified) }}</div>
         </div>
-        
-        <div class="info-row">
-          <div class="info-label">Status</div>
+
+        <div class="info-row" v-if="dataset.tags && dataset.tags.length">
+          <div class="info-label">Tag</div>
           <div class="info-value">
-            <span class="status-badge" :class="dataset.status === 'active' ? 'active' : 'inactive'">
-              {{ dataset.status === 'active' ? '● Aktif' : '○ Tidak Aktif' }}
+            <span
+              v-for="tag in dataset.tags"
+              :key="tag.name"
+              class="tag-badge me-2 mb-1"
+            >
+              {{ tag.display_name || tag.name }}
             </span>
           </div>
         </div>
-        
-        <div v-if="dataset.url" class="info-row">
-          <div class="info-label">URL</div>
-          <div class="info-value">
-            <a :href="dataset.url" target="_blank" class="dataset-url-link">
-              {{ dataset.url }} <i class="bi bi-box-arrow-up-right ms-1"></i>
-            </a>
-          </div>
-        </div>
-        
-        <div v-if="dataset.path" class="info-row">
-          <div class="info-label">Path</div>
-          <div class="info-value text-muted font-monospace small">{{ dataset.path }}</div>
+
+        <div class="info-row">
+          <div class="info-label">Jumlah Resource</div>
+          <div class="info-value fw-bold">{{ dataset.num_resources || (dataset.resources && dataset.resources.length) || 0 }}</div>
         </div>
       </div>
     </div>
 
-    <div class="preview-section mb-5">
+    <div class="resource-section mb-5" v-if="dataset.resources && dataset.resources.length">
       <div class="section-header d-flex align-items-center mb-4">
         <div class="header-line me-3"></div>
-        <h5 class="fw-bold mb-0">Pratinjau Data</h5>
+        <h5 class="fw-bold mb-0">Daftar Resource</h5>
       </div>
-      
-      <div class="preview-container">
-        <div class="table-responsive">
-          <table class="table mb-0 dataset-table">
-            <thead>
-              <tr>
-                <th width="5%" class="text-center">No</th>
-                <th width="30%">Wilayah</th>
-                <th width="40%">Indikator</th>
-                <th width="15%" class="text-end">Nilai</th>
-                <th width="10%" class="text-center">Tahun</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="i in 5" :key="i">
-                <td class="text-center">{{ i }}</td>
-                <td>{{ dataset.region_name || 'Kalimantan Utara' }} - Area {{ i }}</td>
-                <td class="text-truncate" style="max-width: 250px;">{{ dataset.title }}</td>
-                <td class="text-end fw-medium">{{ (Math.random() * 1000 + 100).toFixed(2) }}</td>
-                <td class="text-center">{{ dataset.year || new Date().getFullYear() }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="preview-footer">
-          <span class="text-muted small"><i class="bi bi-info-circle me-1"></i> Menampilkan 5 baris pertama sebagai pratinjau. Unduh dataset untuk melihat data lengkap.</span>
+
+      <div class="resource-list">
+        <div
+          v-for="res in dataset.resources"
+          :key="res.id"
+        >
+          <div
+            class="resource-card"
+            :class="{ 'rc-selected': selectedResourceId === res.id }"
+            @click="toggleResource(res.id)"
+            style="cursor: pointer"
+          >
+            <div class="rc-icon" :class="getFormatClass(res.format)">
+              <i :class="getFormatIcon(res.format)"></i>
+            </div>
+            <div class="rc-info flex-grow-1 min-w-0">
+              <div class="rc-name">{{ res.name || res.description || 'Resource' }}</div>
+              <div class="rc-meta">
+                <span class="rc-format-badge">{{ (res.format || 'FILE').toUpperCase() }}</span>
+                <span class="rc-date" v-if="res.created">{{ formatLongDate(res.created) }}</span>
+              </div>
+            </div>
+            <div class="rc-toggle d-flex align-items-center gap-2">
+              <span class="rc-toggle-label d-none d-sm-inline">{{ selectedResourceId === res.id ? 'Tutup' : 'Lihat Data' }}</span>
+              <i class="bi" :class="selectedResourceId === res.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+          </div>
+
+          <CkanResourceViewer
+            v-if="selectedResourceId === res.id"
+            :resource="res"
+          />
         </div>
       </div>
     </div>
 
-    <div class="download-section">
-      <div class="section-header d-flex align-items-center mb-4">
-        <div class="header-line me-3"></div>
-        <h5 class="fw-bold mb-0">Unduh Dataset</h5>
-      </div>
-      
-      <div class="download-grid">
-        <div class="download-card" @click="simulateDownload('CSV')">
-          <div class="dc-icon csv"><i class="bi bi-filetype-csv"></i></div>
-          <div class="dc-info">
-            <div class="dc-title">Comma Separated Values</div>
-            <div class="dc-ext">.CSV</div>
-          </div>
-          <div class="dc-action"><i class="bi bi-download"></i></div>
-        </div>
-        
-        <div class="download-card" @click="simulateDownload('Excel')">
-          <div class="dc-icon xlsx"><i class="bi bi-filetype-xlsx"></i></div>
-          <div class="dc-info">
-            <div class="dc-title">Microsoft Excel Spreadsheet</div>
-            <div class="dc-ext">.XLSX</div>
-          </div>
-          <div class="dc-action"><i class="bi bi-download"></i></div>
-        </div>
-        
-        <div class="download-card" @click="simulateDownload('PDF')">
-          <div class="dc-icon pdf"><i class="bi bi-filetype-pdf"></i></div>
-          <div class="dc-info">
-            <div class="dc-title">Portable Document Format</div>
-            <div class="dc-ext">.PDF</div>
-          </div>
-          <div class="dc-action"><i class="bi bi-download"></i></div>
-        </div>
-      </div>
+    <div v-else class="empty-resource-card mb-5">
+      <i class="bi bi-folder2-open" style="font-size: 2rem; color: var(--text-secondary); opacity: 0.3;"></i>
+      <p class="text-muted small mt-2 mb-0">Dataset ini belum memiliki resource.</p>
     </div>
   </div>
 
@@ -216,69 +195,119 @@
   font-size: 0.8125rem;
   font-weight: 700;
   border: 1px solid var(--border-amber-20);
+  display: inline-block;
 }
 
-.status-badge {
-  font-size: 0.8125rem;
-  font-weight: 700;
+.tag-badge {
+  background: var(--bg-color);
+  color: var(--text-secondary);
   padding: 4px 12px;
   border-radius: 100px;
-}
-.status-badge.active { background: #f0fdf4; color: #16a34a; }
-.status-badge.inactive { background: #fef2f2; color: #dc2626; }
-
-.dataset-url-link {
-  color: var(--primary-color);
-  text-decoration: none;
+  font-size: 0.8125rem;
   font-weight: 600;
-  border-bottom: 1px solid transparent;
-  transition: var(--transition-smooth);
-}
-.dataset-url-link:hover {
-  border-bottom-color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  display: inline-block;
 }
 
-.preview-container {
-  background: white;
+.resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resource-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8fafc;
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dataset-table {
+.resource-card:hover {
+  background: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.1);
+  transform: translateY(-2px);
+}
+
+.rc-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.rc-icon.csv { color: #0ea5e9; }
+.rc-icon.xlsx, .rc-icon.xls { color: #16a34a; }
+.rc-icon.pdf { color: #dc2626; }
+.rc-icon.json { color: #8b5cf6; }
+.rc-icon.api { color: #d97706; }
+.rc-icon.other { color: #64748b; }
+
+.rc-info { min-width: 0; }
+.rc-name {
   font-size: 0.9375rem;
-}
-
-.dataset-table thead {
-  background-color: #f8fafc;
-}
-
-.dataset-table th {
   font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.8125rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 2px solid var(--border-color) !important;
-}
-
-.dataset-table td {
-  padding: 1rem 1.5rem;
-  vertical-align: middle;
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rc-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.rc-format-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+.rc-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
-.dataset-table tbody tr:hover {
-  background-color: #f8fafc;
+.rc-toggle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.rc-toggle-label {
+  font-size: 0.8rem;
 }
 
-.preview-footer {
-  padding: 1rem 1.5rem;
-  background: #f8fafc;
-  border-top: 1px solid var(--border-color);
+.rc-selected {
+  background: white !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1);
+}
+.rc-selected .rc-toggle {
+  color: var(--primary-color);
+}
+
+.empty-resource-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 3rem 2rem;
+  text-align: center;
 }
 
 .ds-loading-spinner {
@@ -294,120 +323,90 @@
   .dataset-detail-card { padding: 1.5rem; }
   .info-row { grid-template-columns: 1fr; gap: 4px; padding: 1rem; }
   .info-label { font-size: 0.75rem; }
+  .resource-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .rc-actions {
+    width: 100%;
+  }
+  .rc-actions .btn {
+    flex: 1;
+    text-align: center;
+  }
 }
-
-.download-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.download-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.download-card:hover {
-  background: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.1);
-  transform: translateY(-2px);
-}
-
-.dc-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-}
-
-.dc-icon.csv { color: #0ea5e9; }
-.dc-icon.xlsx { color: #16a34a; }
-.dc-icon.pdf { color: #dc2626; }
-
-.dc-info { flex: 1; }
-.dc-title { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.02em; }
-.dc-ext { font-size: 1.125rem; font-weight: 800; color: var(--text-primary); }
-
-.dc-action { color: #94a3b8; transition: all 0.3s ease; }
-.download-card:hover .dc-action { color: var(--primary-color); transform: scale(1.1); }
-
-.download-toast {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-}
-
-.toast-content {
-  background: #1e293b;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 100px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  display: flex;
-  align-items: center;
-  font-size: 0.9375rem;
-}
-
-.toast-content i { color: #22c55e; }
-
-.toast-enter-active, .toast-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
 </style>
 
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useDatasetStore } from '@/composables/useDatasetStore'
+import { CKAN_ACTION_API } from '@/config/api'
 import { formatLongDate } from '../utils/dates'
 import { useToast } from '@/composables/useToast'
+import CkanResourceViewer from './CkanResourceViewer.vue'
 
 const route = useRoute()
-const store = useDatasetStore()
-const { allDatasets, categories } = store
-const { error: toastError, success: toastSuccess } = useToast()
+const { error: toastError } = useToast()
 const dataset = ref(null)
 const notFound = ref(false)
-const downloadFormat = ref('')
+const selectedResourceId = ref(null)
 const emit = defineEmits(['setTitle', 'setOrganizationName'])
 
-const simulateDownload = (format) => {
-  downloadFormat.value = format
-  toastSuccess(`Dataset berhasil diunduh dalam format ${format}!`)
+const toggleResource = (id) => {
+  selectedResourceId.value = selectedResourceId.value === id ? null : id
 }
 
+const stripHtml = (html) => {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '')
+}
+
+const getFormatClass = (format) => {
+  if (!format) return 'other'
+  const f = format.toLowerCase()
+  if (f === 'csv') return 'csv'
+  if (f === 'xlsx' || f === 'xls') return 'xlsx'
+  if (f === 'pdf') return 'pdf'
+  if (f === 'json') return 'json'
+  if (f === 'api') return 'api'
+  return 'other'
+}
+
+const getFormatIcon = (format) => {
+  if (!format) return 'bi bi-file-earmark'
+  const f = format.toLowerCase()
+  if (f === 'csv') return 'bi bi-filetype-csv'
+  if (f === 'xlsx' || f === 'xls') return 'bi bi-filetype-xlsx'
+  if (f === 'pdf') return 'bi bi-filetype-pdf'
+  if (f === 'json') return 'bi bi-filetype-json'
+  if (f === 'api') return 'bi bi-cloud-arrow-down'
+  return 'bi bi-file-earmark'
+}
 
 const fetchDataset = async (id) => {
-  if (!store.hasLoaded.value) {
-    await store.fetchAllData()
-  }
-  
-  const found = allDatasets.value.find(d => String(d.id) === String(id))
-  if (found) {
-    dataset.value = {
-      ...found,
-      category_name: categories.value.find(c => c.id === found.category)?.name || found.category
+  try {
+    const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SHOW}?id=${encodeURIComponent(id)}`)
+    const data = await res.json()
+
+    if (data.success && data.result) {
+      dataset.value = data.result
+      emit('setTitle', data.result.title)
+      emit('setOrganizationName', data.result.organization?.title || 'Tidak tersedia')
+
+      // Auto-expand first resource if only 1
+      if (data.result.resources && data.result.resources.length === 1) {
+        selectedResourceId.value = data.result.resources[0].id
+      }
+    } else {
+      notFound.value = true
+      toastError('Dataset tidak ditemukan.')
     }
-    emit('setTitle', dataset.value.title)
-    emit('setOrganizationName', dataset.value.region_name || 'Tidak tersedia')
-  } else {
+  } catch (err) {
+    console.error('Gagal memuat dataset:', err)
     notFound.value = true
-    toastError('Dataset tidak ditemukan.')
+    toastError('Gagal memuat dataset.')
   }
 }
 

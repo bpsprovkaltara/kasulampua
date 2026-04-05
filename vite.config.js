@@ -24,6 +24,18 @@ export default defineConfig({
         target: 'https://apikasulampua.datakaltara.my.id',
         changeOrigin: true,
         secure: true,
+      },
+      '/ckan-api': {
+        target: 'https://data.kasulampua.id',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/ckan-api/, '/api/3/action'),
+      },
+      '/ckan-file': {
+        target: 'https://data.kasulampua.id',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/ckan-file/, ''),
       }
     }
   }
