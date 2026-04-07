@@ -33,7 +33,7 @@
             <div class="hm-divider"></div>
             <div class="hero-meta-item">
               <span class="hm-num">{{ categories.length }}</span>
-              <span class="hm-label">Kategori</span>
+              <span class="hm-label">Subjek</span>
             </div>
           </div>
         </div>
@@ -64,7 +64,7 @@
               <div class="sidebar-card-header clickable" @click="toggleCategory">
                 <div class="d-flex align-items-center">
                   <i class="bi bi-grid-3x3-gap-fill text-amber me-2"></i>
-                  <span>Kategori</span>
+                  <span>Subjek</span>
                 </div>
                 <i class="bi bi-chevron-down ms-auto transition-smooth" :class="{ 'rotate-180': categoryExpanded }"></i>
               </div>
@@ -75,7 +75,7 @@
                   @click="selectCategory(null)"
                 >
                   <span class="si-icon"><i class="bi bi-archive-fill"></i></span>
-                  <span class="si-label">Semua Kategori</span>
+                  <span class="si-label">Semua Subjek</span>
                 </button>
                 <button
                   v-for="cat in categories"
@@ -87,6 +87,37 @@
                   <span class="si-icon"><i :class="getCategoryIcon(cat.name)"></i></span>
                   <span class="si-label">{{ cat.name }}</span>
                   <span class="si-badge">{{ cat.count }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="sidebar-card mb-3">
+              <div class="sidebar-card-header clickable" @click="toggleWilayah">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-geo-alt-fill text-amber me-2"></i>
+                  <span>Wilayah</span>
+                </div>
+                <i class="bi bi-chevron-down ms-auto transition-smooth" :class="{ 'rotate-180': wilayahExpanded }"></i>
+              </div>
+              <div class="sidebar-card-body collapsible" :class="{ expanded: wilayahExpanded }">
+                <button
+                  class="sidebar-item"
+                  :class="{ active: selectedWilayah === null }"
+                  @click="selectWilayah(null)"
+                >
+                  <span class="si-icon"><i class="bi bi-globe2"></i></span>
+                  <span class="si-label">Semua Wilayah</span>
+                </button>
+                <button
+                  v-for="w in wilayahRegions"
+                  :key="w.id"
+                  class="sidebar-item"
+                  :class="{ active: selectedWilayah === w.id }"
+                  @click="selectWilayah(w.id)"
+                >
+                  <span class="si-icon"><i class="bi bi-geo-alt"></i></span>
+                  <span class="si-label">{{ w.label }}</span>
+                  <span class="si-badge">{{ w.count }}</span>
                 </button>
               </div>
             </div>
@@ -163,7 +194,7 @@
                     v-if="dataset.organization"
                   >
                     <i class="bi bi-building me-1"></i>
-                    {{ dataset.organization.title || dataset.organization.name }}
+                    {{ ckanOrgToWilayahLabel(dataset.organization) }}
                   </span>
                   <span class="item-status-tag active">● Aktif</span>
                 </div>
@@ -194,22 +225,26 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import { CKAN_ACTION_API } from '@/config/api'
+import { ckanOrgToWilayahLabel } from '@/utils/ckanOrganizationWilayah.js'
 import PaginationControl from '../components/PaginationControl.vue'
 
 const route = useRoute()
+const router = useRouter()
 const store = useDatasetStore()
-const { categories, isLoading: storeLoading } = store
+const { categories, wilayahRegions } = store
 
 const search = ref('')
 const selectedCategory = ref(null)
+const selectedWilayah = ref(null)
 const currentPage = ref(1)
 const limit = 12
 const categoryExpanded = ref(false)
+const wilayahExpanded = ref(false)
 
 const datasets = ref([])
 const total = ref(0)
@@ -217,9 +252,59 @@ const loading = ref(true)
 
 let searchDebounce = null
 
+function pickQueryStr(val) {
+  if (val == null || val === '') return ''
+  if (Array.isArray(val)) return String(val[0] ?? '')
+  return String(val)
+}
+
+function cleanQuery(q) {
+  const out = {}
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === '') continue
+    out[k] = v
+  }
+  return out
+}
+
+/** Baca route.query ke state lokal (setelah metadata store siap). */
+const readRouteIntoState = () => {
+  search.value = pickQueryStr(route.query.q)
+
+  const pg = parseInt(pickQueryStr(route.query.page) || '1', 10)
+  currentPage.value = Number.isFinite(pg) && pg >= 1 ? pg : 1
+
+  const g = pickQueryStr(route.query.group)
+  if (g && categories.value.length > 0) {
+    const cat = categories.value.find((c) => c.id === g)
+    if (cat) {
+      selectedCategory.value = cat.id
+      categoryExpanded.value = true
+    } else {
+      selectedCategory.value = null
+    }
+  } else {
+    selectedCategory.value = null
+  }
+
+  const o = pickQueryStr(route.query.organization)
+  if (o && wilayahRegions.value.length > 0) {
+    const w = wilayahRegions.value.find((r) => r.id === o)
+    if (w) {
+      selectedWilayah.value = w.id
+      wilayahExpanded.value = true
+    } else {
+      selectedWilayah.value = null
+    }
+  } else {
+    selectedWilayah.value = null
+  }
+}
+
 const totalPages = computed(() => Math.ceil(total.value / limit))
 
 const toggleCategory = () => (categoryExpanded.value = !categoryExpanded.value)
+const toggleWilayah = () => (wilayahExpanded.value = !wilayahExpanded.value)
 
 const stripHtml = (html) => {
   if (!html) return ''
@@ -236,8 +321,9 @@ const fetchDatasets = async () => {
     // Build Solr query
     const qParts = []
     if (search.value.trim()) qParts.push(search.value.trim())
-    if (selectedCategory.value) params.set('fq', `groups:${selectedCategory.value}`)
     params.set('q', qParts.length ? qParts.join(' ') : '*:*')
+    if (selectedCategory.value) params.append('fq', `groups:${selectedCategory.value}`)
+    if (selectedWilayah.value) params.append('fq', `organization:${selectedWilayah.value}`)
 
     const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
     const data = await res.json()
@@ -274,52 +360,54 @@ const categoryIcons = {
 const getCategoryIcon = (name) => categoryIcons[name] || 'bi bi-archive-fill'
 
 const selectCategory = (id) => {
-  selectedCategory.value = id
-  currentPage.value = 1
-  fetchDatasets()
+  const next = { ...route.query, page: undefined }
+  if (id) next.group = id
+  else delete next.group
+  router.replace({ path: '/dataset', query: cleanQuery(next) })
+}
+
+const selectWilayah = (orgName) => {
+  const next = { ...route.query, page: undefined }
+  if (orgName) next.organization = orgName
+  else delete next.organization
+  router.replace({ path: '/dataset', query: cleanQuery(next) })
 }
 
 const applySearch = () => {
   clearTimeout(searchDebounce)
   searchDebounce = setTimeout(() => {
-    currentPage.value = 1
-    fetchDatasets()
+    const next = {
+      ...route.query,
+      q: search.value.trim() || undefined,
+      page: undefined,
+    }
+    router.replace({ path: '/dataset', query: cleanQuery(next) })
   }, 400)
 }
 
 const goToPage = (p) => {
   if (p >= 1 && p <= totalPages.value) {
-    currentPage.value = p
-    fetchDatasets()
+    const next = { ...route.query, page: p > 1 ? String(p) : undefined }
+    router.replace({ path: '/dataset', query: cleanQuery(next) })
   }
 }
 
 const resetFilters = () => {
-  selectedCategory.value = null
-  search.value = ''
-  currentPage.value = 1
-  fetchDatasets()
+  router.replace({ path: '/dataset', query: {} })
 }
 
-const applyQueryFilters = () => {
-  if (route.query.group && categories.value.length > 0) {
-    const cat = categories.value.find(c => c.id === route.query.group)
-    if (cat) {
-      selectedCategory.value = cat.id
-      categoryExpanded.value = true
-    }
-  }
-}
-
-watch(() => route.query.group, () => {
-  applyQueryFilters()
-  currentPage.value = 1
-  fetchDatasets()
-})
+watch(
+  () => route.query,
+  async () => {
+    readRouteIntoState()
+    await fetchDatasets()
+  },
+  { deep: true }
+)
 
 onMounted(async () => {
   await store.fetchAllData()
-  applyQueryFilters()
+  readRouteIntoState()
   await fetchDatasets()
 })
 </script>
@@ -404,8 +492,21 @@ onMounted(async () => {
   padding: 0 10px;
 }
 .sidebar-card-body.collapsible.expanded {
-  max-height: 1000px;
+  max-height: min(1000px, calc(100vh - 10rem));
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+.sidebar-card-body.collapsible.expanded::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-card-body.collapsible.expanded::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 6px;
+}
+.sidebar-card-body.collapsible.expanded::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 .rotate-180 {

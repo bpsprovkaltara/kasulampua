@@ -103,7 +103,7 @@
         </p>
 
         <div class="hero-actions d-flex flex-wrap justify-content-center gap-4 mb-5">
-          <a :href="link.href" class="btn btn-hero-primary-v2"> Masuk ke Pusat Informasi </a>
+          <router-link :to="link.href" class="btn btn-hero-primary-v2"> Masuk ke Portal Data </router-link>
         </div>
 
         <div class="hero-partners mt-3 pt-lg-3 pb-4">
@@ -163,7 +163,7 @@
 
     <div class="regions-section-v2 py-5">
       <div class="container text-center py-4 position-relative z-index-10">
-        <p class="section-label mb-4 text-center">CAKUPAN WILAYAH STRATEGIS</p>
+        <p class="section-label text-center">CAKUPAN WILAYAH STRATEGIS</p>
         <div class="row g-4 justify-content-center">
           <div class="col-6 col-md-3" v-for="(item, key) in regions" :key="key">
             <router-link
@@ -176,7 +176,7 @@
                     :src="item.icon"
                     :alt="'icon_' + key"
                     class="img-fluid"
-                    style="height: 96px; width: auto"
+                    style="height: 124px; width: auto"
                   />
                 </div>
                 <h5 class="region-title-v4 text-capitalize">{{ key }}</h5>
@@ -389,6 +389,7 @@ function particleStyle() {
   letter-spacing: -0.06em;
   line-height: 1;
   background: linear-gradient(135deg, #d97706, #b45309);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -551,10 +552,11 @@ function particleStyle() {
   padding-bottom: 5rem !important;
 }
 .section-label {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.4em;
   color: #94a3b8;
+  margin-bottom: 2.5rem !important;
 }
 .region-card-premium-v2 {
   background: rgba(255, 255, 255, 0.4);
@@ -577,7 +579,7 @@ function particleStyle() {
   transition: opacity 0.4s ease;
 }
 .region-card-premium-v2:hover {
-  transform: translateY(-20px) scale(1.05);
+  transform: translateY(-12px) scale(1.02);
   border-color: rgba(245, 158, 11, 0.4);
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 30px 60px -15px rgba(217, 119, 6, 0.2);
@@ -587,7 +589,7 @@ function particleStyle() {
 }
 .region-icon-wrapper-v4 {
   width: auto;
-  height: 130px;
+  height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -597,7 +599,7 @@ function particleStyle() {
   position: relative;
 }
 .region-card-premium-v2:hover .region-icon-wrapper-v4 {
-  transform: translateY(-10px) rotate(5deg) scale(1.15);
+  transform: translateY(-8px) rotate(4deg) scale(1.32);
   filter: drop-shadow(0 15px 15px rgba(217, 119, 6, 0.2));
 }
 .region-title-v4 {

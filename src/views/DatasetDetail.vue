@@ -2,7 +2,11 @@
   <Navbar />
   <section class="py-5 container mt-5 mt-md-0">
     <PageHeader :title_detil="title_detail" />
-    <DatasetDetail @setTitle="datasetTitle = $event" @setOrganizationName="organizationTitle = $event"/>
+    <DatasetDetail
+      @setTitle="datasetTitle = $event"
+      @setOrganizationName="organizationTitle = $event"
+      @setOrganizationSlug="organizationSlug = $event"
+    />
   </section>
   <Footer />
 </template>
@@ -21,12 +25,25 @@ const { updateMeta } = useMeta()
 
 const datasetTitle = ref('...')
 const organizationTitle = ref('...')
+const organizationSlug = ref('')
+
+/** Kembali ke katalog: filter wilayah jika slug CKAN tersedia; jika tidak, gunakan `from` bila valid. */
+const organizationListPath = computed(() => {
+  if (organizationSlug.value) {
+    return { path: '/dataset', query: { organization: organizationSlug.value } }
+  }
+  const from = route.query.from
+  if (typeof from === 'string' && from.trim().length > 0) {
+    return from
+  }
+  return '/dataset'
+})
 
 const title_detail = computed(() => ({
   title: datasetTitle.value,
   parent: [
-    { label: 'Dataset', path: '/dataset' },
-    { label: organizationTitle.value, path: route.query.from || '/dataset' }
+    { label: 'Subjek', path: '/dataset' },
+    { label: organizationTitle.value, path: organizationListPath.value }
   ]
 }))
 

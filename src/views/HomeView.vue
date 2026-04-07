@@ -26,7 +26,7 @@ import { DUMMY_BERITA } from '../utils/dummyBerita'
 import { DUMMY_INSIGHTS } from '../utils/dummyInsights'
 
 
-const pusatInformasi = ref({ href: 'https://info.kasulampua.id/' })
+const pusatInformasi = ref({ href: '/dataset' })
 
 const header = reactive({
   logo: '/assets/images/logo-kasulampua-PUTIH.png',

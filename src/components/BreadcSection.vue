@@ -4,15 +4,15 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
           <li class="breadcrumb-item">
-            <a href="/" class="text-amber-breadcrumb text-decoration-none" aria-label="Kembali ke Beranda">
+            <router-link to="/" class="text-amber-breadcrumb text-decoration-none" aria-label="Kembali ke Beranda">
               <i class="bi bi-house-door-fill me-1"></i>Beranda
-            </a>
+            </router-link>
           </li>
 
           <li v-for="(item, index) in title_detil.parent" :key="index" class="breadcrumb-item">
-            <a :href="item.path" class="text-dark text-decoration-none" :aria-label="`Ke halaman ${item.label}`">
+            <router-link :to="item.path" class="text-dark text-decoration-none" :aria-label="`Ke halaman ${item.label}`">
               {{ item.label }}
-            </a>
+            </router-link>
           </li>
 
           <li class="breadcrumb-item active" aria-current="page">

@@ -76,6 +76,21 @@ import { DATAHUB_ENDPOINTS } from '@/config/api'
 const route = useRoute()
 const router = useRouter()
 
+function pickQueryStr(val) {
+  if (val == null || val === '') return ''
+  if (Array.isArray(val)) return String(val[0] ?? '')
+  return String(val)
+}
+
+function cleanQuery(q) {
+  const out = {}
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === '') continue
+    out[k] = v
+  }
+  return out
+}
+
 const organizationId = ref(route.query.organization_id || '')
 const organizationTitle = ref('')
 const organizationName = ref('')
@@ -87,6 +102,7 @@ const limit = 10
 const total = ref(0)
 const loading = ref(true)
 
+let searchDebounce = null
 
 const currentPage = computed(() => Math.floor(offset.value / limit) + 1)
 const totalPages = computed(() => Math.ceil(total.value / limit))
@@ -115,14 +131,33 @@ const fetchOrganizationDatasets = async () => {
   }
 }
 
+const syncFromRoute = () => {
+  organizationId.value = pickQueryStr(route.query.organization_id)
+  search.value = pickQueryStr(route.query.q)
+  const page = parseInt(pickQueryStr(route.query.page) || '1', 10)
+  const safePage = Number.isFinite(page) && page >= 1 ? page : 1
+  offset.value = (safePage - 1) * limit
+}
+
+const runListFetch = async () => {
+  if (!organizationId.value) return
+  if (search.value.trim()) await fetchDataFiltered()
+  else await fetchOrganizationDatasets()
+}
+
 const applySearch = () => {
-  if (!search.value) {
-    offset.value =0
-    fetchOrganizationDatasets()
-  } else {
-    offset.value =0
-    fetchDataFiltered()
-  }
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    router.replace({
+      path: '/dataset',
+      query: cleanQuery({
+        ...route.query,
+        organization_id: organizationId.value,
+        q: search.value.trim() || undefined,
+        page: undefined,
+      }),
+    })
+  }, 400)
 }
 
 //GET /ckan/datasets-search?org=bps-kalsel&keyword=transportasi&rows=10&offset=0
@@ -140,49 +175,41 @@ const fetchDataFiltered = async () => {
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
-    offset.value = (page - 1) * limit
-
-    fetchDataFiltered()
-
     router.replace({
-      path: route.path,
-      query: {
+      path: '/dataset',
+      query: cleanQuery({
         ...route.query,
-        page: page
-      }
+        organization_id: organizationId.value,
+        q: search.value.trim() || undefined,
+        page: page > 1 ? String(page) : undefined,
+      }),
     })
   }
 }
 
 const organizationSelected = (newOrgId) => {
-  router.replace({ path: '/dataset', query: { organization_id: newOrgId } })
-  organizationId.value = newOrgId
-  offset.value = 0
-  fetchOrganizationDatasets()
-
+  router.replace({
+    path: '/dataset',
+    query: cleanQuery({ organization_id: newOrgId }),
+  })
 }
 
-const setPage = () => {
-  const page = parseInt(route.query.page)
-  if (page > 1) {
-    const waitUntilReady = setInterval(() => {
-      if (totalPages.value > 0) {
-        clearInterval(waitUntilReady)
-        goToPage(page)
-      }
-    }, 100)
-  }
-}
+watch(
+  () => route.query,
+  async () => {
+    syncFromRoute()
+    await runListFetch()
+  },
+  { deep: true }
+)
 
-
-watch(() => route.query.group_id, (newVal) => {
-  organizationId.value = newVal
-  offset.value = 0
-  fetchOrganizationDatasets()
+watch(search, () => {
+  if (pickQueryStr(route.query.q) === search.value.trim()) return
+  applySearch()
 })
 
 onMounted(async () => {
-  await fetchOrganizationDatasets()
-  setPage()
+  syncFromRoute()
+  await runListFetch()
 })
 </script>

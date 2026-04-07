@@ -77,10 +77,25 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
                 :to="link.href"
                 class="nav-link fw-semibold px-0 mx-2 position-relative h-100 d-flex align-items-center"
               >
-                {{ link.text }}
+                <span class="nav-link-text">{{ link.text }}</span>
               </router-link>
-              <a v-else class="nav-link fw-semibold px-0 mx-2" :href="link.href" target="_blank">
-                {{ link.text }}
+              <a
+                v-else
+                class="nav-link fw-semibold px-0 mx-2"
+                :class="{
+                  'external-nav-link': link.text === 'Pusat Informasi',
+                  'no-nav-underline': link.text === 'Pusat Informasi',
+                }"
+                :href="link.href"
+                target="_blank"
+              >
+                <template v-if="link.text === 'Pusat Informasi'">
+                  <span class="external-link-badge">
+                    <span class="external-link-badge-text">{{ link.text }}</span>
+                    <i class="bi bi-box-arrow-up-right ext-link-icon" aria-hidden="true"></i>
+                  </span>
+                </template>
+                <template v-else>{{ link.text }}</template>
               </a>
             </li>
           </ul>
@@ -167,18 +182,27 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
 
 .nav-link {
   position: relative;
+  display: inline-block;
+  align-items: center;
+  width: auto;
   transition: color 0.3s ease;
   font-size: 0.9375rem;
 }
 
-.nav-link.router-link-active {
+.nav-link-text {
+  position: relative;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.nav-link.router-link-active .nav-link-text {
   color: var(--primary-color) !important;
 }
 
-.nav-link::after {
+.nav-link-text::after {
   content: '';
   position: absolute;
-  bottom: 8px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
@@ -187,11 +211,55 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
   border-radius: 100px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
+  pointer-events: none;
 }
 
-.nav-link:hover::after,
-.nav-link.router-link-active::after {
-  width: calc(100% - 12px);
+.nav-link:hover .nav-link-text::after,
+.nav-link.router-link-active .nav-link-text::after {
+  width: 100%;
+  opacity: 1;
+}
+
+.external-nav-link {
+  color: inherit !important;
+}
+
+.no-nav-underline::after {
+  display: none !important;
+}
+
+.external-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  font-size: 0.82rem;
+  line-height: 1;
+  transition: all 0.25s ease;
+}
+
+.external-link-badge-text {
+  font-weight: 800;
+}
+
+.ext-link-icon {
+  font-size: 0.72rem;
+  opacity: 0.6;
+  transform: translateY(-0.5px);
+  transition: opacity 0.2s ease;
+}
+
+.external-nav-link:hover .external-link-badge {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(217, 119, 6, 0.6);
+  box-shadow: 0 8px 16px -10px rgba(217, 119, 6, 0.55);
+}
+
+.external-nav-link:hover .ext-link-icon {
   opacity: 1;
 }
 

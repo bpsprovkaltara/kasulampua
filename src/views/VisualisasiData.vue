@@ -121,7 +121,7 @@
   <Footer />
 </template>
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref, reactive, watch, nextTick } from 'vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
@@ -137,8 +137,51 @@ const dataOptions = ref([])
 const chartRef = ref(null)
 let chartInstance = null
 const route = useRoute()
+const router = useRouter()
 const loading = ref(true)
+
+function pickQueryStr(val) {
+  if (val == null || val === '') return ''
+  if (Array.isArray(val)) return String(val[0] ?? '')
+  return String(val)
+}
+
+function cleanQuery(q) {
+  const out = {}
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === '') continue
+    out[k] = v
+  }
+  return out
+}
+
+const CHART_IDS = ['bar', 'line', 'map', 'doughnut']
+
 const selectedChartType = ref('bar')
+
+let skipRouteQueryFetch = false
+let isBootstrapping = true
+
+const syncFromRoute = () => {
+  const r = pickQueryStr(route.query.region)
+  if (r) selectedRegion.value = r
+  const d = pickQueryStr(route.query.data)
+  if (d) selectedData.value = d
+  const c = pickQueryStr(route.query.chart)
+  if (c && CHART_IDS.includes(c)) selectedChartType.value = c
+}
+
+const pushQueryFromState = () => {
+  const next = cleanQuery({
+    region: selectedRegion.value || undefined,
+    data: selectedData.value || undefined,
+    chart: selectedChartType.value && selectedChartType.value !== 'bar' ? selectedChartType.value : undefined,
+  })
+  const cur = cleanQuery(route.query)
+  if (JSON.stringify(next) === JSON.stringify(cur)) return
+  skipRouteQueryFetch = true
+  router.replace({ path: '/visualisasi_data', query: next })
+}
 
 const chartTypes = [
   { id: 'bar', label: 'Batang', icon: 'bi bi-bar-chart-fill' },
@@ -462,19 +505,44 @@ const renderChart = () => {
   })
 }
 
-onMounted(() => {
-  fetchDataset()
-  if (route.query.region) selectedRegion.value = route.query.region
-  if (route.query.data) selectedData.value = route.query.data
+onMounted(async () => {
+  await fetchDataset()
+  syncFromRoute()
+  if (selectedData.value) {
+    loading.value = true
+    await fetchData()
+  }
+  pushQueryFromState()
+  isBootstrapping = false
 })
 
+watch(
+  () => route.query,
+  async () => {
+    if (skipRouteQueryFetch) {
+      skipRouteQueryFetch = false
+      return
+    }
+    syncFromRoute()
+    if (selectedData.value) {
+      loading.value = true
+      await fetchData()
+    }
+  },
+  { deep: true }
+)
+
 watch([selectedRegion, selectedChartType], () => {
+  if (isBootstrapping) return
   updateData()
+  pushQueryFromState()
 })
 
 watch([selectedData], () => {
+  if (isBootstrapping) return
   loading.value = true
   fetchData()
+  pushQueryFromState()
 })
 </script>
 

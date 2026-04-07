@@ -6,7 +6,7 @@
         type="text"
         class="filter-input"
         v-model="search"
-        @input="applyFilters"
+        @input="applyFiltersDebounced"
         placeholder="Cari judul insight..."
       />
     </div>
@@ -46,10 +46,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const emit = defineEmits(['filter-changed'])
 
 const search = ref('')
@@ -63,12 +64,38 @@ const regions = [
   { value: 'papua', label: 'Papua' },
 ]
 
+function pickQueryStr(val) {
+  if (val == null || val === '') return ''
+  if (Array.isArray(val)) return String(val[0] ?? '')
+  return String(val)
+}
+
+function cleanQuery(q) {
+  const out = {}
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === '') continue
+    out[k] = v
+  }
+  return out
+}
+
+let searchDebounce = null
+
 const setRegion = (val) => {
   selectedRegion.value = val
   applyFilters()
 }
 
 const applyFilters = () => {
+  router.replace({
+    path: '/regional_insight',
+    query: cleanQuery({
+      keyword: search.value.trim() || undefined,
+      region: selectedRegion.value || undefined,
+      topik: selectedTopic.value || undefined,
+      page: undefined,
+    }),
+  })
   emit('filter-changed', {
     keyword: search.value,
     region: selectedRegion.value,
@@ -76,11 +103,32 @@ const applyFilters = () => {
   })
 }
 
+const applyFiltersDebounced = () => {
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => applyFilters(), 400)
+}
+
+const syncFromRoute = () => {
+  search.value = pickQueryStr(route.query.keyword)
+  selectedRegion.value = pickQueryStr(route.query.region)
+  selectedTopic.value = pickQueryStr(route.query.topik)
+}
+
+watch(
+  () => route.query,
+  () => {
+    syncFromRoute()
+  },
+  { deep: true }
+)
+
 onMounted(() => {
-  if (route.query.keyword) search.value = route.query.keyword
-  if (route.query.region) selectedRegion.value = route.query.region
-  if (route.query.topik) selectedTopic.value = route.query.topik
-  applyFilters()
+  syncFromRoute()
+  emit('filter-changed', {
+    keyword: search.value,
+    region: selectedRegion.value,
+    topik: selectedTopic.value,
+  })
 })
 </script>
 

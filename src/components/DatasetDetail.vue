@@ -2,7 +2,11 @@
   <div v-if="dataset" class="dataset-detail-card mb-5">
     <div class="detail-header mb-5">
       <h1 class="detail-title mb-3">{{ dataset.title }}</h1>
-      <p class="detail-notes" v-if="dataset.notes">{{ stripHtml(dataset.notes) }}</p>
+      <div
+        v-if="dataset.notes"
+        class="detail-notes markdown-notes"
+        v-html="notesHtml"
+      />
     </div>
 
     <div class="info-section mb-5">
@@ -18,7 +22,7 @@
         </div>
 
         <div class="info-row" v-if="dataset.groups && dataset.groups.length">
-          <div class="info-label">Kategori</div>
+          <div class="info-label">Subjek</div>
           <div class="info-value">
             <span
               v-for="group in dataset.groups"
@@ -64,53 +68,32 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="resource-section mb-5" v-if="dataset.resources && dataset.resources.length">
+  <template v-if="dataset">
+    <div class="data-section mb-5" v-if="dataset.resources && dataset.resources.length">
       <div class="section-header d-flex align-items-center mb-4">
         <div class="header-line me-3"></div>
-        <h5 class="fw-bold mb-0">Daftar Resource</h5>
+        <h5 class="fw-bold mb-0">Data</h5>
       </div>
 
-      <div class="resource-list">
-        <div
-          v-for="res in dataset.resources"
-          :key="res.id"
-        >
-          <div
-            class="resource-card"
-            :class="{ 'rc-selected': selectedResourceId === res.id }"
-            @click="toggleResource(res.id)"
-            style="cursor: pointer"
-          >
-            <div class="rc-icon" :class="getFormatClass(res.format)">
-              <i :class="getFormatIcon(res.format)"></i>
-            </div>
-            <div class="rc-info flex-grow-1 min-w-0">
-              <div class="rc-name">{{ res.name || res.description || 'Resource' }}</div>
-              <div class="rc-meta">
-                <span class="rc-format-badge">{{ (res.format || 'FILE').toUpperCase() }}</span>
-                <span class="rc-date" v-if="res.created">{{ formatLongDate(res.created) }}</span>
-              </div>
-            </div>
-            <div class="rc-toggle d-flex align-items-center gap-2">
-              <span class="rc-toggle-label d-none d-sm-inline">{{ selectedResourceId === res.id ? 'Tutup' : 'Lihat Data' }}</span>
-              <i class="bi" :class="selectedResourceId === res.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-            </div>
-          </div>
+      <JsonDatasetInsightPanel v-if="jsonResource" :resource="jsonResource" />
 
-          <CkanResourceViewer
-            v-if="selectedResourceId === res.id"
-            :resource="res"
-          />
-        </div>
+      <div v-else class="empty-data-hint">
+        <i class="bi bi-filetype-json" style="font-size: 2rem; color: var(--text-secondary); opacity: 0.35;"></i>
+        <p class="text-muted small mt-2 mb-0">
+          Dataset ini tidak memiliki resource <strong>JSON</strong> untuk pratinjau tabel dan grafik.
+        </p>
       </div>
     </div>
 
-    <div v-else class="empty-resource-card mb-5">
-      <i class="bi bi-folder2-open" style="font-size: 2rem; color: var(--text-secondary); opacity: 0.3;"></i>
-      <p class="text-muted small mt-2 mb-0">Dataset ini belum memiliki resource.</p>
+    <div v-else class="data-section mb-5">
+      <div class="empty-resource-card">
+        <i class="bi bi-folder2-open" style="font-size: 2rem; color: var(--text-secondary); opacity: 0.3;"></i>
+        <p class="text-muted small mt-2 mb-0">Dataset ini belum memiliki resource.</p>
+      </div>
     </div>
-  </div>
+  </template>
 
   <div v-else-if="notFound" class="text-center py-5">
     <i class="bi bi-database-slash" style="font-size: 3rem; color: var(--text-secondary);"></i>
@@ -147,6 +130,109 @@
   font-size: 1.0625rem;
   color: var(--text-secondary);
   line-height: 1.7;
+}
+
+.detail-notes.markdown-notes :deep(p) {
+  margin-bottom: 0.75rem;
+}
+
+.detail-notes.markdown-notes :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.detail-notes.markdown-notes :deep(ul),
+.detail-notes.markdown-notes :deep(ol) {
+  margin: 0.5rem 0 0.75rem;
+  padding-left: 1.35rem;
+}
+
+.detail-notes.markdown-notes :deep(li) {
+  margin-bottom: 0.35rem;
+}
+
+.detail-notes.markdown-notes :deep(h1),
+.detail-notes.markdown-notes :deep(h2),
+.detail-notes.markdown-notes :deep(h3),
+.detail-notes.markdown-notes :deep(h4) {
+  margin: 1rem 0 0.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.detail-notes.markdown-notes :deep(h1) {
+  font-size: 1.35rem;
+}
+
+.detail-notes.markdown-notes :deep(h2) {
+  font-size: 1.2rem;
+}
+
+.detail-notes.markdown-notes :deep(h3) {
+  font-size: 1.1rem;
+}
+
+.detail-notes.markdown-notes :deep(a) {
+  color: var(--primary-color);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+
+.detail-notes.markdown-notes :deep(blockquote) {
+  margin: 0.75rem 0;
+  padding: 0.5rem 0 0.5rem 1rem;
+  border-left: 3px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.detail-notes.markdown-notes :deep(pre) {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  overflow-x: auto;
+  font-size: 0.9em;
+}
+
+.detail-notes.markdown-notes :deep(code) {
+  font-size: 0.92em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--bg-color);
+}
+
+.detail-notes.markdown-notes :deep(pre code) {
+  padding: 0;
+  background: transparent;
+  font-size: inherit;
+}
+
+.detail-notes.markdown-notes :deep(table) {
+  width: 100%;
+  margin: 0.75rem 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.detail-notes.markdown-notes :deep(th),
+.detail-notes.markdown-notes :deep(td) {
+  border: 1px solid var(--border-color);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.detail-notes.markdown-notes :deep(th) {
+  background: var(--bg-color);
+  font-weight: 600;
+}
+
+.detail-notes.markdown-notes :deep(hr) {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
 }
 
 .header-line {
@@ -209,97 +295,14 @@
   display: inline-block;
 }
 
-.resource-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.data-section {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
 }
 
-.resource-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: #f8fafc;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.resource-card:hover {
-  background: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.1);
-  transform: translateY(-2px);
-}
-
-.rc-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  flex-shrink: 0;
-}
-
-.rc-icon.csv { color: #0ea5e9; }
-.rc-icon.xlsx, .rc-icon.xls { color: #16a34a; }
-.rc-icon.pdf { color: #dc2626; }
-.rc-icon.json { color: #8b5cf6; }
-.rc-icon.api { color: #d97706; }
-.rc-icon.other { color: #64748b; }
-
-.rc-info { min-width: 0; }
-.rc-name {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.rc-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 4px;
-}
-.rc-format-badge {
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 2px 10px;
-  border-radius: 6px;
-  background: var(--bg-color);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
-.rc-date {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.rc-toggle {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 700;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-.rc-toggle-label {
-  font-size: 0.8rem;
-}
-
-.rc-selected {
-  background: white !important;
-  border-color: var(--primary-color) !important;
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1);
-}
-.rc-selected .rc-toggle {
-  color: var(--primary-color);
+.empty-data-hint {
+  text-align: center;
+  padding: 2rem 1rem;
 }
 
 .empty-resource-card {
@@ -321,69 +324,39 @@
 
 @media (max-width: 768px) {
   .dataset-detail-card { padding: 1.5rem; }
+  .data-section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
   .info-row { grid-template-columns: 1fr; gap: 4px; padding: 1rem; }
   .info-label { font-size: 0.75rem; }
-  .resource-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .rc-actions {
-    width: 100%;
-  }
-  .rc-actions .btn {
-    flex: 1;
-    text-align: center;
-  }
 }
 </style>
 
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { CKAN_ACTION_API } from '@/config/api'
 import { formatLongDate } from '../utils/dates'
+import { renderCkanNotesMarkdown } from '../utils/renderCkanNotesMarkdown'
 import { useToast } from '@/composables/useToast'
-import CkanResourceViewer from './CkanResourceViewer.vue'
+import JsonDatasetInsightPanel from './JsonDatasetInsightPanel.vue'
 
 const route = useRoute()
 const { error: toastError } = useToast()
 const dataset = ref(null)
 const notFound = ref(false)
-const selectedResourceId = ref(null)
-const emit = defineEmits(['setTitle', 'setOrganizationName'])
+const emit = defineEmits(['setTitle', 'setOrganizationName', 'setOrganizationSlug'])
 
-const toggleResource = (id) => {
-  selectedResourceId.value = selectedResourceId.value === id ? null : id
-}
+const jsonResource = computed(() => {
+  const list = dataset.value?.resources
+  if (!list?.length) return null
+  const jsons = list.filter((r) => (r.format || '').toLowerCase() === 'json')
+  return jsons.length ? jsons[0] : null
+})
 
-const stripHtml = (html) => {
-  if (!html) return ''
-  return html.replace(/<[^>]*>/g, '')
-}
-
-const getFormatClass = (format) => {
-  if (!format) return 'other'
-  const f = format.toLowerCase()
-  if (f === 'csv') return 'csv'
-  if (f === 'xlsx' || f === 'xls') return 'xlsx'
-  if (f === 'pdf') return 'pdf'
-  if (f === 'json') return 'json'
-  if (f === 'api') return 'api'
-  return 'other'
-}
-
-const getFormatIcon = (format) => {
-  if (!format) return 'bi bi-file-earmark'
-  const f = format.toLowerCase()
-  if (f === 'csv') return 'bi bi-filetype-csv'
-  if (f === 'xlsx' || f === 'xls') return 'bi bi-filetype-xlsx'
-  if (f === 'pdf') return 'bi bi-filetype-pdf'
-  if (f === 'json') return 'bi bi-filetype-json'
-  if (f === 'api') return 'bi bi-cloud-arrow-down'
-  return 'bi bi-file-earmark'
-}
+const notesHtml = computed(() => renderCkanNotesMarkdown(dataset.value?.notes))
 
 const fetchDataset = async (id) => {
   try {
@@ -394,11 +367,7 @@ const fetchDataset = async (id) => {
       dataset.value = data.result
       emit('setTitle', data.result.title)
       emit('setOrganizationName', data.result.organization?.title || 'Tidak tersedia')
-
-      // Auto-expand first resource if only 1
-      if (data.result.resources && data.result.resources.length === 1) {
-        selectedResourceId.value = data.result.resources[0].id
-      }
+      emit('setOrganizationSlug', data.result.organization?.name || '')
     } else {
       notFound.value = true
       toastError('Dataset tidak ditemukan.')

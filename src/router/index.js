@@ -54,7 +54,7 @@ const router = createRouter({
       path: '/dataset',
       name: 'dataset',
       component: Dataset,
-      meta: { title: 'Dataset' }
+      meta: { title: 'Subjek' }
     },
     {
       path: '/dataset/:id',

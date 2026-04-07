@@ -75,6 +75,21 @@ import { DATAHUB_ENDPOINTS } from '@/config/api'
 const route = useRoute()
 const router = useRouter()
 
+function pickQueryStr(val) {
+  if (val == null || val === '') return ''
+  if (Array.isArray(val)) return String(val[0] ?? '')
+  return String(val)
+}
+
+function cleanQuery(q) {
+  const out = {}
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === '') continue
+    out[k] = v
+  }
+  return out
+}
+
 const groupId = ref(route.query.group_id || '')
 const groupTitle = ref('')
 const groupName = ref('')
@@ -86,6 +101,7 @@ const limit = 10
 const total = ref(0)
 const loading = ref(true)
 
+let searchDebounce = null
 
 const currentPage = computed(() => Math.floor(offset.value / limit) + 1)
 const totalPages = computed(() => Math.ceil(total.value / limit))
@@ -115,14 +131,33 @@ const fetchGroupDatasets = async () => {
   }
 }
 
+const syncFromRoute = () => {
+  groupId.value = pickQueryStr(route.query.group_id)
+  search.value = pickQueryStr(route.query.q)
+  const page = parseInt(pickQueryStr(route.query.page) || '1', 10)
+  const safePage = Number.isFinite(page) && page >= 1 ? page : 1
+  offset.value = (safePage - 1) * limit
+}
+
+const runListFetch = async () => {
+  if (!groupId.value) return
+  if (search.value.trim()) await fetchDataFiltered()
+  else await fetchGroupDatasets()
+}
+
 const applySearch = () => {
-  if (!search.value) {
-    offset.value =0
-    fetchGroupDatasets()
-  } else {
-    offset.value =0
-    fetchDataFiltered()
-  }
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    router.replace({
+      path: '/dataset',
+      query: cleanQuery({
+        ...route.query,
+        group_id: groupId.value,
+        q: search.value.trim() || undefined,
+        page: undefined,
+      }),
+    })
+  }, 400)
 }
 
 //GET /ckan/datasets-search?org=bps-kalsel&keyword=transportasi&rows=10&offset=0
@@ -140,46 +175,41 @@ const fetchDataFiltered = async () => {
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
-    offset.value = (page - 1) * limit
-    fetchDataFiltered()
-
     router.replace({
-      path: route.path,
-      query: {
+      path: '/dataset',
+      query: cleanQuery({
         ...route.query,
-        page: page
-      }
+        group_id: groupId.value,
+        q: search.value.trim() || undefined,
+        page: page > 1 ? String(page) : undefined,
+      }),
     })
   }
 }
 
 const redirectToGroup = (newGroupId) => {
-  router.replace({ path: '/dataset', query: { group_id: newGroupId } })
-  groupId.value = newGroupId
-  offset.value = 0
-  fetchGroupDatasets()
+  router.replace({
+    path: '/dataset',
+    query: cleanQuery({ group_id: newGroupId }),
+  })
 }
 
-watch(() => route.query.group_id, (newVal) => {
-  groupId.value = newVal
-  offset.value = 0
-  fetchGroupDatasets()
+watch(
+  () => route.query,
+  async () => {
+    syncFromRoute()
+    await runListFetch()
+  },
+  { deep: true }
+)
+
+watch(search, () => {
+  if (pickQueryStr(route.query.q) === search.value.trim()) return
+  applySearch()
 })
 
-const setPage = () => {
-  const page = parseInt(route.query.page)
-  if (page > 1) {
-    const waitUntilReady = setInterval(() => {
-      if (totalPages.value > 0) {
-        clearInterval(waitUntilReady)
-        goToPage(page)
-      }
-    }, 100)
-  }
-}
-
 onMounted(async () => {
-  await fetchGroupDatasets()
-  setPage()
+  syncFromRoute()
+  await runListFetch()
 })
 </script>

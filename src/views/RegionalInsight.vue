@@ -44,7 +44,7 @@
 
   <div class="insight-content-wrapper py-5">
     <div class="container">
-      <RegionalFilter @filter-changed="applyFilter" class="mb-5" />
+      <RegionalFilter class="mb-5" />
       <div v-if="loading" class="text-center py-5">
         <div class="loading-spinner mx-auto mb-3"></div>
         <p class="text-muted small">Memuat insight...</p>
@@ -74,7 +74,7 @@
         <PaginationControl
           :current-page="currentPage"
           :total-pages="totalPages"
-          @change="(p) => { currentPage = p }"
+          @change="onPageChange"
         />
       </div>
     </div>
@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref, computed, watch } from 'vue'
 import RegionalFilter from '../components/RegionalFilter.vue'
 import RegionalCard from '../components/RegionalCard.vue'
@@ -96,6 +96,7 @@ import { DUMMY_INSIGHTS } from '../utils/dummyInsights'
 const insights = ref([])
 const loading = ref(true)
 const route = useRoute()
+const router = useRouter()
 
 const currentPage = ref(1)
 const itemsPerPage = 9
@@ -106,9 +107,25 @@ const paginatedInsights = computed(() => {
   return insights.value.slice(start, start + itemsPerPage)
 })
 
-watch(route, () => {
-  currentPage.value = 1
-})
+function pickQueryStr(val) {
+  if (val == null || val === '') return ''
+  if (Array.isArray(val)) return String(val[0] ?? '')
+  return String(val)
+}
+
+function cleanQuery(q) {
+  const out = {}
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === '') continue
+    out[k] = v
+  }
+  return out
+}
+
+const syncPageFromRoute = () => {
+  const page = parseInt(pickQueryStr(route.query.page) || '1', 10)
+  currentPage.value = Number.isFinite(page) && page >= 1 ? page : 1
+}
 
 const fetchInsight = async (filter = {}) => {
   loading.value = true
@@ -147,15 +164,36 @@ const fetchInsight = async (filter = {}) => {
   }
 }
 
-const applyFilter = (filter) => {
-  currentPage.value = 1
-  fetchInsight(filter)
+const fetchInsightFromRoute = () => {
+  fetchInsight({
+    keyword: pickQueryStr(route.query.keyword),
+    region: pickQueryStr(route.query.region),
+    topik: pickQueryStr(route.query.topik),
+  })
 }
 
+const onPageChange = (p) => {
+  router.replace({
+    path: '/regional_insight',
+    query: cleanQuery({
+      ...route.query,
+      page: p > 1 ? String(p) : undefined,
+    }),
+  })
+}
+
+watch(
+  () => route.query,
+  () => {
+    syncPageFromRoute()
+    fetchInsightFromRoute()
+  },
+  { deep: true }
+)
+
 onMounted(() => {
-  const initialFilter = {}
-  if (route.query.region) initialFilter.region = route.query.region
-  fetchInsight(initialFilter)
+  syncPageFromRoute()
+  fetchInsightFromRoute()
 })
 </script>
 

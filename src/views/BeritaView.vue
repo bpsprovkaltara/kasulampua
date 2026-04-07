@@ -172,7 +172,15 @@
         <PaginationControl
           :current-page="currentPage"
           :total-pages="totalPages"
-          @change="(p) => { currentPage = p; applySearch() }"
+          @change="(p) => {
+            router.replace({
+              path: '/berita',
+              query: cleanQuery({
+                q: searchQuery.value.trim() || undefined,
+                page: p > 1 ? String(p) : undefined,
+              }),
+            })
+          }"
         />
       </template>
     </div>
@@ -186,7 +194,7 @@ import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { API_ENDPOINTS } from '../config/api'
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { formatLongDate } from '../utils/dates'
 import { DUMMY_BERITA } from '../utils/dummyBerita'
 import PaginationControl from '../components/PaginationControl.vue'
@@ -195,6 +203,7 @@ const beritaList = ref([])
 const searchQuery = ref('')
 const loading = ref(true)
 const route = useRoute()
+const router = useRouter()
 
 const currentPage = ref(1)
 const itemsPerPage = 7 
@@ -218,9 +227,50 @@ const paginatedList = computed(() => {
   return filteredList.value.slice(start, start + itemsPerPage)
 })
 
+function pickQueryStr(val) {
+  if (val == null || val === '') return ''
+  if (Array.isArray(val)) return String(val[0] ?? '')
+  return String(val)
+}
+
+function cleanQuery(q) {
+  const out = {}
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === '') continue
+    out[k] = v
+  }
+  return out
+}
+
+const syncFromRoute = () => {
+  searchQuery.value = pickQueryStr(route.query.q)
+  const page = parseInt(pickQueryStr(route.query.page) || '1', 10)
+  currentPage.value = Number.isFinite(page) && page >= 1 ? page : 1
+}
+
+let searchDebounce = null
+
 watch(searchQuery, () => {
-  currentPage.value = 1
+  if (pickQueryStr(route.query.q) === searchQuery.value.trim()) return
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    router.replace({
+      path: '/berita',
+      query: cleanQuery({
+        q: searchQuery.value.trim() || undefined,
+        page: undefined,
+      }),
+    })
+  }, 400)
 })
+
+watch(
+  () => route.query,
+  () => {
+    syncFromRoute()
+  },
+  { deep: true }
+)
 
 const fetchBerita = async () => {
   loading.value = true
@@ -259,18 +309,13 @@ function applySearch() {
 }
 
 onMounted(() => {
-  const initial = {}
-  if (route.query.q) {
-    initial.keyword = route.query.q
-    searchQuery.value = route.query.q
-  }
-  fetchBerita(initial)
+  syncFromRoute()
+  fetchBerita({})
 })
 
 const clearSearch = () => {
   searchQuery.value = ''
-  currentPage.value = 1
-  applySearch()
+  router.replace({ path: '/berita', query: {} })
 }
 </script>
 
