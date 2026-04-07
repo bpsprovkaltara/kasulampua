@@ -10,6 +10,15 @@ import DatasetDetail from '@/views/DatasetDetail.vue'
 import ResourceDetail from '@/views/ResourceDetail.vue'
 import VisualisasiData from '@/views/VisualisasiData.vue'
 import NotFound from '@/views/NotFound.vue'
+import { isAuthenticated } from '@/utils/auth.js'
+
+import AdminLayout from '@/views/admin/AdminLayout.vue'
+import LoginView from '@/views/admin/LoginView.vue'
+import DashboardView from '@/views/admin/DashboardView.vue'
+import ManageUsers from '@/views/admin/ManageUsers.vue'
+import ManageBerita from '@/views/admin/ManageBerita.vue'
+import ManageInsight from '@/views/admin/ManageInsight.vue'
+import ManageDataset from '@/views/admin/ManageDataset.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -79,8 +88,54 @@ const router = createRouter({
       name: 'not-found',
       component: NotFound,
       meta: { title: '404 - Halaman Tidak Ditemukan' }
+    },
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: LoginView,
+      meta: { title: 'Admin Login', guestOnly: true }
+    },
+    {
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          redirect: '/admin/dashboard'
+        },
+        {
+          path: 'dashboard',
+          name: 'admin-dashboard',
+          component: DashboardView,
+          meta: { title: 'Dashboard' }
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: ManageUsers,
+          meta: { title: 'Kelola Users' }
+        },
+        {
+          path: 'berita',
+          name: 'admin-berita',
+          component: ManageBerita,
+          meta: { title: 'Kelola Berita' }
+        },
+        {
+          path: 'insight',
+          name: 'admin-insight',
+          component: ManageInsight,
+          meta: { title: 'Kelola Insight' }
+        },
+        {
+          path: 'dataset',
+          name: 'admin-dataset',
+          component: ManageDataset,
+          meta: { title: 'Kelola Dataset' }
+        }
+      ]
     }
-
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
@@ -90,6 +145,26 @@ const router = createRouter({
     }
   }
 })
+
+router.beforeEach((to, from, next) => {
+  const isAuth = isAuthenticated();
+
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuth) {
+      next({ name: 'admin-login' });
+    } else {
+      next();
+    }
+  } else if (to.matched.some(record => record.meta.guestOnly)) {
+    if (isAuth) {
+      next({ name: 'admin-dashboard' });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+});
 
 router.afterEach((to) => {
   const defaultTitle = 'Konsultasi Regional PDRB Kasulampua'

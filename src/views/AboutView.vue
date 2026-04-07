@@ -42,7 +42,7 @@
         <div class="col-lg-5 text-center text-lg-start">
           <div class="about-logo-wrapper">
              <div class="logo-glow-bg"></div>
-             <img src="/assets/images/logo-nav.png" alt="Logo Kasulampua" class="img-fluid about-kasulampua-logo fade-in-up" />
+             <img src="/assets/images/logo-kasulampua-warna.png" alt="Logo Kasulampua" class="img-fluid about-kasulampua-logo fade-in-up" />
           </div>
         </div>
         

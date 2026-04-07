@@ -488,24 +488,50 @@ defineProps({ dataSection: Object, dataset: Array })
   box-shadow: 0 8px 20px -5px rgba(217, 119, 6, 0.3);
 }
 
-@media (max-width: 992px) {
+@media (max-width: 991px) {
+  .data-story-section {
+    padding: 3rem 0;
+  }
   .insight-image-banner {
-    height: 200px;
+    height: 220px;
   }
   .insight-body {
-    padding: 1.5rem !important;
+    padding: 2rem 1.5rem !important;
   }
   .insight-title {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
   }
   .insight-desc {
-    font-size: 1rem;
+    font-size: 0.9375rem;
   }
   .cta-content {
-    padding: 1.5rem;
+    padding: 2rem 1.5rem;
   }
   .cta-title {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .insight-title {
     font-size: 1.25rem;
+  }
+  .section-label {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+  }
+  .meta-item {
+    padding: 1rem;
+    gap: 12px;
+  }
+  .meta-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+  .meta-value {
+    font-size: 0.9rem;
   }
 }
 </style>

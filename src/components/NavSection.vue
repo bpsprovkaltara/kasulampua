@@ -30,7 +30,7 @@ const scrolledClass = computed(() => {
 })
 
 const navLogo = computed(() => {
-  return '/assets/images/logo-nav.png'
+  return '/assets/images/logo-kasulampua.png'
 })
 
 const toggleMobileMenu = () => {
@@ -416,9 +416,23 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
 }
 
 @media (max-width: 991px) {
+  .navbar {
+    height: 56px !important;
+  }
   .nav-logo {
-    height: 44px;
-    max-width: 220px;
+    height: 38px;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-logo {
+    height: 32px;
+    max-width: 150px;
+  }
+  .container-fluid {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
 </style>

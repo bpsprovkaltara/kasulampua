@@ -18,7 +18,7 @@
     </div>
 
     <div v-else-if="tableData.length" class="jd-view">
-      <div class="jd-toolbar d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+      <div class="jd-toolbar d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <span class="jd-badge">
             <i class="bi bi-table me-1"></i>{{ tableData.length }} baris
@@ -35,15 +35,42 @@
           >
             <i class="bi bi-filetype-xlsx me-1"></i> Unduh Excel
           </button>
-          <a
+          <button
             v-if="resource.url && resource.url !== '-'"
-            :href="resource.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+            type="button"
+            class="btn btn-sm btn-orange-amber rounded-pill px-3"
+            @click="downloadJson"
           >
             <i class="bi bi-filetype-json me-1"></i> Unduh JSON
-          </a>
+          </button>
+        </div>
+      </div>
+
+      <div v-if="filterOptions.length > 1" class="jd-filter-bar mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="filter-icon-box">
+              <i class="bi bi-funnel-fill"></i>
+            </div>
+            <div>
+              <h6 class="mb-0 fw-bold text-dark">Saring Data</h6>
+              <p class="small text-muted mb-0">Tampilkan data berdasarkan {{ formatHeader(firstCol) }} tertentu</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <select v-model="filterValue" class="form-select form-select-sm jd-filter-select-lg">
+              <option value="">Semua {{ formatHeader(firstCol) }}</option>
+              <option v-for="opt in filterOptions" :key="opt" :value="opt">{{ opt }}</option>
+            </select>
+            <button 
+              v-if="filterValue" 
+              @click="filterValue = ''" 
+              class="btn btn-sm btn-link text-decoration-none text-muted fw-bold px-2"
+              title="Bersihkan filter"
+            >
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -68,13 +95,13 @@
 
       <JsonDatasetTableCard
         v-if="activeTab === 'table'"
-        :table-data="tableData"
+        :table-data="filteredData"
         :columns="visibleCols"
       />
 
       <JsonDatasetChartCard
         v-else-if="activeTab === 'chart'"
-        :table-data="tableData"
+        :table-data="filteredData"
         :columns="visibleCols"
       />
     </div>
@@ -102,6 +129,30 @@ const allColumns = ref([])
 const loading = ref(true)
 const error = ref(null)
 const activeTab = ref('table')
+const filterValue = ref('')
+
+const firstCol = computed(() => (allColumns.value.length ? allColumns.value[0] : ''))
+
+const filterOptions = computed(() => {
+  const col = firstCol.value
+  if (!col || !tableData.value.length) return []
+  const vals = new Set()
+  tableData.value.forEach((row) => {
+    if (row[col] !== null && row[col] !== undefined) {
+      vals.add(String(row[col]))
+    }
+  })
+  return Array.from(vals).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+})
+
+const filteredData = computed(() => {
+  if (!filterValue.value || !firstCol.value) return tableData.value
+  const col = firstCol.value
+  return tableData.value.filter((row) => String(row[col]) === filterValue.value)
+})
+
+const formatHeader = (col) =>
+  String(col).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 
 const hiddenInfo = computed(() => computeHiddenColumns(tableData.value, allColumns.value))
 
@@ -127,6 +178,13 @@ const downloadExcel = () => {
   saveAs(new Blob([buf], { type: 'application/octet-stream' }), `${name}.xlsx`)
 }
 
+const downloadJson = () => {
+  if (!tableData.value.length) return
+  const dataStr = JSON.stringify(tableData.value, null, 2)
+  const name = (props.resource.name || 'data').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 50)
+  saveAs(new Blob([dataStr], { type: 'application/json' }), `${name}.json`)
+}
+
 const setChartTab = () => {
   activeTab.value = 'chart'
 }
@@ -145,8 +203,23 @@ const fetchData = async () => {
     if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`)
 
     const json = await res.json()
-    const { cols, rows } = parseJsonResource(json)
-    if (!rows.length) throw new Error('Format JSON tidak dikenali atau data kosong')
+    const { cols, rows: rawRows } = parseJsonResource(json)
+    if (!rawRows.length) throw new Error('Format JSON tidak dikenali atau data kosong')
+
+    const aggregateKey = cols.find(
+      (c) => c.toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim() === 'is aggregate'
+    )
+
+    let rows = rawRows
+    if (aggregateKey) {
+      rows = rawRows.filter((r) => {
+        const val = r[aggregateKey]
+        if (val === true || String(val).toLowerCase() === 'true' || val === 1 || val === '1') {
+          return false
+        }
+        return true
+      })
+    }
 
     allColumns.value = cols
     tableData.value = rows
@@ -162,6 +235,7 @@ watch(
   () => props.resource?.id,
   () => {
     activeTab.value = 'table'
+    filterValue.value = ''
     fetchData()
   },
   { immediate: true }
@@ -227,5 +301,53 @@ watch(
   background: white;
   color: #d97706;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-orange-amber {
+  background: #d97706;
+  color: white;
+  border: 1px solid #d97706;
+}
+.btn-orange-amber:hover {
+  background: #b45309;
+  color: white;
+}
+
+.jd-filter-select-lg {
+  border-radius: 10px;
+  border-color: #e2e8f0;
+  font-size: 0.875rem;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  min-width: 240px;
+  background-color: white;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
+}
+.jd-filter-select-lg:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.jd-filter-bar {
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.filter-icon-box {
+  width: 44px;
+  height: 44px;
+  background: white;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 </style>

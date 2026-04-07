@@ -308,7 +308,13 @@ const toggleWilayah = () => (wilayahExpanded.value = !wilayahExpanded.value)
 
 const stripHtml = (html) => {
   if (!html) return ''
-  return html.replace(/<[^>]*>/g, '').substring(0, 200)
+  
+  let text = html.replace(/<[^>]*>/g, '')
+ 
+  text = text.replace(/[*_~#`>+\\-]+/g, ' ')
+  
+  text = text.replace(/\s+/g, ' ').trim()
+  return text.substring(0, 200)
 }
 
 const fetchDatasets = async () => {
@@ -756,82 +762,92 @@ onMounted(async () => {
   color: var(--primary-color);
 }
 
+@media (max-width: 991px) {
+  .hero-v2 {
+    padding: 100px 0 60px;
+  }
+  .hero-v2-title {
+    font-size: 2.75rem;
+    margin-bottom: 1rem;
+  }
+  .hero-v2-subtitle {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+  .sidebar-wrapper {
+    position: static;
+    margin-top: 1rem;
+  }
+  .sidebar-card {
+    border-radius: 16px;
+  }
+  .dataset-item {
+    padding: 1.25rem;
+    border-radius: 16px;
+    margin-bottom: 1rem;
+  }
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .result-info {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .dataset-item {
     flex-direction: column;
     align-items: flex-start;
-    padding: 16px;
-    gap: 12px;
+    padding: 1.25rem;
+    gap: 1rem;
   }
-  .item-rank {
-    text-align: left;
-    width: auto;
-    font-size: 0.75rem;
-    color: var(--primary-color);
-    background: var(--bg-accent);
-    padding: 2px 8px;
-    border-radius: 6px;
-    margin-bottom: 4px;
+  .item-main {
+    width: 100%;
   }
   .item-title {
-    font-size: 0.95rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .item-meta {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+  .item-rank {
+    position: static;
+    display: inline-block;
+    font-size: 0.7rem;
+    background: #fffbeb;
+    color: #d97706;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(217, 119, 6, 0.1);
   }
   .item-action,
   .detail-label {
     opacity: 1;
     transform: none;
-    color: var(--primary-color);
-    font-size: 0.75rem;
-    margin-top: 8px;
+    width: 100%;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
   }
 }
 
-.ds-loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--secondary-color);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+@media (max-width: 480px) {
+  .hero-v2-title {
+    font-size: 2.25rem;
   }
-}
-
-.empty-card {
-  background: white;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  padding: 5rem 2rem;
-  text-align: center;
-}
-.empty-icon {
-  font-size: 4rem;
-  color: var(--primary-color);
-  opacity: 0.2;
-}
-
-@media (max-width: 992px) {
-  .hero-title {
-    font-size: clamp(2rem, 8vw, 2.5rem);
+  .search-box {
+    border-radius: 12px;
   }
-  .dataset-item {
-    padding: 16px 20px;
-  }
-  .item-notes {
-    display: none;
-  }
-  .topbar {
-    gap: 12px;
-  }
-  .hero-meta-card {
-    padding: 1.25rem 2rem;
-    gap: 1.5rem;
-  }
-  .hm-num {
-    font-size: 2rem;
+  .search-input {
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
   }
 }
 </style>

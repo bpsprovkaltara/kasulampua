@@ -88,13 +88,19 @@
           PORTAL DATA
         </div>
 
-        <h1 class="hero-main-title mb-3">KASULAMPUA</h1>
+        <div class="hero-logo-box mb-4 fade-in">
+          <img
+            src="/assets/images/kasulampua.png"
+            alt="Kasulampua"
+            class="hero-main-logo"
+          />
+        </div>
 
         <div class="hero-event-banner mb-4">
           <span class="event-text">
             <strong>Konsultasi Regional PDRB Kasulampua 2026</strong>
             <span class="mx-2 opacity-50">|</span>
-            <i class="bi bi-geo-alt-fill text-amber me-1"></i>Tanjung Selor, 15–17 April 2026
+            <i class="bi bi-geo-alt-fill text-amber me-1"></i>Tanjung Selor, 14–16 April 2026
           </span>
         </div>
 
@@ -110,28 +116,28 @@
           <p class="partners-label mb-3">DIDUKUNG OLEH</p>
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 gap-md-5">
             <img
-              src="/assets/images/bps.png"
-              alt="BPS"
-              class="partner-logo"
-              title="Badan Pusat Statistik"
-            />
-            <img
               src="/assets/images/bank-indonesia.png"
               alt="BI"
               class="partner-logo"
               title="Bank Indonesia"
             />
             <img
-              src="/assets/images/djpb.png"
-              alt="DJPb"
-              class="partner-logo"
-              title="Direktorat Jenderal Perbendaharaan"
-            />
-            <img
               src="/assets/images/pemda/kalimantan-utara.png"
               alt="Kaltara"
               class="partner-logo"
               title="Kalimantan Utara"
+            />
+            <img
+              src="/assets/images/bps.png"
+              alt="BPS"
+              class="partner-logo"
+              title="Badan Pusat Statistik"
+            />
+            <img
+              src="/assets/images/djpb.png"
+              alt="DJPb"
+              class="partner-logo"
+              title="Direktorat Jenderal Perbendaharaan"
             />
           </div>
         </div>
@@ -167,7 +173,7 @@
         <div class="row g-4 justify-content-center">
           <div class="col-6 col-md-3" v-for="(item, key) in regions" :key="key">
             <router-link
-              :to="{ path: '/visualisasi_data', query: { region: key } }"
+              :to="{ path: '/regional_insight', query: { region: key } }"
               class="region-card-premium-v2 text-decoration-none"
             >
               <div class="p-4 d-flex flex-column align-items-center text-center">
@@ -176,12 +182,12 @@
                     :src="item.icon"
                     :alt="'icon_' + key"
                     class="img-fluid"
-                    style="height: 124px; width: auto"
+                    style="height: 180px; width: auto"
                   />
                 </div>
                 <h5 class="region-title-v4 text-capitalize">{{ key }}</h5>
                 <span class="btn-region-link-v2">
-                  Lihat Analisis
+                  <span>Lihat Analisis</span>
                 </span>
               </div>
             </router-link>
@@ -383,15 +389,24 @@ function particleStyle() {
   }
 }
 
-.hero-main-title {
-  font-size: clamp(2.5rem, 8vw, 7.5rem);
-  font-weight: 950;
-  letter-spacing: -0.06em;
-  line-height: 1;
-  background: linear-gradient(135deg, #d97706, #b45309);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.hero-logo-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-main-logo {
+  height: clamp(2.5rem, 8vw, 5.5rem);
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 35px rgba(217, 119, 6, 0.4)) 
+          invert(48%) sepia(79%) saturate(2476%) hue-rotate(15deg) brightness(95%) contrast(101%);
+  animation: float-logo 6s infinite ease-in-out;
+}
+
+@keyframes float-logo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .hero-main-subtitle {
@@ -623,15 +638,32 @@ function particleStyle() {
   transition: all 0.3s ease;
   z-index: 2;
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  width: 100%;
+  padding-right: 0;
+}
+.btn-region-link-v2 span {
+  display: inline-block;
+  transition: transform 0.3s ease;
+  transform: translateX(0);
 }
 .btn-region-link-v2::after {
   content: '→';
-  transform: translateX(-5px);
+  position: absolute;
+  left: calc(50% + 48px); 
   opacity: 0;
   transition: all 0.3s ease;
+  transform: translateX(-5px);
+}
+.region-card-premium-v2:hover .btn-region-link-v2 {
+  opacity: 1;
+}
+.region-card-premium-v2:hover .btn-region-link-v2::after {
+  opacity: 1;
+  transform: translateX(0);
+  left: calc(50% + 54px);
 }
 .region-card-premium-v2:hover .btn-region-link-v2 {
   opacity: 1;
@@ -640,6 +672,7 @@ function particleStyle() {
 .region-card-premium-v2:hover .btn-region-link-v2::after {
   transform: translateX(0);
   opacity: 1;
+  right: -24px;
 }
 
 .fade-in {
@@ -703,43 +736,80 @@ function particleStyle() {
 
 @media (max-width: 991px) {
   .hero-premium-v2 {
-    padding-top: 80px;
+    padding-top: 60px;
     min-height: auto;
   }
   .hero-container {
-    padding-top: 60px;
+    padding-top: 40px;
     padding-bottom: 20px;
   }
-  .hero-main-title {
-    font-size: clamp(2.5rem, 8vw, 4.5rem);
-    margin-bottom: 0.5rem !important;
+  .hero-main-logo {
+    height: 3.5rem;
+    margin-bottom: 0.5rem;
   }
   .hero-main-subtitle {
     font-size: 1rem;
+    margin-bottom: 1.5rem !important;
+    padding: 0 1rem;
+    max-width: 100%;
+  }
+  .hero-actions {
+    gap: 1rem;
     margin-bottom: 2rem !important;
   }
   .btn-hero-primary-v2,
   .btn-hero-outline-v2 {
     width: 100%;
-    padding: 0.8rem;
+    padding: 0.85rem 1.5rem;
     font-size: 1rem;
+    border-radius: 12px;
   }
   .hero-event-banner {
     flex-wrap: wrap;
-    border-radius: 16px;
+    border-radius: 20px;
     text-align: center;
     justify-content: center;
-    padding: 8px 12px;
+    padding: 12px 16px;
+    width: auto;
+    max-width: 100%;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    gap: 8px;
   }
   .event-text {
     white-space: normal;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  .event-text .mx-2 {
+    display: none; 
+  }
+  .event-text br {
+    display: block;
   }
   .partner-logo {
-    height: 42px;
+    height: 40px;
+  }
+  .hero-partners {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   .glass-module {
     display: none; 
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-main-logo {
+    height: 2.8rem;
+  }
+  .hero-main-subtitle {
+    font-size: 0.9rem;
+  }
+  .hero-badge {
+    padding: 6px 14px;
+    font-size: 0.6rem;
+    letter-spacing: 0.2rem;
   }
 }
 </style>

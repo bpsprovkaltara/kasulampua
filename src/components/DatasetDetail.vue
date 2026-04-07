@@ -16,55 +16,63 @@
       </div>
 
       <div class="info-grid">
-        <div class="info-row" v-if="dataset.organization">
-          <div class="info-label">Organisasi</div>
-          <div class="info-value">{{ dataset.organization.title || dataset.organization.name }}</div>
+        <div class="info-row">
+          <div class="info-label text-truncate"><i class="bi bi-building me-2"></i>Organisasi</div>
+          <div class="info-value">{{ valOrDash(dataset.organization?.title || dataset.organization?.name) }}</div>
         </div>
 
-        <div class="info-row" v-if="dataset.groups && dataset.groups.length">
-          <div class="info-label">Subjek</div>
+        <div class="info-row">
+          <div class="info-label text-truncate"><i class="bi bi-bookmark-star me-2"></i>Subjek</div>
           <div class="info-value">
-            <span
-              v-for="group in dataset.groups"
-              :key="group.name"
-              class="info-badge-amber me-2 mb-1"
-            >
-              {{ group.display_name || group.title }}
-            </span>
-          </div>
-        </div>
-
-        <div class="info-row" v-if="dataset.license_title">
-          <div class="info-label">Lisensi</div>
-          <div class="info-value">{{ dataset.license_title }}</div>
-        </div>
-
-        <div class="info-row" v-if="dataset.metadata_created">
-          <div class="info-label">Dibuat</div>
-          <div class="info-value">{{ formatLongDate(dataset.metadata_created) }}</div>
-        </div>
-
-        <div class="info-row" v-if="dataset.metadata_modified">
-          <div class="info-label">Diperbarui</div>
-          <div class="info-value">{{ formatLongDate(dataset.metadata_modified) }}</div>
-        </div>
-
-        <div class="info-row" v-if="dataset.tags && dataset.tags.length">
-          <div class="info-label">Tag</div>
-          <div class="info-value">
-            <span
-              v-for="tag in dataset.tags"
-              :key="tag.name"
-              class="tag-badge me-2 mb-1"
-            >
-              {{ tag.display_name || tag.name }}
-            </span>
+            <template v-if="dataset.groups && dataset.groups.length">
+              <span
+                v-for="group in dataset.groups"
+                :key="group.name"
+                class="info-badge-amber me-2 mb-1"
+              >
+                {{ group.display_name || group.title }}
+              </span>
+            </template>
+            <template v-else>-</template>
           </div>
         </div>
 
         <div class="info-row">
-          <div class="info-label">Jumlah Resource</div>
-          <div class="info-value fw-bold">{{ dataset.num_resources || (dataset.resources && dataset.resources.length) || 0 }}</div>
+          <div class="info-label text-truncate"><i class="bi bi-shield-check me-2"></i>Lisensi</div>
+          <div class="info-value">{{ valOrDash(dataset.license_title) }}</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label text-truncate"><i class="bi bi-calendar-plus me-2"></i>Dibuat</div>
+          <div class="info-value">{{ formatLongDate(dataset.metadata_created) }}</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label text-truncate"><i class="bi bi-calendar-event me-2"></i>Diperbarui</div>
+          <div class="info-value">{{ formatLongDate(dataset.metadata_modified) }}</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label text-truncate"><i class="bi bi-tags me-2"></i>Tag</div>
+          <div class="info-value">
+            <template v-if="dataset.tags && dataset.tags.length">
+              <span
+                v-for="tag in dataset.tags"
+                :key="tag.name"
+                class="tag-badge me-2 mb-1"
+              >
+                {{ tag.display_name || tag.name }}
+              </span>
+            </template>
+            <template v-else>-</template>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label text-truncate"><i class="bi bi-files me-2"></i>Jumlah Resource</div>
+          <div class="info-value fw-bold">
+            {{ dataset.num_resources || (dataset.resources && dataset.resources.length) || 0 }}
+          </div>
         </div>
       </div>
     </div>
@@ -127,13 +135,26 @@
 }
 
 .detail-notes {
-  font-size: 1.0625rem;
+  font-size: 1rem;
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
 }
 
 .detail-notes.markdown-notes :deep(p) {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.detail-notes.markdown-notes :deep(strong) {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.detail-notes.markdown-notes :deep(br) {
+  content: "";
+  display: block;
+  margin-top: 0.5rem;
 }
 
 .detail-notes.markdown-notes :deep(p:last-child) {
@@ -261,16 +282,24 @@
 }
 
 .info-label {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+}
+
+.info-label i {
+  font-size: 1rem;
+  color: #94a3b8;
 }
 
 .info-value {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   color: var(--text-primary);
+  font-weight: 500;
 }
 
 .info-badge-amber {
@@ -322,14 +351,62 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-@media (max-width: 768px) {
-  .dataset-detail-card { padding: 1.5rem; }
-  .data-section {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+@media (max-width: 991px) {
+  .dataset-detail-card {
+    padding: 1.5rem;
+    border-radius: 20px;
   }
-  .info-row { grid-template-columns: 1fr; gap: 4px; padding: 1rem; }
-  .info-label { font-size: 0.75rem; }
+  .detail-title {
+    font-size: 1.75rem;
+  }
+  .detail-header {
+    margin-bottom: 2rem !important;
+  }
+  .data-section {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .info-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+  .info-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+  }
+  .info-value {
+    font-size: 0.875rem;
+    word-break: break-word;
+  }
+  .detail-notes {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+  
+  /* Robust table responsiveness for markdown content */
+  .markdown-notes :deep(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-title {
+    font-size: 1.4rem;
+  }
+  .info-section {
+    margin-bottom: 2rem !important;
+  }
 }
 </style>
 
@@ -338,7 +415,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { CKAN_ACTION_API } from '@/config/api'
-import { formatLongDate } from '../utils/dates'
+import { formatLongDate, formatDate } from '../utils/dates'
 import { renderCkanNotesMarkdown } from '../utils/renderCkanNotesMarkdown'
 import { useToast } from '@/composables/useToast'
 import JsonDatasetInsightPanel from './JsonDatasetInsightPanel.vue'
@@ -356,7 +433,12 @@ const jsonResource = computed(() => {
   return jsons.length ? jsons[0] : null
 })
 
-const notesHtml = computed(() => renderCkanNotesMarkdown(dataset.value?.notes))
+const notesHtml = computed(() => {
+  const notes = dataset.value?.notes || ''
+  return renderCkanNotesMarkdown(notes) || '<p>-</p>'
+})
+
+const valOrDash = (v) => (v === null || v === undefined || String(v).trim() === '' ? '-' : v)
 
 const fetchDataset = async (id) => {
   try {

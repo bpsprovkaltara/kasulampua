@@ -33,23 +33,39 @@
       </div>
       <div
         v-if="totalPages > 1"
-        class="jd-table-footer d-flex align-items-center justify-content-between mt-3 px-1"
+        class="jd-table-footer d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3 px-1"
       >
         <span class="text-muted small">Halaman {{ currentPage }} dari {{ totalPages }}</span>
-        <div class="d-flex gap-1">
+        <div class="pagination-container d-flex gap-1 align-items-center">
           <button
             type="button"
-            class="btn btn-sm btn-outline-secondary px-2"
+            class="btn btn-pagination"
             :disabled="currentPage <= 1"
             @click="currentPage--"
+            aria-label="Previous page"
           >
             <i class="bi bi-chevron-left"></i>
           </button>
+
+          <template v-for="page in pageNumbers" :key="page">
+            <button
+              v-if="typeof page === 'number'"
+              type="button"
+              class="btn btn-pagination"
+              :class="{ active: page === currentPage }"
+              @click="currentPage = page"
+            >
+              {{ page }}
+            </button>
+            <span v-else class="pagination-ellipsis px-1">{{ page }}</span>
+          </template>
+
           <button
             type="button"
-            class="btn btn-sm btn-outline-secondary px-2"
+            class="btn btn-pagination"
             :disabled="currentPage >= totalPages"
             @click="currentPage++"
+            aria-label="Next page"
           >
             <i class="bi bi-chevron-right"></i>
           </button>
@@ -72,6 +88,29 @@ const currentPage = ref(1)
 const pageSize = 50
 
 const totalPages = computed(() => Math.ceil(props.tableData.length / pageSize))
+
+const pageNumbers = computed(() => {
+  const current = currentPage.value
+  const total = totalPages.value
+  const pages = []
+  const range = 1 
+
+  for (let i = 1; i <= total; i++) {
+    if (
+      i === 1 || 
+      i === total || 
+      (i >= current - range && i <= current + range) 
+    ) {
+      pages.push(i)
+    } else if (i === current - range - 1 || i === current + range + 1) {
+      pages.push('...')
+    }
+  }
+  return pages.filter((item, pos, self) => {
+    return typeof item === 'number' || (item === '...' && self[pos - 1] !== '...')
+  })
+})
+
 const paginatedData = computed(() =>
   props.tableData.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize)
 )
@@ -88,7 +127,6 @@ const formatHeader = (col) =>
 
 const isNilaiColumn = (col) => String(col).toLowerCase() === 'nilai'
 
-/** Angka Indonesia / mentah → Number; null jika bukan angka */
 function parseLocaleNumber(raw) {
   if (raw === null || raw === undefined) return null
   const s = String(raw).trim()
@@ -98,9 +136,6 @@ function parseLocaleNumber(raw) {
   return Number.isFinite(n) ? n : null
 }
 
-/**
- * Kolom nilai: pemisah ribuan titik (id-ID) hanya jika |nilai| > 999; selain itu tampilkan as-is.
- */
 function formatCell(col, raw) {
   if (!isNilaiColumn(col)) return raw === null || raw === undefined ? '' : raw
   const n = parseLocaleNumber(raw)
@@ -140,5 +175,45 @@ function formatCell(col, raw) {
 }
 .jd-table-footer {
   padding: 0 0.25rem;
+}
+
+.btn-pagination {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-pagination:hover:not(:disabled) {
+  border-color: #d97706;
+  color: #d97706;
+  background: #fffbeb;
+}
+
+.btn-pagination.active {
+  background: #d97706;
+  color: white;
+  border-color: #d97706;
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+}
+
+.btn-pagination:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 </style>

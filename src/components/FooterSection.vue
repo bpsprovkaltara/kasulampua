@@ -184,7 +184,7 @@ const footerSections = [
                 <MapPin size="16" class="text-amber" />
               </div>
               <p class="opacity-75 fs-xs mb-0 text-secondary-light">
-                Jl. Gubernur Syarkawi No. 123, Tanjung Selor, Kalimantan Utara 77212
+                Jl. Kolonel Soetadji No.1, Tj. Selor Hilir, Kec. Tj. Selor, Kabupaten Bulungan, Kalimantan Utara 77212
               </p>
             </div>
             <div class="d-flex align-items-start mb-3">
@@ -192,15 +192,14 @@ const footerSections = [
                 <Phone size="16" class="text-amber" />
               </div>
               <div class="opacity-75 fs-xs text-secondary-light">
-                <p class="mb-1">+62 551 21234</p>
-                <p class="mb-0">+62 551 21235</p>
+                <p class="mb-1">+62 821 5472 0118</p>
               </div>
             </div>
             <div class="d-flex align-items-center">
               <div class="icon-box me-3">
                 <Mail size="16" class="text-amber" />
               </div>
-              <p class="opacity-75 fs-xs mb-0 text-secondary-light">bps6500@bps.go.id</p>
+              <p class="opacity-75 fs-xs mb-0 text-secondary-light">bappedakaltara@gmail.com</p>
             </div>
           </div>
         </div>
@@ -324,9 +323,35 @@ const footerSections = [
   transition: all 0.3s ease;
 }
 
+@media (max-width: 991px) {
+  .main-footer {
+    padding-top: 3rem;
+  }
+}
+
 @media (max-width: 767px) {
   .cursor-pointer-mobile {
     cursor: pointer;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 0 !important;
+  }
+  .footer-list-mobile {
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-box {
+    width: 32px;
+    height: 32px;
+  }
+  .fs-small {
+    font-size: 0.85rem !important;
+  }
+  .fs-xs {
+    font-size: 0.75rem !important;
   }
 }
 

@@ -12,6 +12,19 @@ export const MATOMO_ENDPOINT = {
 export const API_ENDPOINTS = {
   BASE_URL: `${API_BASE_URL}`,
 
+  // Auth
+  LOGIN: `${API_BASE_URL}/api/login`,
+  REGISTER: `${API_BASE_URL}/api/register`,
+  PROFILE: `${API_BASE_URL}/api/profile`,
+  OAUTH_TOKEN: `${API_BASE_URL}/api/oauth/token`,
+
+  // Users
+  USERS: `${API_BASE_URL}/api/users`,
+  USER_DETAIL: (id) => `${API_BASE_URL}/api/users/${id}`,
+
+  // Analytics
+  ANALYTICS_VISITORS: `${API_BASE_URL}/api/analytics/visitors`,
+
   // CRUD Berita
   BERITA: `${API_BASE_URL}/api/berita`,
   BERITA_SLUG: ($slug) => `${API_BASE_URL}/api/berita/slug/${$slug}`,
