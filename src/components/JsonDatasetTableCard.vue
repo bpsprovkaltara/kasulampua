@@ -9,10 +9,18 @@
               <th
                 v-for="col in columns"
                 :key="col"
-                class="jd-th"
+                class="jd-th jd-sortable-th"
                 :class="{ 'text-end': isNilaiColumn(col) }"
+                @click="toggleSort(col)"
               >
-                {{ formatHeader(col) }}
+                <span class="d-inline-flex align-items-center gap-1">
+                  {{ formatHeader(col) }}
+                  <i
+                    class="bi"
+                    :class="sortIconClass(col)"
+                    aria-hidden="true"
+                  ></i>
+                </span>
               </th>
             </tr>
           </thead>
@@ -36,40 +44,7 @@
         class="jd-table-footer d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3 px-1"
       >
         <span class="text-muted small">Halaman {{ currentPage }} dari {{ totalPages }}</span>
-        <div class="pagination-container d-flex gap-1 align-items-center">
-          <button
-            type="button"
-            class="btn btn-pagination"
-            :disabled="currentPage <= 1"
-            @click="currentPage--"
-            aria-label="Previous page"
-          >
-            <i class="bi bi-chevron-left"></i>
-          </button>
-
-          <template v-for="page in pageNumbers" :key="page">
-            <button
-              v-if="typeof page === 'number'"
-              type="button"
-              class="btn btn-pagination"
-              :class="{ active: page === currentPage }"
-              @click="currentPage = page"
-            >
-              {{ page }}
-            </button>
-            <span v-else class="pagination-ellipsis px-1">{{ page }}</span>
-          </template>
-
-          <button
-            type="button"
-            class="btn btn-pagination"
-            :disabled="currentPage >= totalPages"
-            @click="currentPage++"
-            aria-label="Next page"
-          >
-            <i class="bi bi-chevron-right"></i>
-          </button>
-        </div>
+        <PaginationControl :current-page="currentPage" :total-pages="totalPages" @change="setPage" />
       </div>
     </div>
     <div v-else class="text-muted small py-3 text-center">Tidak ada data untuk ditampilkan.</div>
@@ -78,6 +53,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import PaginationControl from './PaginationControl.vue'
 
 const props = defineProps({
   tableData: { type: Array, default: () => [] },
@@ -86,33 +62,19 @@ const props = defineProps({
 
 const currentPage = ref(1)
 const pageSize = 50
+const sortKey = ref('')
+const sortDirection = ref('asc')
 
-const totalPages = computed(() => Math.ceil(props.tableData.length / pageSize))
-
-const pageNumbers = computed(() => {
-  const current = currentPage.value
-  const total = totalPages.value
-  const pages = []
-  const range = 1 
-
-  for (let i = 1; i <= total; i++) {
-    if (
-      i === 1 || 
-      i === total || 
-      (i >= current - range && i <= current + range) 
-    ) {
-      pages.push(i)
-    } else if (i === current - range - 1 || i === current + range + 1) {
-      pages.push('...')
-    }
-  }
-  return pages.filter((item, pos, self) => {
-    return typeof item === 'number' || (item === '...' && self[pos - 1] !== '...')
-  })
+const sortedData = computed(() => {
+  if (!sortKey.value) return props.tableData
+  const col = sortKey.value
+  const dir = sortDirection.value === 'desc' ? -1 : 1
+  return [...props.tableData].sort((a, b) => compareRows(col, a[col], b[col]) * dir)
 })
 
+const totalPages = computed(() => Math.ceil(sortedData.value.length / pageSize))
 const paginatedData = computed(() =>
-  props.tableData.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize)
+  sortedData.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize)
 )
 
 watch(
@@ -127,21 +89,70 @@ const formatHeader = (col) =>
 
 const isNilaiColumn = (col) => String(col).toLowerCase() === 'nilai'
 
+function toggleSort(col) {
+  if (sortKey.value !== col) {
+    sortKey.value = col
+    sortDirection.value = 'asc'
+  } else {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  }
+  currentPage.value = 1
+}
+
+function sortIconClass(col) {
+  if (sortKey.value !== col) return 'bi-arrow-down-up jd-sort-icon'
+  return sortDirection.value === 'asc'
+    ? 'bi-sort-down-alt jd-sort-icon-active'
+    : 'bi-sort-up jd-sort-icon-active'
+}
+
+function setPage(page) {
+  currentPage.value = page
+}
+
+/** Angka CKAN (titik = desimal) atau id-ID (titik ribuan, koma desimal) → Number; null jika bukan angka */
 function parseLocaleNumber(raw) {
   if (raw === null || raw === undefined) return null
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null
   const s = String(raw).trim()
   if (s === '' || s === '-' || s === '—') return null
-  const normalized = s.replace(/\./g, '').replace(',', '.')
-  const n = Number(normalized)
+  if (s.includes(',')) {
+    const normalized = s.replace(/\./g, '').replace(',', '.')
+    const n = Number(normalized)
+    return Number.isFinite(n) ? n : null
+  }
+  const n = parseFloat(s)
   return Number.isFinite(n) ? n : null
 }
 
+/**
+ * Kolom nilai: selalu format id-ID (ribuan titik, desimal koma); CKAN mentah memakai titik desimal.
+ */
 function formatCell(col, raw) {
   if (!isNilaiColumn(col)) return raw === null || raw === undefined ? '' : raw
   const n = parseLocaleNumber(raw)
   if (n === null || !Number.isFinite(n)) return raw === null || raw === undefined ? '' : raw
-  if (Math.abs(n) <= 999) return String(raw).trim()
   return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 20 }).format(n)
+}
+
+function compareRows(col, aRaw, bRaw) {
+  const aNilai = isNilaiColumn(col) ? parseLocaleNumber(aRaw) : null
+  const bNilai = isNilaiColumn(col) ? parseLocaleNumber(bRaw) : null
+  if (aNilai !== null && bNilai !== null) return aNilai - bNilai
+
+  const aEmpty = aRaw === null || aRaw === undefined || String(aRaw).trim() === ''
+  const bEmpty = bRaw === null || bRaw === undefined || String(bRaw).trim() === ''
+  if (aEmpty && bEmpty) return 0
+  if (aEmpty) return 1
+  if (bEmpty) return -1
+
+  const aNum = parseLocaleNumber(aRaw)
+  const bNum = parseLocaleNumber(bRaw)
+  if (aNum !== null && bNum !== null) return aNum - bNum
+
+  const aStr = String(aRaw).trim()
+  const bStr = String(bRaw).trim()
+  return aStr.localeCompare(bStr, 'id', { numeric: true, sensitivity: 'base' })
 }
 </script>
 
@@ -163,6 +174,18 @@ function formatCell(col, raw) {
   border-bottom: 2px solid #e2e8f0 !important;
   white-space: nowrap;
 }
+.jd-sortable-th {
+  cursor: pointer;
+  user-select: none;
+}
+.jd-sort-icon {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.jd-sort-icon-active {
+  font-size: 0.75rem;
+  color: var(--primary-color, #d97706);
+}
 .jd-td {
   font-size: 0.875rem;
   padding: 0.55rem 1rem !important;
@@ -175,45 +198,8 @@ function formatCell(col, raw) {
 }
 .jd-table-footer {
   padding: 0 0.25rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
-.btn-pagination {
-  min-width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.btn-pagination:hover:not(:disabled) {
-  border-color: #d97706;
-  color: #d97706;
-  background: #fffbeb;
-}
-
-.btn-pagination.active {
-  background: #d97706;
-  color: white;
-  border-color: #d97706;
-  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
-}
-
-.btn-pagination:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.pagination-ellipsis {
-  color: #94a3b8;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
 </style>

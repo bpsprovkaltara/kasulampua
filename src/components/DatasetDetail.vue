@@ -434,11 +434,28 @@ const jsonResource = computed(() => {
 })
 
 const notesHtml = computed(() => {
-  const notes = dataset.value?.notes || ''
-  return renderCkanNotesMarkdown(notes) || '<p>-</p>'
+  const notes = renderCkanNotesMarkdown(dataset.value?.notes || '') || '<p>-</p>'
+  return stripDuplicateTitleHeading(notes, dataset.value?.title)
 })
 
 const valOrDash = (v) => (v === null || v === undefined || String(v).trim() === '' ? '-' : v)
+
+function stripDuplicateTitleHeading(html, title) {
+  if (!html || !title) return html || ''
+  if (typeof window === 'undefined') return html
+
+  const parser = new window.DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  const firstHeading = doc.body.querySelector('h1, h2, h3')
+  if (!firstHeading) return html
+
+  const headingText = firstHeading.textContent?.trim().toLowerCase()
+  const titleText = String(title).trim().toLowerCase()
+  if (headingText && headingText === titleText) {
+    firstHeading.remove()
+  }
+  return doc.body.innerHTML
+}
 
 const fetchDataset = async (id) => {
   try {

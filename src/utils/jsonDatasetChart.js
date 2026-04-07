@@ -6,7 +6,15 @@ const normalizeCell = (v) => (v === null || v === undefined ? '' : String(v).tri
 
 function parseNumber(v) {
   if (v === null || v === undefined || v === '') return null
-  const n = Number(String(v).replace(/,/g, ''))
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null
+  const s = String(v).trim()
+  if (s === '' || s === '-' || s === '—') return null
+  if (s.includes(',')) {
+    const normalized = s.replace(/\./g, '').replace(',', '.')
+    const n = Number(normalized)
+    return Number.isFinite(n) ? n : null
+  }
+  const n = parseFloat(s)
   return Number.isFinite(n) ? n : null
 }
 

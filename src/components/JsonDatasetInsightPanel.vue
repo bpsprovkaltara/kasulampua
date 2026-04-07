@@ -38,7 +38,7 @@
           <button
             v-if="resource.url && resource.url !== '-'"
             type="button"
-            class="btn btn-sm btn-orange-amber rounded-pill px-3"
+            class="btn btn-sm rounded-pill px-3 jd-btn-json"
             @click="downloadJson"
           >
             <i class="bi bi-filetype-json me-1"></i> Unduh JSON
@@ -99,11 +99,101 @@
         :columns="visibleCols"
       />
 
-      <JsonDatasetChartCard
-        v-else-if="activeTab === 'chart'"
-        :table-data="filteredData"
-        :columns="visibleCols"
-      />
+      <div v-else-if="activeTab === 'chart'" class="jd-chart-layout row g-3 align-items-start">
+        <aside class="col-12 col-lg-4 col-xl-3 jd-chart-filters">
+          <div class="jd-filter-card">
+            <h6 class="jd-filter-title mb-3">Filter grafik</h6>
+
+            <div v-if="vervalFilterKey" class="jd-filter-group mb-3">
+              <div class="jd-filter-label mb-2">verval_label</div>
+              <div class="jd-filter-checklist">
+                <div
+                  v-for="(opt, idx) in vervalOptions"
+                  :key="'v-' + idx + '-' + opt"
+                  class="form-check form-check-sm"
+                >
+                  <input
+                    :id="'jd-verval-' + idx"
+                    class="form-check-input"
+                    type="checkbox"
+                    :checked="selectedVerval.includes(opt)"
+                    @change="toggleVerval(opt, $event.target.checked)"
+                  />
+                  <label class="form-check-label small" :for="'jd-verval-' + idx">{{
+                    opt
+                  }}</label>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="showTurvarFilter" class="jd-filter-group mb-3">
+              <div class="jd-filter-label mb-2">turvar_label</div>
+              <div class="jd-filter-checklist">
+                <div
+                  v-for="(opt, idx) in turvarOptions"
+                  :key="'t-' + idx + '-' + opt"
+                  class="form-check form-check-sm"
+                >
+                  <input
+                    :id="'jd-turvar-' + idx"
+                    class="form-check-input"
+                    type="checkbox"
+                    :checked="selectedTurvar.includes(opt)"
+                    @change="toggleTurvar(opt, $event.target.checked)"
+                  />
+                  <label class="form-check-label small" :for="'jd-turvar-' + idx">{{
+                    opt
+                  }}</label>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="hiddenInfo.isAggregateKey" class="jd-filter-group mb-0">
+              <div class="jd-filter-label mb-2">is_aggregate</div>
+              <div class="d-flex flex-column gap-1">
+                <div class="form-check form-check-sm">
+                  <input
+                    id="jd-agg-all"
+                    v-model="isAggregateFilter"
+                    class="form-check-input"
+                    type="radio"
+                    value="all"
+                  />
+                  <label class="form-check-label small" for="jd-agg-all">Semua data</label>
+                </div>
+                <div class="form-check form-check-sm">
+                  <input
+                    id="jd-agg-without"
+                    v-model="isAggregateFilter"
+                    class="form-check-input"
+                    type="radio"
+                    value="without"
+                  />
+                  <label class="form-check-label small" for="jd-agg-without"
+                    >Tanpa agregat</label
+                  >
+                </div>
+                <div class="form-check form-check-sm">
+                  <input
+                    id="jd-agg-only"
+                    v-model="isAggregateFilter"
+                    class="form-check-input"
+                    type="radio"
+                    value="only"
+                  />
+                  <label class="form-check-label small" for="jd-agg-only">Hanya agregat</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div class="col-12 col-lg col-xl jd-chart-main">
+          <JsonDatasetChartCard
+            :table-data="chartFilteredData"
+            :columns="visibleCols"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -154,11 +244,126 @@ const filteredData = computed(() => {
 const formatHeader = (col) =>
   String(col).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 
+/** @type {import('vue').Ref<string[]>} */
+const selectedVerval = ref([])
+/** @type {import('vue').Ref<string[]>} */
+const selectedTurvar = ref([])
+/** 'all' | 'without' | 'only' — default exclude aggregate rows */
+const isAggregateFilter = ref('without')
+
 const hiddenInfo = computed(() => computeHiddenColumns(tableData.value, allColumns.value))
 
 const visibleCols = computed(() =>
   visibleColumnsList(allColumns.value, hiddenInfo.value.hiddenKeys)
 )
+
+const cellStr = (v) => (v === null || v === undefined ? '' : String(v).trim())
+
+function rowIsAggregateTrue(row, key) {
+  if (!key || !(key in row)) return false
+  const v = row[key]
+  if (v === true || v === 1) return true
+  if (typeof v === 'string') {
+    const u = v.trim().toLowerCase()
+    return u === 'true' || u === '1' || u === 'yes' || u === 'ya'
+  }
+  return false
+}
+
+const vervalFilterKey = computed(() => hiddenInfo.value.vervalKey)
+
+const vervalOptions = computed(() => {
+  const key = vervalFilterKey.value
+  if (!key || !tableData.value.length) return []
+  const uniq = new Set()
+  for (const row of tableData.value) {
+    const s = cellStr(row[key])
+    if (s) uniq.add(s)
+  }
+  return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
+})
+
+const showTurvarFilter = computed(() => {
+  const key = hiddenInfo.value.turvarKey
+  if (!key || !tableData.value.length) return false
+  const meaningful = new Set()
+  for (const row of tableData.value) {
+    const s = cellStr(row[key])
+    if (!s) continue
+    if (s.toLowerCase() === 'tidak ada') continue
+    meaningful.add(s)
+  }
+  return meaningful.size > 1
+})
+
+const turvarOptions = computed(() => {
+  const key = hiddenInfo.value.turvarKey
+  if (!key || !tableData.value.length) return []
+  const uniq = new Set()
+  for (const row of tableData.value) {
+    const s = cellStr(row[key])
+    if (s !== '') uniq.add(s)
+  }
+  return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
+})
+
+const chartFilteredData = computed(() => {
+  const hi = hiddenInfo.value
+  let rows = filteredData.value
+
+  const aggKey = hi.isAggregateKey
+  if (aggKey) {
+    if (isAggregateFilter.value === 'without') {
+      rows = rows.filter((r) => !rowIsAggregateTrue(r, aggKey))
+    } else if (isAggregateFilter.value === 'only') {
+      rows = rows.filter((r) => rowIsAggregateTrue(r, aggKey))
+    }
+  }
+
+  const vk = hi.vervalKey
+  if (vk && selectedVerval.value.length) {
+    const allow = new Set(selectedVerval.value)
+    rows = rows.filter((r) => allow.has(cellStr(r[vk])))
+  }
+
+  const tk = hi.turvarKey
+  if (tk && selectedTurvar.value.length) {
+    const allow = new Set(selectedTurvar.value)
+    rows = rows.filter((r) => allow.has(cellStr(r[tk])))
+  }
+
+  return rows
+})
+
+function initChartFilterSelections() {
+  selectedVerval.value = [...vervalOptions.value]
+  selectedTurvar.value = [...turvarOptions.value]
+}
+
+function toggleVerval(opt, checked) {
+  if (checked) {
+    if (!selectedVerval.value.includes(opt)) selectedVerval.value = [...selectedVerval.value, opt]
+  } else {
+    selectedVerval.value = selectedVerval.value.filter((x) => x !== opt)
+  }
+}
+
+function toggleTurvar(opt, checked) {
+  if (checked) {
+    if (!selectedTurvar.value.includes(opt)) selectedTurvar.value = [...selectedTurvar.value, opt]
+  } else {
+    selectedTurvar.value = selectedTurvar.value.filter((x) => x !== opt)
+  }
+}
+
+watch(turvarOptions, (nextOptions) => {
+  if (!nextOptions.length) {
+    selectedTurvar.value = []
+    return
+  }
+  const allowed = new Set(nextOptions)
+  selectedTurvar.value = selectedTurvar.value.filter((v) => allowed.has(v))
+})
 
 const getProxyUrl = (originalUrl) => {
   if (!originalUrl) return ''
@@ -223,6 +428,7 @@ const fetchData = async () => {
 
     allColumns.value = cols
     tableData.value = rows
+    initChartFilterSelections()
   } catch (err) {
     console.error('Gagal memuat resource JSON:', err)
     error.value = 'Gagal memuat data: ' + (err.message || 'Kesalahan tidak diketahui')
@@ -236,6 +442,7 @@ watch(
   () => {
     activeTab.value = 'table'
     filterValue.value = ''
+    isAggregateFilter.value = 'without'
     fetchData()
   },
   { immediate: true }
@@ -270,9 +477,23 @@ watch(
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 100px;
-  background: white;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  background: var(--primary-color, #d97706);
+  color: #fff;
+  border: 1px solid var(--primary-color, #d97706);
+}
+
+.jd-btn-json {
+  background: #334155;
+  color: #fff;
+  border: 1px solid #334155;
+  font-weight: 700;
+}
+
+.jd-btn-json:hover,
+.jd-btn-json:focus-visible {
+  background: #475569;
+  color: #fff;
+  border-color: #475569;
 }
 
 .rv-tabs {
@@ -301,16 +522,6 @@ watch(
   background: white;
   color: #d97706;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
-.btn-orange-amber {
-  background: #d97706;
-  color: white;
-  border: 1px solid #d97706;
-}
-.btn-orange-amber:hover {
-  background: #b45309;
-  color: white;
 }
 
 .jd-filter-select-lg {
@@ -349,5 +560,55 @@ watch(
   color: #f59e0b;
   font-size: 1.25rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.jd-chart-layout {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.jd-chart-filters {
+  min-width: 0;
+}
+
+@media (min-width: 992px) {
+  .jd-chart-filters {
+    max-width: 360px;
+  }
+}
+
+.jd-filter-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem 1rem 1.1rem;
+}
+
+.jd-filter-title {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin: 0;
+}
+
+.jd-filter-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.jd-filter-checklist {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.jd-chart-main {
+  min-width: 0;
 }
 </style>

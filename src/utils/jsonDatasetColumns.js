@@ -41,13 +41,26 @@ export function columnAllEqual(rows, colKey, literal, caseInsensitive = false) {
 /**
  * @param {object[]} rows
  * @param {string[]} columns - original column order
- * @returns {{ hiddenKeys: Set<string>, turvarKey: string|null, turtahunKey: string|null }}
+ * @returns {{
+ *   hiddenKeys: Set<string>,
+ *   turvarKey: string|null,
+ *   turtahunKey: string|null,
+ *   vervalKey: string|null,
+ *   isAggregateKey: string|null
+ * }}
  */
 export function computeHiddenColumns(rows, columns) {
   const hiddenKeys = new Set()
-  const turvarKey = pickColumnByNameOrIndex(columns, 'turvar_label', 2)
+  const vervalKey = pickColumnByNameOrIndex(columns, 'verval_label', 1)
+  const turvarKey =
+    columns?.find((c) => String(c).toLowerCase() === 'turvar_label') ?? null
   const turtahunKey = pickColumnByNameOrIndex(columns, 'turtahun', 4)
+  const isAggregateKey =
+    columns?.find((c) => String(c).toLowerCase() === 'is_aggregate') ?? null
 
+  if (isAggregateKey) {
+    hiddenKeys.add(isAggregateKey)
+  }
   if (turvarKey && columnAllEqual(rows, turvarKey, 'Tidak ada', true)) {
     hiddenKeys.add(turvarKey)
   }
@@ -55,7 +68,7 @@ export function computeHiddenColumns(rows, columns) {
     hiddenKeys.add(turtahunKey)
   }
 
-  return { hiddenKeys, turvarKey, turtahunKey }
+  return { hiddenKeys, turvarKey, turtahunKey, vervalKey, isAggregateKey }
 }
 
 /**
