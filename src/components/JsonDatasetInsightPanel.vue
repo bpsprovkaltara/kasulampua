@@ -384,8 +384,8 @@ const downloadExcel = () => {
 }
 
 const downloadJson = () => {
-  if (!tableData.value.length) return
-  const dataStr = JSON.stringify(tableData.value, null, 2)
+  if (!filteredData.value.length) return
+  const dataStr = JSON.stringify(filteredData.value, null, 2)
   const name = (props.resource.name || 'data').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 50)
   saveAs(new Blob([dataStr], { type: 'application/json' }), `${name}.json`)
 }
@@ -411,23 +411,8 @@ const fetchData = async () => {
     const { cols, rows: rawRows } = parseJsonResource(json)
     if (!rawRows.length) throw new Error('Format JSON tidak dikenali atau data kosong')
 
-    const aggregateKey = cols.find(
-      (c) => c.toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim() === 'is aggregate'
-    )
-
-    let rows = rawRows
-    if (aggregateKey) {
-      rows = rawRows.filter((r) => {
-        const val = r[aggregateKey]
-        if (val === true || String(val).toLowerCase() === 'true' || val === 1 || val === '1') {
-          return false
-        }
-        return true
-      })
-    }
-
     allColumns.value = cols
-    tableData.value = rows
+    tableData.value = rawRows
     initChartFilterSelections()
   } catch (err) {
     console.error('Gagal memuat resource JSON:', err)

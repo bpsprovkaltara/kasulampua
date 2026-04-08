@@ -415,7 +415,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { CKAN_ACTION_API } from '@/config/api'
-import { formatLongDate, formatDate } from '../utils/dates'
+import { formatLongDate } from '../utils/dates'
 import { renderCkanNotesMarkdown } from '../utils/renderCkanNotesMarkdown'
 import { useToast } from '@/composables/useToast'
 import JsonDatasetInsightPanel from './JsonDatasetInsightPanel.vue'
