@@ -1133,4 +1133,53 @@ onMounted(() => {
     min-height: 380px;
   }
 }
+
+@media (max-width: 576px) {
+  .viz-card-header {
+    padding: 1.25rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  .header-main {
+    width: 100%;
+  }
+  .viz-icon-box {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  .viz-chart-toggles {
+    width: 100%;
+    padding: 4px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 10px 5px;
+  }
+  .toggle-btn span {
+    display: none;
+  }
+  .toggle-btn i {
+    margin-right: 0 !important;
+    font-size: 1.1rem;
+  }
+  .chart-wrapper {
+    height: 280px;
+  }
+  .viz-card-body {
+    padding: 1rem;
+  }
+  .viz-card-footer {
+    padding: 1rem;
+  }
+  .stat-mini-card {
+    padding: 10px 12px;
+  }
+  .stat-value {
+    font-size: 1.125rem;
+  }
+}
 </style>

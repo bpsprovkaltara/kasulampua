@@ -668,13 +668,14 @@ watch([selectedData], () => {
 }
 
 .chart-type-toggle {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  background: white;
-  padding: 6px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 6px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    width: fit-content;
 }
 
 .type-btn {
@@ -811,7 +812,8 @@ watch([selectedData], () => {
   }
 
   .chart-type-toggle {
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    gap: 6px;
   }
 }
 
@@ -858,14 +860,22 @@ watch([selectedData], () => {
     grid-column: 1;
   }
   .chart-type-toggle {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    padding: 6px;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px;
+    padding: 4px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    width: fit-content;
   }
   .type-btn {
-    min-height: 40px;
-    font-size: 0.85rem;
-    border-radius: 10px;
+    width: 38px !important;
+    height: 38px !important;
+    flex: 0 0 38px !important;
+    min-height: 38px !important;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    padding: 0 !important;
   }
   .chart-container-card {
     padding: 1.25rem 1rem;
@@ -886,8 +896,9 @@ watch([selectedData], () => {
   .btn-download-chart {
     width: 100%;
     justify-content: center;
-    padding: 1rem !important;
-    font-size: 1rem;
+    padding: 10px 16px !important;
+    font-size: 0.75rem;
+    border-radius: 10px;
   }
   .badge-satuan {
     display: inline-block;
