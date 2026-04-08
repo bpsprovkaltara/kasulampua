@@ -42,7 +42,7 @@ const organizationListPath = computed(() => {
 const title_detail = computed(() => ({
   title: datasetTitle.value,
   parent: [
-    { label: 'Subjek', path: '/dataset' },
+    { label: 'Dataset', path: '/dataset' },
     { label: organizationTitle.value, path: organizationListPath.value }
   ]
 }))

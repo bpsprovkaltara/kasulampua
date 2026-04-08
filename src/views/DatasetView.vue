@@ -24,7 +24,7 @@
           </p>
         </div>
 
-        <div class="col-lg-4 d-none d-lg-flex justify-content-end">
+        <div class="col-lg-4 d-flex justify-content-lg-end justify-content-center mt-4 mt-lg-0">
           <div class="hero-meta-card">
             <div class="hero-meta-item">
               <span class="hm-num">{{ total }}</span>
@@ -44,7 +44,7 @@
   <div class="dataset-content py-5">
     <div class="container-xl">
       <div class="row g-4">
-        <div class="col-lg-3 order-2 order-lg-1">
+        <div class="col-lg-3 order-1 order-lg-1">
           <div class="sidebar-wrapper">
             <!-- Search (mobile) -->
             <div class="d-lg-none mb-3">
@@ -124,7 +124,7 @@
           </div>
         </div>
 
-        <div class="col-lg-9 order-1 order-lg-2">
+        <div class="col-lg-9 order-2 order-lg-2">
           <div class="topbar mb-4">
             <div class="d-none d-lg-block">
               <div class="search-box">
@@ -243,8 +243,8 @@ const selectedCategory = ref(null)
 const selectedWilayah = ref(null)
 const currentPage = ref(1)
 const limit = 12
-const categoryExpanded = ref(false)
-const wilayahExpanded = ref(false)
+const categoryExpanded = ref(true)
+const wilayahExpanded = ref(true)
 
 const datasets = ref([])
 const total = ref(0)
@@ -498,7 +498,7 @@ onMounted(async () => {
   padding: 0 10px;
 }
 .sidebar-card-body.collapsible.expanded {
-  max-height: min(1000px, calc(100vh - 10rem));
+  max-height: 320px;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 10px;
@@ -740,10 +740,12 @@ onMounted(async () => {
   font-size: 0.875rem;
   color: var(--text-secondary);
   margin: 0;
-  white-space: nowrap;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 500px;
+  max-width: 600px;
 }
 
 .detail-label {
@@ -836,11 +838,20 @@ onMounted(async () => {
     padding-top: 1rem;
     border-top: 1px solid #f1f5f9;
   }
+  .hero-meta-card {
+    padding: 1rem 1.5rem;
+    gap: 1rem;
+    width: 100%;
+    justify-content: space-around;
+  }
+  .hm-num {
+    font-size: 1.75rem;
+  }
 }
 
 @media (max-width: 480px) {
   .hero-v2-title {
-    font-size: 2.25rem;
+    font-size: 2rem;
   }
   .search-box {
     border-radius: 12px;
@@ -848,6 +859,16 @@ onMounted(async () => {
   .search-input {
     font-size: 0.95rem;
     padding: 0.75rem 1rem 0.75rem 2.75rem;
+  }
+  .item-content {
+    width: 100%;
+  }
+  .item-notes {
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    max-width: 100%;
+    white-space: normal;
   }
 }
 </style>
