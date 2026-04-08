@@ -29,7 +29,7 @@ export function ckanOrgToWilayahLabel(org) {
     .replace(/_/g, '-')
 
   if (isNationalBpsSlug(slug)) {
-    return 'Indonesia'
+    return 'Kasulampua'
   }
 
   if (!title) {
@@ -39,12 +39,12 @@ export function ckanOrgToWilayahLabel(org) {
   const normalized = title.replace(/\s+/g, ' ')
 
   if (/^badan\s+pusat\s+statistik$/i.test(normalized)) {
-    return 'Indonesia'
+    return 'Kasulampua'
   }
 
   /** Hanya "BPS" / "bps" tanpa nama wilayah — dipetakan ke Indonesia (kantor pusat). */
   if (/^bps$/i.test(normalized)) {
-    return 'Indonesia'
+    return 'Kasulampua'
   }
 
   let rest = normalized
@@ -56,7 +56,7 @@ export function ckanOrgToWilayahLabel(org) {
     .trim()
 
   if (rest !== normalized) {
-    if (!rest || /^bps$/i.test(rest)) return 'Indonesia'
+    if (!rest || /^bps$/i.test(rest)) return 'Kasulampua'
     return rest
   }
 
@@ -65,8 +65,8 @@ export function ckanOrgToWilayahLabel(org) {
 
 export function sortWilayahRegions(regions) {
   return [...regions].sort((a, b) => {
-    if (a.label === 'Indonesia') return -1
-    if (b.label === 'Indonesia') return 1
+    if (a.label === 'Kasulampua') return -1
+    if (b.label === 'Kasulampua') return 1
     return a.label.localeCompare(b.label, 'id')
   })
 }
