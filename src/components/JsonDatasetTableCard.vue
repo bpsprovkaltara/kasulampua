@@ -25,7 +25,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(row, idx) in paginatedData" :key="idx">
+            <tr
+              v-for="(row, idx) in paginatedData"
+              :key="idx"
+              :class="{ 'row-aggregate': isAggregateRow(row) }"
+            >
               <td class="text-center text-muted small jd-td">{{ (currentPage - 1) * pageSize + idx + 1 }}</td>
               <td
                 v-for="col in columns"
@@ -154,6 +158,17 @@ function compareRows(col, aRaw, bRaw) {
   const bStr = String(bRaw).trim()
   return aStr.localeCompare(bStr, 'id', { numeric: true, sensitivity: 'base' })
 }
+
+function isAggregateRow(row) {
+  if (!row || !('is_aggregate' in row)) return false
+  const v = row['is_aggregate']
+  if (v === true || v === 1) return true
+  if (typeof v === 'string') {
+    const u = v.trim().toLowerCase()
+    return u === 'true' || u === '1' || u === 'yes' || u === 'ya'
+  }
+  return false
+}
 </script>
 
 <style scoped>
@@ -196,6 +211,12 @@ function compareRows(col, aRaw, bRaw) {
 .jd-td-nilai {
   font-variant-numeric: tabular-nums;
 }
+.row-aggregate td {
+  background-color: #fffbeb !important;
+  font-weight: 600;
+  color: #92400e;
+}
+
 .jd-table-footer {
   padding: 0 0.25rem;
   gap: 0.75rem;

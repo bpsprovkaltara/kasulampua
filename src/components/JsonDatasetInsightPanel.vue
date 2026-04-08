@@ -46,33 +46,6 @@
         </div>
       </div>
 
-      <div v-if="filterOptions.length > 1" class="jd-filter-bar mb-4">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="filter-icon-box">
-              <i class="bi bi-funnel-fill"></i>
-            </div>
-            <div>
-              <h6 class="mb-0 fw-bold text-dark">Saring Data</h6>
-              <p class="small text-muted mb-0">Tampilkan data berdasarkan {{ formatHeader(firstCol) }} tertentu</p>
-            </div>
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            <select v-model="filterValue" class="form-select form-select-sm jd-filter-select-lg">
-              <option value="">Semua {{ formatHeader(firstCol) }}</option>
-              <option v-for="opt in filterOptions" :key="opt" :value="opt">{{ opt }}</option>
-            </select>
-            <button 
-              v-if="filterValue" 
-              @click="filterValue = ''" 
-              class="btn btn-sm btn-link text-decoration-none text-muted fw-bold px-2"
-              title="Bersihkan filter"
-            >
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div class="rv-tabs mb-4">
         <button
@@ -101,88 +74,83 @@
 
       <div v-else-if="activeTab === 'chart'" class="jd-chart-layout row g-3 align-items-start">
         <aside class="col-12 col-lg-4 col-xl-3 jd-chart-filters">
-          <div class="jd-filter-card">
-            <h6 class="jd-filter-title mb-3">Filter grafik</h6>
+          <div class="jd-filter-container">
+            <div class="jd-filter-header-main">
+              <i class="bi bi-sliders2-vertical me-2"></i>
+              <h6 class="jd-sidebar-main-title">Filter visualisasi</h6>
+            </div>
 
-            <div v-if="vervalFilterKey" class="jd-filter-group mb-3">
-              <div class="jd-filter-label mb-2">verval_label</div>
-              <div class="jd-filter-checklist">
+            <div v-if="vervalFilterKey" class="jd-filter-section mb-4">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-patch-check me-2"></i>
+                <span>Verval</span>
+              </div>
+              <div class="jd-filter-list custom-scrollbar">
                 <div
                   v-for="(opt, idx) in vervalOptions"
                   :key="'v-' + idx + '-' + opt"
-                  class="form-check form-check-sm"
+                  class="jd-check-item"
                 >
                   <input
                     :id="'jd-verval-' + idx"
-                    class="form-check-input"
                     type="checkbox"
+                    class="jd-check-input"
                     :checked="selectedVerval.includes(opt)"
                     @change="toggleVerval(opt, $event.target.checked)"
                   />
-                  <label class="form-check-label small" :for="'jd-verval-' + idx">{{
-                    opt
-                  }}</label>
+                  <label class="jd-check-label" :for="'jd-verval-' + idx">
+                    {{ opt }}
+                  </label>
                 </div>
               </div>
             </div>
 
-            <div v-if="showTurvarFilter" class="jd-filter-group mb-3">
-              <div class="jd-filter-label mb-2">turvar_label</div>
-              <div class="jd-filter-checklist">
+            <div v-if="showTurvarFilter" class="jd-filter-section mb-4">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-layers me-2"></i>
+                <span>Turvar</span>
+              </div>
+              <div class="jd-filter-list custom-scrollbar">
                 <div
                   v-for="(opt, idx) in turvarOptions"
                   :key="'t-' + idx + '-' + opt"
-                  class="form-check form-check-sm"
+                  class="jd-check-item"
                 >
                   <input
                     :id="'jd-turvar-' + idx"
-                    class="form-check-input"
                     type="checkbox"
+                    class="jd-check-input"
                     :checked="selectedTurvar.includes(opt)"
                     @change="toggleTurvar(opt, $event.target.checked)"
                   />
-                  <label class="form-check-label small" :for="'jd-turvar-' + idx">{{
-                    opt
-                  }}</label>
+                  <label class="jd-check-label" :for="'jd-turvar-' + idx">
+                    {{ opt }}
+                  </label>
                 </div>
               </div>
             </div>
 
-            <div v-if="hiddenInfo.isAggregateKey" class="jd-filter-group mb-0">
-              <div class="jd-filter-label mb-2">is_aggregate</div>
-              <div class="d-flex flex-column gap-1">
-                <div class="form-check form-check-sm">
-                  <input
-                    id="jd-agg-all"
-                    v-model="isAggregateFilter"
-                    class="form-check-input"
-                    type="radio"
-                    value="all"
-                  />
-                  <label class="form-check-label small" for="jd-agg-all">Semua data</label>
-                </div>
-                <div class="form-check form-check-sm">
-                  <input
-                    id="jd-agg-without"
-                    v-model="isAggregateFilter"
-                    class="form-check-input"
-                    type="radio"
-                    value="without"
-                  />
-                  <label class="form-check-label small" for="jd-agg-without"
-                    >Tanpa agregat</label
-                  >
-                </div>
-                <div class="form-check form-check-sm">
-                  <input
-                    id="jd-agg-only"
-                    v-model="isAggregateFilter"
-                    class="form-check-input"
-                    type="radio"
-                    value="only"
-                  />
-                  <label class="form-check-label small" for="jd-agg-only">Hanya agregat</label>
-                </div>
+            <div v-if="hiddenInfo.isAggregateKey" class="jd-filter-section mb-0">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-calculator me-2"></i>
+                <span>Agregat</span>
+              </div>
+              <div class="jd-radio-group">
+                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'all' }">
+                  <input type="radio" v-model="isAggregateFilter" value="all" />
+                  <span class="option-dot"></span>
+                  <span class="option-text">Semua data</span>
+                </label>
+                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'without' }">
+                  <input type="radio" v-model="isAggregateFilter" value="without" />
+                  <span class="option-dot"></span>
+                  <span class="option-text">Tanpa agregat</span>
+                </label>
+                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'only' }">
+                  <input type="radio" v-model="isAggregateFilter" value="only" />
+                  <span class="option-dot"></span>
+                  <span class="option-text">Hanya agregat</span>
+                </label>
               </div>
             </div>
           </div>
@@ -219,27 +187,10 @@ const allColumns = ref([])
 const loading = ref(true)
 const error = ref(null)
 const activeTab = ref('table')
-const filterValue = ref('')
 
 const firstCol = computed(() => (allColumns.value.length ? allColumns.value[0] : ''))
 
-const filterOptions = computed(() => {
-  const col = firstCol.value
-  if (!col || !tableData.value.length) return []
-  const vals = new Set()
-  tableData.value.forEach((row) => {
-    if (row[col] !== null && row[col] !== undefined) {
-      vals.add(String(row[col]))
-    }
-  })
-  return Array.from(vals).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-})
-
-const filteredData = computed(() => {
-  if (!filterValue.value || !firstCol.value) return tableData.value
-  const col = firstCol.value
-  return tableData.value.filter((row) => String(row[col]) === filterValue.value)
-})
+const filteredData = computed(() => tableData.value)
 
 const formatHeader = (col) =>
   String(col).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -426,7 +377,6 @@ watch(
   () => props.resource?.id,
   () => {
     activeTab.value = 'table'
-    filterValue.value = ''
     isAggregateFilter.value = 'without'
     fetchData()
   },
@@ -562,35 +512,178 @@ watch(
   }
 }
 
-.jd-filter-card {
-  background: #f8fafc;
+.jd-filter-container {
+  background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 1rem 1rem 1.1rem;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-.jd-filter-title {
-  font-size: 0.8125rem;
+.jd-filter-header-main {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+}
+
+.jd-sidebar-main-title {
+  font-size: 0.875rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #64748b;
   margin: 0;
 }
 
-.jd-filter-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #475569;
-}
-
-.jd-filter-checklist {
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 4px;
+.jd-filter-section {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+}
+
+.jd-filter-label-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: flex;
+  align-items: center;
+}
+
+.jd-filter-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.jd-check-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+.jd-check-item:hover {
+  background-color: #f8fafc;
+  border-color: #f1f5f9;
+}
+
+.jd-check-input {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+  accent-color: #d97706;
+}
+
+.jd-check-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  margin: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jd-check-item:hover .jd-check-label {
+  color: #1e293b;
+}
+
+.jd-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.jd-radio-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.jd-radio-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.option-dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.option-dot::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.2s ease;
+}
+
+.option-text {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.jd-radio-option:hover {
+  background: #f1f5f9;
+}
+
+.jd-radio-option.active {
+  background: #fff7ed;
+  border-color: #f59e0b;
+}
+
+.jd-radio-option.active .option-dot {
+  border-color: #f59e0b;
+  background: #f59e0b;
+}
+
+.jd-radio-option.active .option-dot::after {
+  transform: scale(1);
+}
+
+.jd-radio-option.active .option-text {
+  color: #d97706;
 }
 
 .jd-chart-main {
