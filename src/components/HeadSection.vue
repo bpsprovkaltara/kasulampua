@@ -98,9 +98,11 @@
 
         <div class="hero-event-banner mb-4">
           <span class="event-text">
-            <strong>Konsultasi Regional PDRB Kasulampua 2026</strong>
-            <span class="mx-2 opacity-50">|</span>
-            <i class="bi bi-geo-alt-fill text-amber me-1"></i>Tanjung Selor, 14–16 April 2026
+            <span class="event-title"><b>Konsultasi Regional PDRB Kasulampua 2026</b></span>
+            <span class="event-sep mx-2 opacity-50">|</span>
+            <span class="event-loc">
+              <i class="bi bi-geo-alt-fill text-amber me-1"></i>Tanjung Selor, 14–16 April 2026
+            </span>
           </span>
         </div>
 
@@ -395,6 +397,11 @@ function particleStyle() {
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .hero-main-logo {
+    max-width: 280px; 
+  }
+}
 .hero-main-logo {
   height: clamp(2.5rem, 8vw, 5.5rem);
   width: auto;
@@ -462,7 +469,7 @@ function particleStyle() {
   margin: 0 auto;
 }
 .partners-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.3em;
   color: #94a3b8;
@@ -726,12 +733,19 @@ function particleStyle() {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 .event-text {
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
 }
-.event-text strong {
-  font-weight: 800;
+.event-title {
   color: #92400e;
+  font-weight: 800;
+}
+.event-loc {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
 }
 
 @media (max-width: 991px) {
@@ -744,7 +758,7 @@ function particleStyle() {
     padding-bottom: 20px;
   }
   .hero-main-logo {
-    height: 3.5rem;
+    height: 2.4rem;
     margin-bottom: 0.5rem;
   }
   .hero-main-subtitle {
@@ -769,20 +783,23 @@ function particleStyle() {
     border-radius: 20px;
     text-align: center;
     justify-content: center;
-    padding: 12px 16px;
-    width: auto;
-    max-width: 100%;
-    margin-left: 1rem;
-    margin-right: 1rem;
+    padding: 10px 18px;
+    width: fit-content;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
     gap: 8px;
   }
   .event-text {
+    flex-direction: column;
+    gap: 4px;
     white-space: normal;
-    font-size: 0.8rem;
-    line-height: 1.5;
   }
-  .event-text .mx-2 {
+  .event-sep {
     display: none; 
+  }
+  .event-loc {
+    justify-content: center;
   }
   .event-text br {
     display: block;
