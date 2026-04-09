@@ -51,12 +51,23 @@
               <div class="search-box">
                 <i class="bi bi-search search-icon"></i>
                 <input
+                  ref="mobileSearchInput"
                   class="search-input"
                   type="text"
                   v-model="search"
                   @input="applySearch"
-                  placeholder="Cari dataset..."
+                  @keydown.esc.prevent="clearSearch"
+                  placeholder="Cari judul dataset atau kata kunci..."
+                  aria-label="Cari dataset"
                 />
+                <button
+                  v-if="search"
+                  class="search-clear"
+                  @click="clearSearch"
+                  aria-label="Hapus pencarian"
+                >
+                  <i class="bi bi-x" aria-hidden="true"></i>
+                </button>
               </div>
             </div>
 
@@ -130,20 +141,24 @@
               <div class="search-box">
                 <i class="bi bi-search search-icon"></i>
                 <input
+                  ref="desktopSearchInput"
                   class="search-input"
                   type="text"
                   v-model="search"
                   @input="applySearch"
-                  placeholder="Cari judul dataset..."
+                  @keydown.esc.prevent="clearSearch"
+                  placeholder="Cari judul dataset atau kata kunci..."
+                  aria-label="Cari dataset"
                 />
                 <button
                   v-if="search"
                   class="search-clear"
-                  @click="search = ''; applySearch()"
+                  @click="clearSearch"
                   aria-label="Hapus pencarian"
                 >
                   <i class="bi bi-x" aria-hidden="true"></i>
                 </button>
+                <span v-if="!search" class="search-shortcut-badge">/</span>
               </div>
             </div>
             <div class="result-info d-flex align-items-center">
@@ -153,62 +168,82 @@
               </span>
             </div>
           </div>
-
-          <div v-if="loading" class="text-center py-5">
-            <div class="ds-loading-spinner mx-auto mb-3"></div>
-            <p class="text-muted small">Memuat dataset...</p>
-          </div>
-          <div v-else-if="!datasets.length" class="empty-card">
-            <i class="bi bi-inbox empty-icon"></i>
-            <h5 class="fw-bold mt-3 mb-1">Tidak ada dataset</h5>
-            <p class="text-muted small">Coba ubah filter atau kata kunci pencarian.</p>
-            <button
-              class="btn btn-sm btn-outline-amber rounded-pill px-4 mt-2"
-              @click="resetFilters"
-            >
-              Reset Filter
-            </button>
+          <div v-if="search && !loading" class="search-state mb-3">
+            <i class="bi bi-search me-2"></i>
+            Menampilkan hasil untuk: <strong>"{{ search }}"</strong>
           </div>
 
-          <div v-else class="dataset-list">
-            <router-link
-              v-for="(dataset, index) in datasets"
-              :key="dataset.id || index"
-              :to="{ path: `/dataset/${dataset.name || dataset.id}`, query: { from: $route.fullPath } }"
-              class="dataset-item text-decoration-none"
-            >
-              <div class="item-rank">{{ (currentPage - 1) * limit + index + 1 }}</div>
-
-              <div class="item-content flex-grow-1 min-w-0">
-                <div class="item-tags mb-1">
-                  <span
-                    class="item-cat-tag"
-                    v-for="group in (dataset.groups || []).slice(0, 2)"
-                    :key="group.name"
-                  >
-                    <i :class="getCategoryIcon(group.display_name || group.title)" class="me-1"></i>
-                    {{ group.display_name || group.title }}
-                  </span>
-                  <span
-                    class="item-region-tag"
-                    v-if="dataset.organization"
-                  >
-                    <i class="bi bi-building me-1"></i>
-                    {{ ckanOrgToWilayahLabel(dataset.organization) }}
-                  </span>
-                  <span class="item-status-tag active">● Aktif</span>
+          <transition name="fade" mode="out-in">
+            <div v-if="loading" class="dataset-list" key="loading">
+              <div v-for="i in 5" :key="i" class="dataset-item skeleton-item">
+                <div class="item-rank skeleton-rank"></div>
+                <div class="item-content flex-grow-1">
+                  <div class="skeleton-tags mb-2">
+                    <div class="skeleton-tag"></div>
+                    <div class="skeleton-tag"></div>
+                  </div>
+                  <div class="skeleton-title mb-2"></div>
+                  <div class="skeleton-text"></div>
+                  <div class="skeleton-text w-75 mt-1"></div>
                 </div>
-                <h6 class="item-title">{{ dataset.title }}</h6>
-                <p class="item-notes" v-if="dataset.notes">{{ stripHtml(dataset.notes) }}</p>
+                <div class="item-action skeleton-action"></div>
               </div>
+            </div>
+            <div v-else-if="!datasets.length" class="empty-card" key="empty">
+              <i class="bi bi-inbox empty-icon"></i>
+              <h5 class="fw-bold mt-3 mb-1">Tidak ada dataset</h5>
+              <p class="text-muted small">Coba ubah filter atau kata kunci pencarian.</p>
+              <button
+                class="btn btn-sm btn-outline-amber rounded-pill px-4 mt-2"
+                @click="resetFilters"
+              >
+                Reset Filter
+              </button>
+            </div>
 
-              <div class="item-action flex-shrink-0">
-                <div class="detail-label">
-                  Lihat Detail
+            <div v-else class="dataset-list" key="list">
+              <router-link
+                v-for="(dataset, index) in datasets"
+                :key="dataset.id || index"
+                :to="{ path: `/dataset/${dataset.name || dataset.id}`, query: { from: $route.fullPath } }"
+                class="dataset-item text-decoration-none"
+              >
+                <div class="item-content flex-grow-1 min-w-0">
+                  <div class="item-tags mb-2">
+                    <span
+                      class="item-cat-tag"
+                      v-for="group in (dataset.groups || []).slice(0, 2)"
+                      :key="group.name"
+                    >
+                      <i :class="getCategoryIcon(group.display_name || group.title)" class="me-1"></i>
+                      {{ group.display_name || group.title }}
+                    </span>
+                    <span
+                      class="item-region-tag"
+                      v-if="dataset.organization"
+                    >
+                      <i class="bi bi-building me-1"></i>
+                      {{ ckanOrgToWilayahLabel(dataset.organization) }}
+                    </span>
+                  </div>
+                  <h6 class="item-title mb-2">{{ dataset.title }}</h6>
+                  
+                  <div class="item-meta-info d-flex align-items-center gap-3">
+                    <span class="meta-data-item">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      {{ formatLongDate(dataset.metadata_modified || dataset.metadata_created) }}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </router-link>
-          </div>
+
+                <div class="item-action flex-shrink-0">
+                  <div class="detail-icon">
+                    <i class="bi bi-chevron-right"></i>
+                  </div>
+                </div>
+              </router-link>
+            </div>
+          </transition>
 
           <PaginationControl
             :current-page="currentPage"
@@ -224,13 +259,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import { CKAN_ACTION_API } from '@/config/api'
 import { ckanOrgToWilayahLabel } from '@/utils/ckanOrganizationWilayah.js'
+import { buildPackageSearchFilterQuery } from '@/utils/ckanPackageSearchFilters.js'
+import { formatLongDate } from '@/utils/dates'
 import PaginationControl from '../components/PaginationControl.vue'
 
 const route = useRoute()
@@ -249,6 +286,8 @@ const wilayahExpanded = ref(true)
 const datasets = ref([])
 const total = ref(0)
 const loading = ref(true)
+const desktopSearchInput = ref(null)
+const mobileSearchInput = ref(null)
 
 let searchDebounce = null
 
@@ -328,8 +367,11 @@ const fetchDatasets = async () => {
     const qParts = []
     if (search.value.trim()) qParts.push(search.value.trim())
     params.set('q', qParts.length ? qParts.join(' ') : '*:*')
-    if (selectedCategory.value) params.append('fq', `groups:${selectedCategory.value}`)
-    if (selectedWilayah.value) params.append('fq', `organization:${selectedWilayah.value}`)
+    const fq = buildPackageSearchFilterQuery({
+      group: selectedCategory.value,
+      organization: selectedWilayah.value,
+    })
+    if (fq) params.set('fq', fq)
 
     const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
     const data = await res.json()
@@ -338,6 +380,9 @@ const fetchDatasets = async () => {
       datasets.value = data.result.results || []
       total.value = data.result.count || 0
     } else {
+      if (data && data.error) {
+        console.error('CKAN package_search error:', data.error)
+      }
       datasets.value = []
       total.value = 0
     }
@@ -391,6 +436,27 @@ const applySearch = () => {
   }, 400)
 }
 
+const clearSearch = () => {
+  search.value = ''
+  applySearch()
+}
+
+const focusSearchInput = () => {
+  const input = desktopSearchInput.value || mobileSearchInput.value
+  if (input) input.focus()
+}
+
+const handleGlobalSearchShortcut = (event) => {
+  const isSlash = event.key === '/'
+  const targetTag = event.target?.tagName?.toLowerCase()
+  const isTypingContext =
+    targetTag === 'input' || targetTag === 'textarea' || event.target?.isContentEditable
+  if (isSlash && !isTypingContext) {
+    event.preventDefault()
+    focusSearchInput()
+  }
+}
+
 const goToPage = (p) => {
   if (p >= 1 && p <= totalPages.value) {
     const next = { ...route.query, page: p > 1 ? String(p) : undefined }
@@ -415,6 +481,11 @@ onMounted(async () => {
   await store.fetchAllData()
   readRouteIntoState()
   await fetchDatasets()
+  window.addEventListener('keydown', handleGlobalSearchShortcut)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleGlobalSearchShortcut)
 })
 </script>
 
@@ -622,7 +693,7 @@ onMounted(async () => {
 }
 .search-input {
   width: 100%;
-  padding: 12px 48px 12px 48px;
+  padding: 12px 56px 12px 48px;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   font-size: 0.9375rem;
@@ -634,6 +705,9 @@ onMounted(async () => {
 .search-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.1);
+}
+.search-input::placeholder {
+  color: #94a3b8;
 }
 .search-clear {
   position: absolute;
@@ -656,6 +730,32 @@ onMounted(async () => {
   background: var(--bg-color);
   color: var(--text-primary);
 }
+.search-shortcut-badge {
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 2px 8px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.search-state {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  background: #fffaf0;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+}
 
 .dataset-list {
   display: flex;
@@ -669,10 +769,23 @@ onMounted(async () => {
   gap: 20px;
   background: white;
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: 20px 24px;
-  transition: var(--transition-smooth);
-  cursor: default;
+  border-radius: 16px;
+  padding: 16px 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.dataset-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--primary-color);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 .dataset-item:hover {
   border-color: var(--primary-color);
@@ -680,14 +793,13 @@ onMounted(async () => {
   box-shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.15);
   transform: translateY(-2px);
 }
+.dataset-item:hover::before {
+  opacity: 1;
+}
 
-.item-rank {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  color: var(--border-color);
-  width: 32px;
-  text-align: right;
-  flex-shrink: 0;
+.item-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .item-tags {
@@ -698,14 +810,15 @@ onMounted(async () => {
 }
 .item-cat-tag,
 .item-region-tag,
-.item-year-tag,
 .item-status-tag {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 100px;
+  padding: 2px 10px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 .item-cat-tag {
   background: var(--bg-accent);
@@ -720,48 +833,124 @@ onMounted(async () => {
 .item-status-tag.active {
   background: #f0fdf4;
   color: #16a34a;
+  padding-left: 8px;
 }
-.item-status-tag.inactive {
-  background: #fef2f2;
-  color: #dc2626;
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: #16a34a;
+  border-radius: 50%;
+  margin-right: 6px;
+  display: inline-block;
 }
 
 .item-title {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   color: var(--text-primary);
-  margin: 6px 0 4px;
+  margin: 8px 0;
   line-height: 1.4;
+  transition: color 0.3s ease;
 }
 .dataset-item:hover .item-title {
   color: var(--primary-color);
 }
-.item-notes {
-  font-size: 0.875rem;
+
+.item-meta-info {
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  margin: 0;
-  display: -webkit-box;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  max-width: 600px;
+}
+.meta-data-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.meta-data-item i {
+  color: var(--primary-color);
 }
 
-.detail-label {
-  font-size: 0.8125rem;
-  font-weight: 700;
+.item-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.detail-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-color);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: var(--transition-smooth);
+  justify-content: center;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
 }
-.dataset-item:hover .detail-label {
-  opacity: 1;
-  transform: translateX(0);
-  color: var(--primary-color);
+.dataset-item:hover .detail-icon {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.detail-label {
+  display: none;
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Skeleton Loading */
+.skeleton-item {
+  pointer-events: none;
+  border-color: #f1f5f9 !important;
+}
+.skeleton-rank,
+.skeleton-tag,
+.skeleton-title,
+.skeleton-text,
+.skeleton-action {
+  background: #f1f5f9;
+  background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-rank {
+  height: 20px;
+  width: 24px;
+}
+.skeleton-tags {
+  display: flex;
+  gap: 8px;
+}
+.skeleton-tag {
+  height: 22px;
+  width: 80px;
+  border-radius: 100px;
+}
+.skeleton-title {
+  height: 24px;
+  width: 60%;
+}
+.skeleton-text {
+  height: 14px;
+  width: 100%;
+}
+.skeleton-action {
+  height: 20px;
+  width: 80px;
 }
 
 @media (max-width: 991px) {
@@ -799,55 +988,31 @@ onMounted(async () => {
   }
 }
 
-@media (max-width: 768px) {
-  .dataset-item {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.25rem;
-    gap: 1rem;
+  @media (max-width: 768px) {
+    .dataset-item {
+      padding: 16px;
+      gap: 12px;
+    }
+    .item-title {
+      font-size: 0.95rem;
+    }
+    .item-meta-info {
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+    .item-action {
+      display: none;
+    }
+    .hero-meta-card {
+      padding: 1rem 1.5rem;
+      gap: 1rem;
+      width: 100%;
+      justify-content: space-around;
+    }
+    .hm-num {
+      font-size: 1.75rem;
+    }
   }
-  .item-main {
-    width: 100%;
-  }
-  .item-title {
-    font-size: 1rem;
-    line-height: 1.4;
-    word-break: break-word;
-  }
-  .item-meta {
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-  }
-  .item-rank {
-    position: static;
-    display: inline-block;
-    font-size: 0.7rem;
-    background: #fffbeb;
-    color: #d97706;
-    padding: 4px 10px;
-    border-radius: 6px;
-    margin-bottom: 0.5rem;
-    border: 1px solid rgba(217, 119, 6, 0.1);
-  }
-  .item-action,
-  .detail-label {
-    opacity: 1;
-    transform: none;
-    width: 100%;
-    justify-content: space-between;
-    padding-top: 1rem;
-    border-top: 1px solid #f1f5f9;
-  }
-  .hero-meta-card {
-    padding: 1rem 1.5rem;
-    gap: 1rem;
-    width: 100%;
-    justify-content: space-around;
-  }
-  .hm-num {
-    font-size: 1.75rem;
-  }
-}
 
 @media (max-width: 480px) {
   .hero-v2-title {

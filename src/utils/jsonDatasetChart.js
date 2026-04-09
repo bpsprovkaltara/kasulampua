@@ -218,8 +218,16 @@ function collectSortedPeriodLabels(rows, periodCol) {
 }
 
 const CHART_COLORS = [
-  '#d97706', '#0ea5e9', '#16a34a', '#8b5cf6', '#dc2626',
-  '#06b6d4', '#f59e0b', '#ec4899', '#14b8a6', '#6366f1'
+  '#d97706', // Amber-600
+  '#2563eb', // Blue-600
+  '#16a34a', // Green-600
+  '#7c3aed', // Violet-600
+  '#dc2626', // Red-600
+  '#0891b2', // Cyan-600
+  '#ea580c', // Orange-600
+  '#4f46e5', // Indigo-600
+  '#059669', // Emerald-600
+  '#c026d3'  // Fuchsia-600
 ]
 
 function makeDatasetStyle(i) {

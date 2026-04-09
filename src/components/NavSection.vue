@@ -56,6 +56,18 @@ const linkIcons = {
 }
 
 const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
+
+/** Nav underline: aktif di path tepat dan halaman turunan (sub-path). Beranda hanya /. Data mencakup /resource/:id. */
+function isNavSectionActive(href) {
+  const path = route.path
+  if (href === '/') {
+    return path === '/' || path === ''
+  }
+  if (path === href) return true
+  if (path.startsWith(`${href}/`)) return true
+  if (href === '/dataset' && path.startsWith('/resource/')) return true
+  return false
+}
 </script>
 
 <template>
@@ -74,10 +86,18 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
             <li class="nav-item px-2" v-for="link in navigationLinks" :key="link.text">
               <router-link
                 v-if="link.href.startsWith('/')"
+                v-slot="{ href, navigate }"
                 :to="link.href"
-                class="nav-link fw-semibold px-0 mx-2 position-relative h-100 d-flex align-items-center"
+                custom
               >
-                <span class="nav-link-text">{{ link.text }}</span>
+                <a
+                  :href="href"
+                  class="nav-link fw-semibold px-0 mx-2 position-relative h-100 d-flex align-items-center"
+                  :class="{ 'router-link-active': isNavSectionActive(link.href) }"
+                  @click="navigate"
+                >
+                  <span class="nav-link-text">{{ link.text }}</span>
+                </a>
               </router-link>
               <a
                 v-else
@@ -125,15 +145,27 @@ const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
                 class="mobile-nav-item">
               <router-link
                 v-if="link.href.startsWith('/')"
+                v-slot="{ href, navigate }"
                 :to="link.href"
-                class="mobile-nav-link"
-                @click="closeMobileMenu"
+                custom
               >
-                <div class="icon-wrapper">
-                  <i :class="getIcon(link.text)"></i>
-                </div>
-                <span>{{ link.text }}</span>
-                <i class="bi bi-chevron-right ms-auto opacity-50"></i>
+                <a
+                  :href="href"
+                  class="mobile-nav-link"
+                  :class="{ 'router-link-active': isNavSectionActive(link.href) }"
+                  @click="
+                    (e) => {
+                      navigate(e)
+                      closeMobileMenu()
+                    }
+                  "
+                >
+                  <div class="icon-wrapper">
+                    <i :class="getIcon(link.text)"></i>
+                  </div>
+                  <span>{{ link.text }}</span>
+                  <i class="bi bi-chevron-right ms-auto opacity-50"></i>
+                </a>
               </router-link>
               <a v-else :href="link.href" class="mobile-nav-link" target="_blank" @click="closeMobileMenu">
                 <div class="icon-wrapper">
