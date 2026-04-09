@@ -135,6 +135,52 @@ export function findNilaiColumn(visibleColumns) {
   return visibleColumns.find((c) => lower(c) === 'nilai') || null
 }
 
+function findTahunColumn(visibleColumns) {
+  const lower = (c) => String(c).toLowerCase()
+  return visibleColumns.find((c) => lower(c) === 'tahun') || null
+}
+
+/**
+ * Kolom sub-tahun: turtahun, bulan, triwulan, atau semester.
+ * Tidak termasuk 'tahun' itu sendiri.
+ */
+function findSubYearColumn(visibleColumns) {
+  const names = ['turtahun', 'bulan', 'triwulan', 'semester']
+  const lower = (c) => String(c).toLowerCase()
+  for (const name of names) {
+    const found = visibleColumns.find((c) => lower(c) === name)
+    if (found) return found
+  }
+  return null
+}
+
+/**
+ * Gabungkan nilai tahun + sub-tahun menjadi satu label periode.
+ * Contoh: tahun="2020", subYear="Triwulan I" → "Triwulan I 2020"
+ * Jika subYear sudah mengandung 4 digit tahun, kembalikan apa adanya.
+ */
+function buildCompositePeriodLabel(tahunVal, subYearVal) {
+  const tahun = normalizeCell(tahunVal)
+  const sub = normalizeCell(subYearVal)
+  if (!sub) return tahun
+  if (!tahun) return sub
+  if (/\d{4}/.test(sub)) return sub
+  return `${sub} ${tahun}`
+}
+
+/**
+ * Long format komposit: gabungkan kolom tahun + kolom sub-tahun menjadi
+ * label periode seperti "Triwulan I 2020", "Januari 2021", dst.
+ * Seluruh titik data per periode unik tetap tampil dan diurutkan kronologis.
+ */
+function buildLongFormatComposite(rows, entityCol, tahunCol, subYearCol, nilaiCol) {
+  const syntheticRows = rows.map((row) => ({
+    ...row,
+    __period__: buildCompositePeriodLabel(row[tahunCol], row[subYearCol]),
+  }))
+  return buildLongFormat(syntheticRows, entityCol, '__period__', nilaiCol)
+}
+
 /**
  * Kumpulkan label periode unik, urutkan: sortKey valid dulu, lalu urutan kemunculan.
  */
@@ -331,16 +377,28 @@ export function buildLineChartData(rows, visibleColumns) {
 
   const entityCol = visibleColumns[0]
   const nilaiCol = findNilaiColumn(visibleColumns)
-  const periodCol = findPeriodColumn(visibleColumns)
+  const tahunCol = findTahunColumn(visibleColumns)
+  const subYearCol = findSubYearColumn(visibleColumns)
 
+  // 1. Komposit: tahun + sub-tahun (turtahun/bulan/triwulan/semester) + nilai
+  //    Semua titik data per periode unik tetap tampil di sumbu X (mis. "Triwulan I 2020").
+  if (tahunCol && subYearCol && nilaiCol && entityCol) {
+    const composite = buildLongFormatComposite(rows, entityCol, tahunCol, subYearCol, nilaiCol)
+    if (composite.labels.length && composite.datasets.length) return composite
+  }
+
+  // 2. Single-period long format (tahun, periode, atau kolom tunggal lainnya)
+  const periodCol = findPeriodColumn(visibleColumns)
   if (periodCol && nilaiCol && entityCol) {
     const long = buildLongFormat(rows, entityCol, periodCol, nilaiCol)
     if (long.labels.length && long.datasets.length) return long
   }
 
+  // 3. Wide format
   const wide = buildWideFormat(rows, visibleColumns)
   if (wide && wide.labels.length && wide.datasets.length) return wide
 
+  // 4. Legacy wide: header kolom = tahun 4 digit
   const wideYear = buildWideFormatYearOnly(rows, visibleColumns)
   if (wideYear && wideYear.labels.length && wideYear.datasets.length) return wideYear
 

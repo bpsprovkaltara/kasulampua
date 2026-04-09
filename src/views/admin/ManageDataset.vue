@@ -303,7 +303,7 @@ const confirmDelete = async (item) => {
             } else {
                 alert('Gagal membuang dataset.');
             }
-        } catch(e) {
+        } catch {
             alert('Kesalahan jaringan.');
         }
     }

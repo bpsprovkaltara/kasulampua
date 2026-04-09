@@ -436,7 +436,7 @@ const confirmDelete = async (item) => {
             } else {
                 alert('Gagal memusnahkan insight.');
             }
-        } catch(e) {
+        } catch {
             alert('Kesalahan jaringan saat menghapus');
         }
     }
