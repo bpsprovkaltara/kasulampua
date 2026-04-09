@@ -140,9 +140,11 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
-    } else {
-      return { top: 0 }
     }
+    if (to.path === from.path) {
+      return
+    }
+    return { top: 0 }
   }
 })
 

@@ -326,6 +326,20 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
+.dataset-card-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+}
+
+.dataset-card-premium:hover::before {
+  opacity: 1;
+}
+
 .is-active .dataset-card-premium {
   border-color: #fce788;
   box-shadow: 0 20px 40px -12px rgba(217, 119, 6, 0.12);
@@ -336,6 +350,8 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .category-icon-main {
@@ -382,7 +398,8 @@ onUnmounted(() => {
 .is-active .cat-color-yellow { background: #fef9c3; box-shadow: 0 8px 16px -4px rgba(202, 138, 4, 0.15); }
 .is-active .cat-color-brown { background: #d7ccc8; box-shadow: 0 8px 16px -4px rgba(93, 64, 55, 0.15); }
 
-.is-active .category-icon-main {
+.is-active .category-icon-main,
+.dataset-card-premium:hover .category-icon-main {
   transform: scale(1.1) rotate(5deg);
 }
 
@@ -416,9 +433,9 @@ onUnmounted(() => {
 }
 
 .dataset-card-premium:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-  border-color: #cbd5e1;
+  transform: translateY(-12px) scale(1.05);
+  box-shadow: 0 30px 60px -15px rgba(217, 119, 6, 0.2);
+  border-color: #fce788;
 }
 
 .dataset-card-premium:hover .stats-badge {

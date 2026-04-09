@@ -16,6 +16,9 @@
       </nav>
 
       <div class="d-flex flex-wrap gap-2 mb-3" v-if="state.insight">
+        <span class="insight-tag-pill badge-pill" v-if="state.insight.badge">
+          <i class="bi bi-patch-check-fill me-1"></i>{{ state.insight.badge }}
+        </span>
         <span class="insight-tag-pill topic" v-if="state.insight.topic">
           <i class="bi bi-tag me-1"></i>{{ state.insight.topic }}
         </span>
@@ -69,47 +72,7 @@
       <template v-else-if="state.insight">
         <div class="row g-5">
           <div class="col-lg-8">
-            <div class="insight-desc-card mb-5">
-              <div class="desc-eyebrow"><span class="eyebrow-dot"></span> RINGKASAN INSIGHT</div>
-              <p class="desc-body">{{ state.insight.description || 'Tidak tersedia' }}</p>
-            </div>
-
-            <!-- TABLE DATA (EXCEL STYLE) -->
-            <div class="insight-table-card mb-5" v-if="state.insight.table_data">
-              <div class="table-card-header">
-                <div class="d-flex align-items-center gap-2">
-                  <i class="bi bi-table text-amber"></i>
-                  <h6 class="mb-0 fw-bold">Dataset Pendukung (Tabel Data)</h6>
-                </div>
-                <div class="table-actions">
-                  <button class="btn-table-action" title="Download Excel" aria-label="Unduh tabel dalam format Excel"><i class="bi bi-file-earmark-excel" aria-hidden="true"></i></button>
-                  <button class="btn-table-action" title="Copy Data" aria-label="Salin data"><i class="bi bi-copy" aria-hidden="true"></i></button>
-                </div>
-              </div>
-              <div class="table-responsive excel-style-wrapper">
-                <table class="table table-hover table-bordered excel-table mb-0">
-                  <thead>
-                    <tr>
-                      <th v-for="(val, key) in state.insight.table_data[0]" :key="key" class="text-capitalize">
-                        {{ key.replace('_', ' ') }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(row, i) in state.insight.table_data" :key="i">
-                      <td v-for="(val, key) in row" :key="key">
-                        {{ val }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="table-card-footer">
-                <p class="small text-muted mb-0">Sumber: BPS Kasulampua (Dummy Data for Presentation)</p>
-              </div>
-            </div>
-
-            <!-- Interactive Visual Dashboard -->
+          
             <div class="insight-viz-card mb-5" v-if="state.insight?.chart_data">
               <div class="viz-card-header">
                 <div class="header-main">
@@ -159,6 +122,47 @@
                 </div>
               </div>
             </div>
+
+            <div class="insight-desc-card mb-5">
+              <div class="desc-eyebrow"><span class="eyebrow-dot"></span> RINGKASAN INSIGHT</div>
+              <p class="desc-body">{{ state.insight.description || 'Tidak tersedia' }}</p>
+            </div>
+
+            <!-- TABLE DATA (EXCEL STYLE) - Commented out as per request
+            <div class="insight-table-card mb-5" v-if="state.insight.table_data">
+              <div class="table-card-header">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-table text-amber"></i>
+                  <h6 class="mb-0 fw-bold">Dataset Pendukung (Tabel Data)</h6>
+                </div>
+                <div class="table-actions">
+                  <button class="btn-table-action" title="Download Excel" aria-label="Unduh tabel dalam format Excel"><i class="bi bi-file-earmark-excel" aria-hidden="true"></i></button>
+                  <button class="btn-table-action" title="Copy Data" aria-label="Salin data"><i class="bi bi-copy" aria-hidden="true"></i></button>
+                </div>
+              </div>
+              <div class="table-responsive excel-style-wrapper">
+                <table class="table table-hover table-bordered excel-table mb-0">
+                  <thead>
+                    <tr>
+                      <th v-for="(val, key) in state.insight.table_data[0]" :key="key" class="text-capitalize">
+                        {{ key.replace('_', ' ') }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, i) in state.insight.table_data" :key="i">
+                      <td v-for="(val, key) in row" :key="key">
+                        {{ val }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-card-footer">
+                <p class="small text-muted mb-0">Sumber: BPS Kasulampua (Dummy Data for Presentation)</p>
+              </div>
+            </div>
+            -->
 
             <div class="insight-share-bar">
               <span class="share-label">Bagikan:</span>
@@ -556,6 +560,11 @@ onMounted(() => {
   padding: 5px 14px;
   border-radius: 100px;
   backdrop-filter: blur(8px);
+}
+.insight-tag-pill.badge-pill {
+  background: rgba(217, 119, 6, 0.15);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  color: #fbbf24;
 }
 .insight-tag-pill.topic {
   background: rgba(134, 239, 172, 0.15);

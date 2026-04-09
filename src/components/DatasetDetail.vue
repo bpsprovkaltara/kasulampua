@@ -232,14 +232,6 @@
   border: 1px dashed var(--border-color);
 }
 
-.ds-loading-spinner {
-  width: 44px; height: 44px;
-  border: 4px solid var(--secondary-color);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 991px) {
   .dataset-main-card {

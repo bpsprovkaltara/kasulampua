@@ -51,7 +51,6 @@
         </div>
       </div>
 
-
       <div class="rv-tabs mb-4">
         <button
           type="button"
@@ -69,130 +68,119 @@
         >
           <i class="bi bi-table me-1"></i> Tabel
         </button>
-        
       </div>
 
-      <JsonDatasetTableCard
-        v-if="activeTab === 'table'"
-        :table-data="filteredData"
-        :columns="visibleCols"
-        :column-labels="columnLabels"
-      />
+      <div class="jd-view-layout row g-3 align-items-start">
+        <aside class="col-12 col-lg-4 col-xl-3 jd-view-filters">
+          <div class="jd-filter-container">
+            <div class="jd-filter-header-main">
+              <i class="bi bi-sliders2-vertical me-2"></i>
+              <h6 class="jd-sidebar-main-title">Filter Data</h6>
+            </div>
 
-      <div v-else-if="activeTab === 'chart'" class="jd-chart-layout">
-        <div class="jd-chart-filters-bar mb-4">
-          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-              <div v-if="vervalFilterKey" class="jd-filter-dropdown">
-                <label class="jd-filter-label-sm">{{ vervalFilterLabel }}</label>
-                <div class="dropdown">
-                  <button
-                    class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i class="bi bi-patch-check me-1"></i>
-                    {{ selectedVerval.length === vervalOptions.length ? 'Semua ' + vervalFilterLabel : selectedVerval.length + ' Terpilih' }}
-                  </button>
-                  <div class="dropdown-menu p-3 shadow-sm border-0 rounded-4" style="min-width: 240px;">
-                    <div class="jd-check-item mb-2 border-bottom pb-2">
-                      <input
-                        id="jd-verval-all"
-                        type="checkbox"
-                        class="jd-check-input"
-                        :checked="allVervalSelected"
-                        @change="toggleAllVerval($event.target.checked)"
-                      />
-                      <label class="jd-check-label fw-bold" for="jd-verval-all">Pilih semua</label>
-                    </div>
-                    <div class="jd-filter-scroll custom-scrollbar" style="max-height: 200px; overflow-y: auto;">
-                      <div
-                        v-for="(opt, idx) in vervalOptions"
-                        :key="'v-' + idx + '-' + opt"
-                        class="jd-check-item"
-                      >
-                        <input
-                          :id="'jd-verval-' + idx"
-                          type="checkbox"
-                          class="jd-check-input"
-                          :checked="selectedVerval.includes(opt)"
-                          @change="toggleVerval(opt, $event.target.checked)"
-                        />
-                        <label class="jd-check-label" :for="'jd-verval-' + idx">{{ opt }}</label>
-                      </div>
-                    </div>
-                  </div>
+            <div v-if="vervalFilterKey" class="jd-filter-section mb-4">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-patch-check me-2"></i>
+                <span>{{ vervalFilterLabel }}</span>
+              </div>
+              <div class="jd-check-item mb-2 border-bottom pb-2 mt-2">
+                <input
+                  id="jd-verval-all"
+                  type="checkbox"
+                  class="jd-check-input"
+                  :checked="allVervalSelected"
+                  @change="toggleAllVerval($event.target.checked)"
+                />
+                <label class="jd-check-label fw-bold" for="jd-verval-all">Pilih semua</label>
+              </div>
+              <div class="jd-filter-list custom-scrollbar">
+                <div
+                  v-for="(opt, idx) in vervalOptions"
+                  :key="'v-' + idx + '-' + opt"
+                  class="jd-check-item"
+                >
+                  <input
+                    :id="'jd-verval-' + idx"
+                    type="checkbox"
+                    class="jd-check-input"
+                    :checked="selectedVerval.includes(opt)"
+                    @change="toggleVerval(opt, $event.target.checked)"
+                  />
+                  <label class="jd-check-label" :for="'jd-verval-' + idx">{{ opt }}</label>
                 </div>
               </div>
+            </div>
 
-              <div v-if="showTurvarFilter" class="jd-filter-dropdown">
-                <label class="jd-filter-label-sm">{{ turvarFilterLabel }}</label>
-                <div class="dropdown">
-                  <button
-                    class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i class="bi bi-layers me-1"></i>
-                    {{ selectedTurvar || 'Pilih ' + turvarFilterLabel }}
-                  </button>
-                  <div class="dropdown-menu p-2 shadow-sm border-0 rounded-4" style="min-width: 200px;">
-                    <div class="jd-filter-scroll custom-scrollbar" style="max-height: 200px; overflow-y: auto;">
-                      <div
-                        v-for="(opt, idx) in turvarOptions"
-                        :key="'t-' + idx + '-' + opt"
-                        class="jd-check-item"
-                        @click="toggleTurvar(opt)"
-                      >
-                        <input
-                          :id="'jd-turvar-' + idx"
-                          type="radio"
-                          name="jd-turvar"
-                          class="jd-check-input"
-                          :checked="selectedTurvar === opt"
-                          @click.stop
-                          @change="toggleTurvar(opt)"
-                        />
-                        <label class="jd-check-label" :for="'jd-turvar-' + idx">{{ opt }}</label>
-                      </div>
-                    </div>
-                  </div>
+            <div v-if="showTurvarFilter" class="jd-filter-section mb-4">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-layers me-2"></i>
+                <span>{{ turvarFilterLabel }}</span>
+              </div>
+              <div class="jd-filter-list custom-scrollbar">
+                <div
+                  v-for="(opt, idx) in turvarOptions"
+                  :key="'t-' + idx + '-' + opt"
+                  class="jd-check-item"
+                  @click="toggleTurvar(opt)"
+                >
+                  <input
+                    :id="'jd-turvar-' + idx"
+                    type="radio"
+                    name="jd-turvar"
+                    class="jd-check-input"
+                    :checked="selectedTurvar === opt"
+                    @click.stop
+                    @change="toggleTurvar(opt)"
+                  />
+                  <label class="jd-check-label" :for="'jd-turvar-' + idx">{{ opt }}</label>
                 </div>
               </div>
+            </div>
 
-              <div v-if="showTurtahunFilter" class="jd-filter-dropdown">
-                <label class="jd-filter-label-sm">Turtahun</label>
-                <div class="dropdown">
-                  <button
-                    class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i class="bi bi-calendar3 me-1"></i>
-                    {{ selectedTurtahun.length === turtahunOptions.length ? 'Semua Tahun' : selectedTurtahun.length + ' Terpilih' }}
-                  </button>
-                  <div class="dropdown-menu p-3 shadow-sm border-0 rounded-4" style="min-width: 200px;">
-                    <div class="jd-filter-scroll custom-scrollbar" style="max-height: 200px; overflow-y: auto;">
-                      <div
-                        v-for="(opt, idx) in turtahunOptions"
-                        :key="'tt-' + idx + '-' + opt"
-                        class="jd-check-item"
-                      >
-                        <input
-                          :id="'jd-turtahun-' + idx"
-                          type="checkbox"
-                          class="jd-check-input"
-                          :checked="selectedTurtahun.includes(opt)"
-                          @change="toggleTurtahun(opt, $event.target.checked)"
-                        />
-                        <label class="jd-check-label" :for="'jd-turtahun-' + idx">{{ opt }}</label>
-                      </div>
-                    </div>
-                  </div>
+            <div v-if="showTurtahunFilter" class="jd-filter-section mb-4">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-calendar3 me-2"></i>
+                <span>Turtahun</span>
+              </div>
+              <div class="jd-filter-list custom-scrollbar">
+                <div
+                  v-for="(opt, idx) in turtahunOptions"
+                  :key="'tt-' + idx + '-' + opt"
+                  class="jd-check-item"
+                >
+                  <input
+                    :id="'jd-turtahun-' + idx"
+                    type="checkbox"
+                    class="jd-check-input"
+                    :checked="selectedTurtahun.includes(opt)"
+                    @change="toggleTurtahun(opt, $event.target.checked)"
+                  />
+                  <label class="jd-check-label" :for="'jd-turtahun-' + idx">{{ opt }}</label>
                 </div>
+              </div>
+            </div>
+
+            <div v-if="hiddenInfo.isAggregateKey" class="jd-filter-section mb-4">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-calculator me-2"></i>
+                <span>Agregat</span>
+              </div>
+              <div class="jd-radio-group">
+                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'all' }">
+                  <input type="radio" v-model="isAggregateFilter" value="all" />
+                  <span class="option-dot"></span>
+                  <span class="option-text">Semua data</span>
+                </label>
+                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'without' }">
+                  <input type="radio" v-model="isAggregateFilter" value="without" />
+                  <span class="option-dot"></span>
+                  <span class="option-text">Tanpa agregat</span>
+                </label>
+                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'only' }">
+                  <input type="radio" v-model="isAggregateFilter" value="only" />
+                  <span class="option-dot"></span>
+                  <span class="option-text">Hanya agregat</span>
+                </label>
               </div>
             </div>
 
@@ -204,14 +192,24 @@
               <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filter
             </button>
           </div>
-        </div>
+        </aside>
 
-        <div class="jd-chart-main-container">
-          <JsonDatasetChartCard
-            :table-data="chartFilteredData"
-            :columns="visibleCols"
-            :column-labels="columnLabels"
-          />
+        <div class="col-12 col-lg col-xl jd-view-main">
+          <div class="jd-view-panel">
+            <JsonDatasetTableCard
+              v-if="activeTab === 'table'"
+              :table-data="displayData"
+              :columns="visibleCols"
+              :column-labels="columnLabels"
+            />
+
+            <JsonDatasetChartCard
+              v-else-if="activeTab === 'chart'"
+              :table-data="displayData"
+              :columns="visibleCols"
+              :column-labels="columnLabels"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -267,8 +265,6 @@ const columnLabels = computed(() => ({
   ...columnLabelsFromJson.value
 }))
 
-const filteredData = computed(() => tableData.value)
-
 /** @type {import('vue').Ref<string[]>} */
 const selectedVerval = ref([])
 /** @type {import('vue').Ref<string>} */
@@ -309,6 +305,7 @@ const vervalOptions = computed(() => {
   }
   return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
 })
+
 const allVervalSelected = computed(
   () => !!vervalOptions.value.length && selectedVerval.value.length === vervalOptions.value.length
 )
@@ -373,9 +370,9 @@ function formatColumnLabel(key) {
 const vervalFilterLabel = computed(() => formatColumnLabel(hiddenInfo.value.vervalKey) || 'Verval')
 const turvarFilterLabel = computed(() => formatColumnLabel(hiddenInfo.value.turvarKey) || 'Turvar')
 
-const chartFilteredData = computed(() => {
+const displayData = computed(() => {
   const hi = hiddenInfo.value
-  let rows = filteredData.value
+  let rows = tableData.value
 
   const aggKey = hi.isAggregateKey
   if (aggKey) {
@@ -494,8 +491,8 @@ const openJsonTextInNewTab = (jsonText) => {
 }
 
 const openJsonInNewTab = () => {
-  if (!filteredData.value.length) return
-  const dataStr = JSON.stringify(filteredData.value, null, 2)
+  if (!displayData.value.length) return
+  const dataStr = JSON.stringify(displayData.value, null, 2)
   openJsonTextInNewTab(dataStr)
 }
 
@@ -618,26 +615,6 @@ watch(
   border-color: #475569;
 }
 
-.jd-split-layout {
-  margin-top: 0.5rem;
-}
-
-.jd-panel {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 1rem;
-  height: 100%;
-}
-
-.jd-panel-title {
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: #334155;
-  display: inline-flex;
-  align-items: center;
-}
-
 .rv-tabs {
   display: flex;
   gap: 4px;
@@ -666,71 +643,26 @@ watch(
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.jd-filter-select-lg {
-  border-radius: 10px;
-  border-color: #e2e8f0;
-  font-size: 0.875rem;
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
-  min-width: 240px;
-  background-color: white;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  font-weight: 500;
-}
-.jd-filter-select-lg:focus {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+.jd-view-layout {
+  margin-left: 0;
+  margin-right: 0;
 }
 
-.jd-filter-bar {
-  background: #fff7ed;
-  border: 1px solid #ffedd5;
-  border-radius: 16px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+.jd-view-filters {
+  min-width: 0;
 }
 
-.filter-icon-box {
-  width: 44px;
-  height: 44px;
-  background: white;
-  border: 1px solid #fed7aa;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #f59e0b;
-  font-size: 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+@media (min-width: 992px) {
+  .jd-view-filters {
+    max-width: 360px;
+  }
 }
 
-.jd-chart-layout {
-  margin-top: 0.5rem;
+.jd-view-main {
+  min-width: 0;
 }
 
-.jd-chart-filters-bar {
-  background: #f8fafc;
-  padding: 1rem 1.25rem;
-  border-radius: 16px;
-  border: 1px solid #f1f5f9;
-}
-
-.jd-filter-dropdown {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.jd-filter-label-sm {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-left: 4px;
-}
-
-.jd-chart-main-container {
+.jd-view-panel {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
@@ -738,66 +670,177 @@ watch(
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
 }
 
-@media (max-width: 1199px) {
-  .jd-chart-panel {
-    order: 1;
-  }
-  .jd-table-panel {
-    order: 2;
-  }
+.jd-filter-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-.dropdown-toggle::after {
-  margin-left: 0.5em;
-  vertical-align: 0.15em;
-  border-top: 0.35em solid;
-  border-right: 0.35em solid transparent;
-  border-bottom: 0;
-  border-left: 0.35em solid transparent;
-  opacity: 0.5;
+.jd-filter-header-main {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
 }
 
-.dropdown-menu {
-  z-index: 1050;
+.jd-sidebar-main-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.jd-filter-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.jd-filter-label-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: flex;
+  align-items: center;
+}
+
+.jd-filter-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
 }
 
 .jd-check-item {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  border: 1px solid transparent;
 }
 
 .jd-check-item:hover {
   background-color: #f8fafc;
+  border-color: #f1f5f9;
 }
 
 .jd-check-input {
-  width: 16px;
-  height: 16px;
-  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
   cursor: pointer;
   accent-color: #d97706;
 }
 
 .jd-check-label {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: #475569;
   cursor: pointer;
   margin: 0;
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+.jd-check-item:hover .jd-check-label {
+  color: #1e293b;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+.jd-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.jd-radio-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
   border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.jd-radio-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.option-dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.option-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.2s ease;
+}
+
+.option-text {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.jd-radio-option:hover {
+  background: #f1f5f9;
+}
+
+.jd-radio-option.active {
+  background: #fff7ed;
+  border-color: #f59e0b;
+}
+
+.jd-radio-option.active .option-dot {
+  border-color: #f59e0b;
+  background: #f59e0b;
+}
+
+.jd-radio-option.active .option-dot::after {
+  transform: scale(1);
+}
+
+.jd-radio-option.active .option-text {
+  color: #d97706;
 }
 </style>
