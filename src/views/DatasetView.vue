@@ -121,6 +121,49 @@
                 </button>
               </div>
             </div>
+
+
+            <div class="sidebar-card mb-3 premium-sidebar-card">
+              <div class="sidebar-card-header clickable" @click="toggleSatuData">
+                <div class="d-flex align-items-center">
+                  <div class="header-icon-box me-2">
+                    <i class="bi bi-link-45deg"></i>
+                  </div>
+                  <span>Portal Satu Data</span>
+                </div>
+                <i class="bi bi-chevron-down ms-auto transition-smooth" :class="{ 'rotate-180': satuDataExpanded }"></i>
+              </div>
+              <div class="sidebar-card-body collapsible" :class="{ expanded: satuDataExpanded }">
+                <div v-for="region in satuDataLinks" :key="region.region" class="sd-region-group mb-3">
+                  <div class="sd-region-label">
+                    <span class="label-dot"></span>
+                    {{ region.region }}
+                  </div>
+                  <div class="sd-links-grid">
+                    <a
+                      v-for="portal in region.portals"
+                      :key="portal.name"
+                      :href="portal.url"
+                      target="_blank"
+                      class="sd-link-item ripple"
+                    >
+                      <span class="portal-initial">{{ portal.name.charAt(0) }}</span>
+                      <span class="portal-name">{{ portal.name }}</span>
+                      <i class="bi bi-arrow-up-right portal-arrow"></i>
+                    </a>
+                  </div>
+                </div>
+                <div class="sd-footer-link pt-3 border-top">
+                  <a href="https://data.go.id" target="_blank" class="sd-main-link">
+                    <div class="sdi-icon-bg">
+                      <i class="bi bi-database-fill"></i>
+                    </div>
+                    <span>Satu Data Indonesia</span>
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -245,6 +288,32 @@ const currentPage = ref(1)
 const limit = 12
 const categoryExpanded = ref(true)
 const wilayahExpanded = ref(true)
+const satuDataExpanded = ref(true)
+
+const satuDataLinks = [
+  {
+    region: 'Kalimantan',
+    portals: [
+      { name: 'Kalbar', url: 'https://data.kalbarprov.go.id' },
+      { name: 'Kalteng', url: 'https://satudata.kalteng.go.id' },
+      { name: 'Kalsel', url: 'https://opendata.kalselprov.go.id' },
+      { name: 'Kaltim', url: 'https://satudata.kaltimprov.go.id' }
+    ]
+  },
+  {
+    region: 'Sulawesi',
+    portals: [
+      { name: 'Sulut', url: 'https://data.go.id/dataset?q=sulawesi+utara' },
+      { name: 'Sulsel', url: 'https://satudata.sulselprov.go.id' }
+    ]
+  },
+  {
+    region: 'Maluku',
+    portals: [
+      { name: 'Malut', url: 'https://satudata.malutprov.go.id' }
+    ]
+  }
+]
 
 const datasets = ref([])
 const total = ref(0)
@@ -267,7 +336,6 @@ function cleanQuery(q) {
   return out
 }
 
-/** Baca route.query ke state lokal (setelah metadata store siap). */
 const readRouteIntoState = () => {
   search.value = pickQueryStr(route.query.q)
 
@@ -305,6 +373,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
 
 const toggleCategory = () => (categoryExpanded.value = !categoryExpanded.value)
 const toggleWilayah = () => (wilayahExpanded.value = !wilayahExpanded.value)
+const toggleSatuData = () => (satuDataExpanded.value = !satuDataExpanded.value)
 
 const stripHtml = (html) => {
   if (!html) return ''
@@ -585,6 +654,155 @@ onMounted(async () => {
 .sidebar-item.active .si-badge {
   background: var(--primary-color);
   color: white;
+}
+
+/* Portal Satu Data Styles - PREMIUM UPGRADE */
+.premium-sidebar-card {
+  border: 1px solid rgba(217, 119, 6, 0.15) !important;
+  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.05) !important;
+}
+
+.header-icon-box {
+  width: 28px;
+  height: 28px;
+  background: var(--bg-accent);
+  color: var(--primary-color);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.sd-region-group {
+  padding: 0 2px;
+}
+
+.sd-region-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--primary-color);
+  border-radius: 50%;
+}
+
+.sd-links-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.sd-link-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(241, 245, 249, 0.5);
+  backdrop-filter: blur(4px);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.portal-initial {
+  width: 18px;
+  height: 18px;
+  background: white;
+  color: var(--primary-color);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 900;
+  border: 1px solid rgba(217, 119, 6, 0.1);
+}
+
+.portal-arrow {
+  position: absolute;
+  right: -10px;
+  top: 10px;
+  font-size: 0.6rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  color: var(--primary-color);
+}
+
+.sd-link-item:hover {
+  background: white;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.15);
+}
+
+.sd-link-item:hover .portal-arrow {
+  right: 10px;
+  opacity: 1;
+}
+
+.sd-link-item:hover .portal-name {
+  transform: translateX(-5px);
+}
+
+.portal-name {
+  transition: all 0.3s ease;
+}
+
+.sd-footer-link {
+  margin-top: 5px;
+}
+
+.sd-main-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary-color), var(--hero-orange));
+  color: white !important;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.25);
+  border: none;
+}
+
+.sd-main-link:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 15px 30px -5px rgba(217, 119, 6, 0.4);
+}
+
+.sdi-icon-bg {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 1rem;
 }
 
 .topbar {

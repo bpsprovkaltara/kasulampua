@@ -27,65 +27,65 @@
     </div>
   </header>
 
-  <main class="visualisasi-wrapper py-4">
+  <main class="visualisasi-wrapper py-5">
     <div class="container container-viz">
-      <aside class="viz-sidebar">
-        <div class="glass-filter-card">
-          <div class="filter-fields">
-            <div class="filter-group">
-              <label class="filter-label"
-                ><i class="bi bi-geo-alt-fill me-2"></i>Regional</label
-              >
-              <Multiselect
-                v-model="selectedRegion"
-                :options="regionOptions"
-                track-by="value"
-                :search="true"
-                label="label"
-                placeholder="Pilih Regional"
-                class="custom-multiselect"
-              />
-            </div>
-
-            <div class="filter-group">
-              <label class="filter-label"
-                ><i class="bi bi-database-fill me-2"></i>Dataset</label
-              >
-              <Multiselect
-                v-model="selectedData"
-                :options="dataOptions"
-                :search="true"
-                label="label"
-                track-by="value"
-                placeholder="Pilih Dataset"
-                class="custom-multiselect"
-              />
-            </div>
-
-            <div class="filter-group">
-              <label class="filter-label"
-                ><i class="bi bi-palette-fill me-2"></i>Tipe Grafik</label
-              >
-              <div class="chart-type-toggle">
-                <button
-                  v-for="type in chartTypes"
-                  :key="type.id"
-                  @click="selectedChartType = type.id"
-                  :class="['type-btn', { active: selectedChartType === type.id }]"
-                  :title="type.label"
-                  :aria-label="`Tipe grafik: ${type.label}`"
-                  :aria-pressed="selectedChartType === type.id"
+      <div class="viz-main">
+        <div class="top-filter-container mb-4">
+          <div class="glass-filter-card">
+            <div class="filter-fields">
+              <div class="filter-group region-filter">
+                <label class="filter-label"
+                  ><i class="bi bi-geo-alt-fill me-2"></i>Regional</label
                 >
-                  <i :class="type.icon" aria-hidden="true"></i>
-                </button>
+                <Multiselect
+                  v-model="selectedRegion"
+                  :options="regionOptions"
+                  track-by="value"
+                  :search="true"
+                  label="label"
+                  placeholder="Pilih Regional"
+                  class="custom-multiselect"
+                />
+              </div>
+
+              <div class="filter-group dataset-filter">
+                <label class="filter-label"
+                  ><i class="bi bi-database-fill me-2"></i>Dataset</label
+                >
+                <Multiselect
+                  v-model="selectedData"
+                  :options="dataOptions"
+                  :search="true"
+                  label="label"
+                  track-by="value"
+                  placeholder="Pilih Dataset"
+                  class="custom-multiselect"
+                />
+              </div>
+
+              <div class="filter-group chart-type-filter">
+                <label class="filter-label"
+                  ><i class="bi bi-palette-fill me-2"></i>Tipe Grafik</label
+                >
+                <div class="chart-type-toggle">
+                  <button
+                    v-for="type in chartTypes"
+                    :key="type.id"
+                    @click="selectedChartType = type.id"
+                    :class="['type-btn', { active: selectedChartType === type.id }]"
+                    :title="type.label"
+                    :aria-label="`Tipe grafik: ${type.label}`"
+                    :aria-pressed="selectedChartType === type.id"
+                  >
+                    <i :class="type.icon" aria-hidden="true"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </aside>
 
-      <div class="viz-main">
-        <div class="chart-container-card">
+        <div class="chart-container-card fade-in-up">
           <div class="chart-header-row">
             <div class="chart-header-text">
               <h3 class="chart-title">{{ state.judul || 'Tidak tersedia' }}</h3>
@@ -98,7 +98,7 @@
 
           <div class="chart-body">
             <div v-if="loading" class="chart-loading-overlay">
-              <div class="loading-spinner"></div>
+              <div class="ds-loading-spinner"></div>
               <p class="mt-3 text-muted fw-medium">Menyiapkan visualisasi...</p>
             </div>
             <div class="chart-canvas-wrapper" :class="{ faded: loading }">
@@ -114,9 +114,105 @@
             </div>
           </div>
         </div>
+
+        <div class="insight-news-section mt-5 fade-in-up" style="animation-delay: 0.2s">
+          <div class="section-header mb-4">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h2 class="section-title">Analisis Terkait</h2>
+                <p class="text-muted small">Informasi terkini seputar dinamika regional di Kasulampua</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4 row-equal-height">
+            <div v-for="item in displayAnalisis" :key="item.slug" class="col-12 col-md-6 col-lg-4">
+              <div class="news-mini-card" @click="router.push('/regional_insight/' + item.slug)">
+                <div class="nm-img-wrapper">
+                  <img 
+                    v-if="item.images && item.images[0]" 
+                    :src="item.images[0]" 
+                    :alt="item.title" 
+                    class="nm-img" 
+                  />
+                  <img 
+                    v-else-if="item.image" 
+                    :src="item.image" 
+                    :alt="item.title" 
+                    class="nm-img" 
+                  />
+                  <div v-else class="nm-placeholder">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                  </div>
+                  <div class="nm-date-badge">{{ formatLongDate(item.created_at) }}</div>
+                  <div v-if="item.images && item.images.length > 1" class="page-count-badge">
+                    <i class="bi bi-layers-fill me-1"></i> {{ item.images.length }} Halaman
+                  </div>
+                </div>
+                <div class="nm-content">
+                  <h4 class="nm-title line-clamp-2">{{ item.title }}</h4>
+                  <p class="nm-excerpt line-clamp-3">{{ stripHTMLText(item.content) }}</p>
+                  <div class="nm-footer">
+                    <span class="detail-label">Lihat Analisis <i class="bi bi-arrow-right ms-2 transition-smooth"></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
+
+  <!-- Modal for analysis images gallery (commented out as per request)
+  <div class="modal fade" id="analysisModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header border-0 bg-light p-4">
+          <div class="modal-header-text">
+            <h5 class="modal-title fw-bold text-dark mb-1">{{ selectedAnalisis?.title }}</h5>
+            <div class="text-muted small">Diterbitkan pada {{ formatLongDate(selectedAnalisis?.created_at) }}</div>
+          </div>
+          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0 bg-dark">
+          <div v-if="selectedAnalisis" id="analysisCarousel" class="carousel slide" data-bs-ride="false">
+            <div class="carousel-inner">
+              <div v-for="(img, idx) in selectedAnalisis.images" :key="idx" :class="['carousel-item', { active: idx === 0 }]">
+                <div class="d-flex align-items-center justify-content-center bg-dark" style="min-height: 60vh; max-height: 80vh;">
+                  <img :src="img" class="d-block img-fluid analysis-img" alt="Analysis slide">
+                </div>
+              </div>
+            </div>
+            
+            <template v-if="selectedAnalisis.images.length > 1">
+              <button class="carousel-control-prev" type="button" data-bs-target="#analysisCarousel" data-bs-slide="prev">
+                <span class="carousel-control-icon"><i class="bi bi-chevron-left"></i></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#analysisCarousel" data-bs-slide="next">
+                <span class="carousel-control-icon"><i class="bi bi-chevron-right"></i></span>
+              </button>
+              
+              <div class="carousel-indicators-custom">
+                {{ currentSlideIndex + 1 }} / {{ selectedAnalisis.images.length }}
+              </div>
+            </template>
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-3 bg-light d-flex justify-content-between">
+          <div class="modal-info-meta text-muted small">
+             <i class="bi bi-info-circle me-1"></i> Klik panah atau gunakan keyboard untuk navigasi halaman
+          </div>
+          <div class="modal-actions">
+            <a :href="selectedAnalisis?.images[currentSlideIndex]" :download="`analisis-${selectedAnalisis?.slug}-page-${currentSlideIndex+1}.jpg`" class="btn btn-primary btn-sm px-4 rounded-pill fw-bold" target="_blank">
+              <i class="bi bi-download me-2"></i> Unduh Gambar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  -->
 
   <Footer />
 </template>
@@ -131,6 +227,9 @@ import MapVisualisasi from '../components/MapVisualisasi.vue'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Chart } from 'chart.js/auto'
+import { DUMMY_BERITA } from '../utils/dummyBerita'
+import { formatLongDate } from '../utils/dates'
+import { Modal, Carousel } from 'bootstrap'
 
 const selectedRegion = ref('kasulampua')
 const selectedData = ref('')
@@ -140,6 +239,75 @@ let chartInstance = null
 const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
+
+const displayAnalisis = ref([
+  {
+    title: 'Tantangan Ekonomi di Wilayah Perbatasan Kalimantan',
+    slug: 'tantangan-ekonomi-kalimantan',
+    content: 'Tinjauan mendalam mengenai dinamika ekonomi di wilayah perbatasan Kalimantan Utara. Analisis ini menyoroti ketergantungan pada perdagangan lintas batas.',
+    images: ['https://images.unsplash.com/photo-1618044733300-9472054094ee?q=80&w=2671&auto=format&fit=crop'],
+    created_at: '2024-02-15'
+  },
+  {
+    title: 'Potensi Wisata Bahari Sulawesi Selatan',
+    slug: 'wisata-bahari-sulawesi',
+    content: 'Sulawesi Selatan memiliki garis pantai yang panjang dengan kekayaan hayati laut yang luar biasa. Analisis ini memetakan titik-titik potensial wisata bahari.',
+    images: ['https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?q=80&w=2670&auto=format&fit=crop'],
+    created_at: '2024-02-10'
+  },
+  {
+    title: 'Distribusi Pangan di Kepulauan Maluku',
+    slug: 'pangan-maluku',
+    content: 'Analisis logistik dan rantai pasok pangan di wilayah Kepulauan Maluku. Fokus pada kestabilan harga kebutuhan pokok antar pulau.',
+    images: ['https://images.unsplash.com/photo-1495539406979-bf61750d38ad?q=80&w=2670&auto=format&fit=crop'],
+    created_at: '2024-02-05'
+  }
+])
+
+// const selectedAnalisis = ref(null)
+// const currentSlideIndex = ref(0)
+// let analysisBsModal = null
+
+/*
+const openAnalysisModal = async (item) => {
+  selectedAnalisis.value = item
+  currentSlideIndex.value = 0
+  
+  await nextTick()
+  
+  if (!analysisBsModal) {
+    const modalEl = document.getElementById('analysisModal')
+    if (modalEl) analysisBsModal = new Modal(modalEl)
+  }
+  
+  const carouselEl = document.getElementById('analysisCarousel')
+  if (carouselEl) {
+    let bsCarousel = Carousel.getInstance(carouselEl)
+    if (!bsCarousel) {
+      bsCarousel = new Carousel(carouselEl, {
+        interval: false,
+        ride: false
+      })
+      
+      carouselEl.addEventListener('slid.bs.carousel', event => {
+        currentSlideIndex.value = event.to
+      })
+    } else {
+      bsCarousel.to(0)
+    }
+  }
+  
+  if (analysisBsModal) analysisBsModal.show()
+}
+*/
+
+function stripHTMLText(htmlStr) {
+  if (!htmlStr) return ''
+  let text = htmlStr.replace(/<br\s*\/?>/gi, ' ').replace(/<\/p>/gi, ' ')
+  text = text.replace(/<[^>]*>?/gm, '')
+  text = text.replace(/&nbsp;/g, ' ')
+  return text.trim().replace(/\s+/g, ' ')
+}
 
 function pickQueryStr(val) {
   if (val == null || val === '') return ''
@@ -554,10 +722,7 @@ watch([selectedData], () => {
 }
 
 .container-viz {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 1.5rem;
-  align-items: start;
+  display: block;
   max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
@@ -566,13 +731,16 @@ watch([selectedData], () => {
 }
 
 .viz-sidebar {
-  position: sticky;
-  top: 80px;
-  z-index: 100;
+  display: none;
 }
 
 .viz-main {
   min-width: 0;
+}
+
+.top-filter-container {
+  position: relative;
+  z-index: 1000;
 }
 
 .glass-filter-card {
@@ -586,8 +754,24 @@ watch([selectedData], () => {
 
 .filter-fields {
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.region-filter {
+  flex: 1;
+  min-width: 200px;
+}
+
+.dataset-filter {
+  flex: 2;
+  min-width: 300px;
+}
+
+.chart-type-filter {
+  flex-shrink: 0;
 }
 
 .filter-group {
@@ -602,12 +786,13 @@ watch([selectedData], () => {
 }
 
 .filter-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--text-secondary);
   display: block;
+  margin-bottom: 0.5rem;
 }
 
 .chart-header-row {
@@ -720,7 +905,7 @@ watch([selectedData], () => {
 }
 
 .chart-canvas-wrapper {
-  height: 380px;
+  height: 500px;
   overflow: hidden;
   position: relative;
   transition: opacity 0.3s ease;
@@ -761,14 +946,212 @@ watch([selectedData], () => {
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* NEWS SECTION */
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.btn-link-all {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-link-all:hover {
+  color: var(--primary-hover);
+  transform: translateX(4px);
+}
+
+.news-mini-card {
+  background: white;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+}
+
+.news-mini-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--primary-color);
+  box-shadow: 0 20px 40px -10px rgba(217, 119, 6, 0.15);
+}
+
+.nm-img-wrapper {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nm-placeholder {
+  font-size: 3rem;
+  color: #d97706;
+  opacity: 0.3;
+}
+
+.nm-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.news-mini-card:hover .nm-img {
+  transform: scale(1.05);
+}
+
+.nm-date-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+
+.nm-content {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.nm-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.45;
+  transition: color 0.2s ease;
+}
+
+.news-mini-card:hover .nm-title {
+  color: var(--primary-color);
+}
+
+.nm-excerpt {
+  font-size: 0.925rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nm-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.news-mini-card:hover .detail-label {
+  color: var(--primary-hover);
+}
+
+.news-mini-card:hover .bi-arrow-right {
+  transform: translateX(5px);
+}
+
+.page-count-badge {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-control-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.carousel-control-prev:hover .carousel-control-icon,
+.carousel-control-next:hover .carousel-control-icon {
+  background: var(--primary-color);
+  transform: scale(1.1);
+}
+
+.carousel-indicators-custom {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 4px 16px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  z-index: 10;
+}
+
+.analysis-img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 :deep(.custom-multiselect) {
@@ -787,48 +1170,31 @@ watch([selectedData], () => {
 }
 
 @media (max-width: 991px) {
-  .container-viz {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .viz-sidebar {
-    position: sticky;
-    top: 72px;
-  }
-
-  .glass-filter-card {
-    padding: 1rem 1.25rem;
-  }
-
   .filter-fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
 
-  .filter-group:last-child {
-    grid-column: 1 / -1;
+  .region-filter, .dataset-filter {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .chart-type-filter {
+    flex: 1 1 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .chart-type-toggle {
-    display: flex;
-    gap: 6px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .type-btn {
+    flex: 1;
   }
 }
 
-@media (max-width: 991px) {
-  .container-viz {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding-top: 1rem;
-    padding-bottom: 2rem;
-  }
-  .viz-sidebar {
-    position: static;
-    margin-bottom: 0;
-  }
-}
 
 @media (max-width: 768px) {
   .hero-v2-title {
