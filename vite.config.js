@@ -1,42 +1,58 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: '/',
-  plugins: [vue(), vueDevTools()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const ckanProxyTarget =
+    env.DEV_CKAN_PROXY_TARGET?.trim() || 'https://data.kasulampua.id'
+
+  /** Same-origin paths in the browser; Vite proxies to CKAN (hindari CORS). */
+  const ckanDevProxy = {
+    '/ckan-api': {
+      target: ckanProxyTarget,
+      changeOrigin: true,
+      secure: true,
+      rewrite: (path) => path.replace(/^\/ckan-api/, '/api/3/action'),
     },
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'https://apikasulampua.datakaltara.my.id',
-        changeOrigin: true,
-        secure: true,
+    '/ckan-file': {
+      target: ckanProxyTarget,
+      changeOrigin: true,
+      secure: true,
+      rewrite: (path) => path.replace(/^\/ckan-file/, ''),
+    },
+  }
+
+  return {
+    base: '/',
+    plugins: [vue(), vueDevTools()],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
-      '/uploads': {
-        target: 'https://apikasulampua.datakaltara.my.id',
-        changeOrigin: true,
-        secure: true,
+    },
+    server: {
+      proxy: {
+        '/api': {
+          target: 'https://apikasulampua.datakaltara.my.id',
+          changeOrigin: true,
+          secure: true,
+        },
+        '/uploads': {
+          target: 'https://apikasulampua.datakaltara.my.id',
+          changeOrigin: true,
+          secure: true,
+        },
+        ...ckanDevProxy,
       },
-      '/ckan-api': {
-        target: 'https://data.kasulampua.id',
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/ckan-api/, '/api/3/action'),
+    },
+    preview: {
+      proxy: {
+        ...ckanDevProxy,
       },
-      '/ckan-file': {
-        target: 'https://data.kasulampua.id',
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/ckan-file/, ''),
-      }
-    }
+    },
   }
 })

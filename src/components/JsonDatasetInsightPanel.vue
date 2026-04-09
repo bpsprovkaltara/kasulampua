@@ -10,9 +10,13 @@
       <div>
         {{ error }}
         <div v-if="resource.url && resource.url !== '-'" class="mt-2">
-          <a :href="resource.url" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary rounded-pill">
-            <i class="bi bi-download me-1"></i> Unduh file
-          </a>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary rounded-pill"
+            @click="openResourceJsonInNewTab"
+          >
+            <i class="bi bi-filetype-json me-1"></i> Buka JSON
+          </button>
         </div>
       </div>
     </div>
@@ -39,9 +43,10 @@
             v-if="resource.url && resource.url !== '-'"
             type="button"
             class="btn btn-sm rounded-pill px-3 jd-btn-json"
-            @click="downloadJson"
+            title="Buka data JSON (sesuai filter) di tab baru"
+            @click="openJsonInNewTab"
           >
-            <i class="bi bi-filetype-json me-1"></i> Unduh JSON
+            <i class="bi bi-filetype-json me-1"></i> Buka JSON
           </button>
         </div>
       </div>
@@ -70,6 +75,7 @@
         v-if="activeTab === 'table'"
         :table-data="filteredData"
         :columns="visibleCols"
+        :column-labels="columnLabels"
       />
 
       <div v-else-if="activeTab === 'chart'" class="jd-chart-layout row g-3 align-items-start">
@@ -118,10 +124,11 @@
                 >
                   <input
                     :id="'jd-turvar-' + idx"
-                    type="checkbox"
+                    type="radio"
+                    name="jd-turvar"
                     class="jd-check-input"
-                    :checked="selectedTurvar.includes(opt)"
-                    @change="toggleTurvar(opt, $event.target.checked)"
+                    :checked="selectedTurvar === opt"
+                    @change="toggleTurvar(opt)"
                   />
                   <label class="jd-check-label" :for="'jd-turvar-' + idx">
                     {{ opt }}
@@ -159,6 +166,7 @@
           <JsonDatasetChartCard
             :table-data="chartFilteredData"
             :columns="visibleCols"
+            :column-labels="columnLabels"
           />
         </div>
       </div>
@@ -187,18 +195,40 @@ const allColumns = ref([])
 const loading = ref(true)
 const error = ref(null)
 const activeTab = ref('table')
+/** Label kolom dari root JSON hasil fetch (column_labels / label_overrides) */
+const columnLabelsFromJson = ref({})
 
-const firstCol = computed(() => (allColumns.value.length ? allColumns.value[0] : ''))
+function columnLabelsFromCkanResource(resource) {
+  if (!resource) return {}
+  let raw = resource.column_labels
+  if (raw === undefined && Array.isArray(resource.extras)) {
+    const entry = resource.extras.find((e) => e.key === 'column_labels')
+    if (entry) raw = entry.value
+  }
+  if (!raw) return {}
+  if (typeof raw === 'string') {
+    try {
+      const o = JSON.parse(raw)
+      return typeof o === 'object' && o && !Array.isArray(o) ? o : {}
+    } catch {
+      return {}
+    }
+  }
+  return typeof raw === 'object' && !Array.isArray(raw) ? { ...raw } : {}
+}
+
+/** JSON file mengalahkan metadata resource CKAN bila keduanya ada */
+const columnLabels = computed(() => ({
+  ...columnLabelsFromCkanResource(props.resource),
+  ...columnLabelsFromJson.value
+}))
 
 const filteredData = computed(() => tableData.value)
 
-const formatHeader = (col) =>
-  String(col).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-
 /** @type {import('vue').Ref<string[]>} */
 const selectedVerval = ref([])
-/** @type {import('vue').Ref<string[]>} */
-const selectedTurvar = ref([])
+/** @type {import('vue').Ref<string>} */
+const selectedTurvar = ref('')
 /** 'all' | 'without' | 'only' — default exclude aggregate rows */
 const isAggregateFilter = ref('without')
 
@@ -278,9 +308,8 @@ const chartFilteredData = computed(() => {
   }
 
   const tk = hi.turvarKey
-  if (tk && selectedTurvar.value.length) {
-    const allow = new Set(selectedTurvar.value)
-    rows = rows.filter((r) => allow.has(cellStr(r[tk])))
+  if (tk && selectedTurvar.value) {
+    rows = rows.filter((r) => cellStr(r[tk]) === selectedTurvar.value)
   }
 
   return rows
@@ -288,7 +317,7 @@ const chartFilteredData = computed(() => {
 
 function initChartFilterSelections() {
   selectedVerval.value = [...vervalOptions.value]
-  selectedTurvar.value = [...turvarOptions.value]
+  selectedTurvar.value = turvarOptions.value.at(-1) ?? ''
 }
 
 function toggleVerval(opt, checked) {
@@ -299,21 +328,18 @@ function toggleVerval(opt, checked) {
   }
 }
 
-function toggleTurvar(opt, checked) {
-  if (checked) {
-    if (!selectedTurvar.value.includes(opt)) selectedTurvar.value = [...selectedTurvar.value, opt]
-  } else {
-    selectedTurvar.value = selectedTurvar.value.filter((x) => x !== opt)
-  }
+function toggleTurvar(opt) {
+  selectedTurvar.value = opt
 }
 
 watch(turvarOptions, (nextOptions) => {
   if (!nextOptions.length) {
-    selectedTurvar.value = []
+    selectedTurvar.value = ''
     return
   }
-  const allowed = new Set(nextOptions)
-  selectedTurvar.value = selectedTurvar.value.filter((v) => allowed.has(v))
+  if (!nextOptions.includes(selectedTurvar.value)) {
+    selectedTurvar.value = nextOptions.at(-1) ?? ''
+  }
 })
 
 const getProxyUrl = (originalUrl) => {
@@ -334,11 +360,48 @@ const downloadExcel = () => {
   saveAs(new Blob([buf], { type: 'application/octet-stream' }), `${name}.xlsx`)
 }
 
-const downloadJson = () => {
+const openJsonTextInNewTab = (jsonText) => {
+  const opened = window.open('', '_blank')
+  if (!opened) return false
+  opened.opener = null
+  const blob = new Blob([jsonText], { type: 'application/json;charset=utf-8' })
+  const objectUrl = URL.createObjectURL(blob)
+  opened.location.href = objectUrl
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 30_000)
+  return true
+}
+
+const openJsonInNewTab = () => {
   if (!filteredData.value.length) return
   const dataStr = JSON.stringify(filteredData.value, null, 2)
-  const name = (props.resource.name || 'data').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 50)
-  saveAs(new Blob([dataStr], { type: 'application/json' }), `${name}.json`)
+  openJsonTextInNewTab(dataStr)
+}
+
+const openResourceJsonInNewTab = async () => {
+  const url = getProxyUrl(props.resource?.url)
+  if (!url) return
+
+  const opened = window.open('', '_blank')
+  if (!opened) return
+  opened.opener = null
+
+  try {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`)
+    const text = await res.text()
+    const blob = new Blob([text], { type: 'application/json;charset=utf-8' })
+    const objectUrl = URL.createObjectURL(blob)
+    opened.location.href = objectUrl
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 30_000)
+  } catch (err) {
+    opened.document.title = 'Gagal membuka JSON'
+    opened.document.body.innerHTML = `
+      <pre style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; padding: 16px;">
+Gagal membuka JSON:
+${(err && err.message) || 'Kesalahan tidak diketahui'}
+      </pre>
+    `
+  }
 }
 
 const setChartTab = () => {
@@ -350,6 +413,7 @@ const fetchData = async () => {
   error.value = null
   tableData.value = []
   allColumns.value = []
+  columnLabelsFromJson.value = {}
 
   try {
     const url = getProxyUrl(props.resource.url)
@@ -359,9 +423,10 @@ const fetchData = async () => {
     if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`)
 
     const json = await res.json()
-    const { cols, rows: rawRows } = parseJsonResource(json)
+    const { cols, rows: rawRows, columnLabels: parsedLabels = {} } = parseJsonResource(json)
     if (!rawRows.length) throw new Error('Format JSON tidak dikenali atau data kosong')
 
+    columnLabelsFromJson.value = parsedLabels
     allColumns.value = cols
     tableData.value = rawRows
     initChartFilterSelections()

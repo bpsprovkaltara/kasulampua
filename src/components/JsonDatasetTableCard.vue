@@ -61,7 +61,8 @@ import PaginationControl from './PaginationControl.vue'
 
 const props = defineProps({
   tableData: { type: Array, default: () => [] },
-  columns: { type: Array, default: () => [] }
+  columns: { type: Array, default: () => [] },
+  columnLabels: { type: Object, default: () => ({}) }
 })
 
 const currentPage = ref(1)
@@ -88,8 +89,10 @@ watch(
   }
 )
 
-const formatHeader = (col) =>
-  String(col).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+const formatHeader = (col) => {
+  if (props.columnLabels?.[col]) return props.columnLabels[col]
+  return String(col).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
 
 const isNilaiColumn = (col) => String(col).toLowerCase() === 'nilai'
 

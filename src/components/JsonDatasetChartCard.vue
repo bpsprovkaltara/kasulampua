@@ -33,19 +33,30 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { buildLineChartData } from '@/utils/jsonDatasetChart'
+import { buildLineChartData, findPeriodColumn, findNilaiColumn } from '@/utils/jsonDatasetChart'
 
 Chart.register(...registerables, zoomPlugin)
 
 const props = defineProps({
   tableData: { type: Array, default: () => [] },
-  columns: { type: Array, default: () => [] }
+  columns: { type: Array, default: () => [] },
+  columnLabels: { type: Object, default: () => ({}) }
 })
 
 const chartRef = ref(null)
 let chartInstance = null
 
 const chartPayload = computed(() => buildLineChartData(props.tableData, props.columns))
+
+const xAxisLabel = computed(() => {
+  const col = findPeriodColumn(props.columns)
+  return (col && props.columnLabels?.[col]) || 'Periode'
+})
+
+const yAxisLabel = computed(() => {
+  const col = findNilaiColumn(props.columns)
+  return (col && props.columnLabels?.[col]) || 'Nilai indikator'
+})
 
 const chartReady = computed(() => {
   const p = chartPayload.value
@@ -94,6 +105,9 @@ const renderChart = () => {
           position: 'bottom',
           labels: { boxWidth: 12, font: { size: 11 } }
         },
+        tooltip: {
+          itemSort: (a, b) => (b.parsed.y ?? -Infinity) - (a.parsed.y ?? -Infinity)
+        },
         zoom: {
           pan: {
             enabled: true,
@@ -115,11 +129,11 @@ const renderChart = () => {
       },
       scales: {
         x: {
-          title: { display: true, text: 'Periode' },
+          title: { display: true, text: xAxisLabel.value },
           ticks: { maxRotation: 45, maxTicksLimit: 48, autoSkip: true }
         },
         y: {
-          title: { display: true, text: 'Nilai indikator' },
+          title: { display: true, text: yAxisLabel.value },
           beginAtZero: false
         }
       }

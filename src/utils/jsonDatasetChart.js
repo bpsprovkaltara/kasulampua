@@ -120,7 +120,7 @@ function parseYearLabel(label) {
 /**
  * Kolom periode (long format): prioritas nama umum BPS/CSV.
  */
-function findPeriodColumn(visibleColumns) {
+export function findPeriodColumn(visibleColumns) {
   const order = ['tahun', 'turtahun', 'periode', 'bulan', 'triwulan', 'semester']
   const lower = (c) => String(c).toLowerCase()
   for (const name of order) {
@@ -130,7 +130,7 @@ function findPeriodColumn(visibleColumns) {
   return null
 }
 
-function findNilaiColumn(visibleColumns) {
+export function findNilaiColumn(visibleColumns) {
   const lower = (c) => String(c).toLowerCase()
   return visibleColumns.find((c) => lower(c) === 'nilai') || null
 }
