@@ -92,6 +92,18 @@
                 <span>Verval</span>
               </div>
               <div class="jd-filter-list custom-scrollbar">
+                <div class="jd-check-item">
+                  <input
+                    id="jd-verval-all"
+                    type="checkbox"
+                    class="jd-check-input"
+                    :checked="allVervalSelected"
+                    @change="toggleAllVerval($event.target.checked)"
+                  />
+                  <label class="jd-check-label" for="jd-verval-all">
+                    Pilih semua / Tidak pilih semua
+                  </label>
+                </div>
                 <div
                   v-for="(opt, idx) in vervalOptions"
                   :key="'v-' + idx + '-' + opt"
@@ -137,7 +149,32 @@
               </div>
             </div>
 
-            <div v-if="hiddenInfo.isAggregateKey" class="jd-filter-section mb-0">
+            <div v-if="showTurtahunFilter" class="jd-filter-section mb-4">
+              <div class="jd-filter-label-header">
+                <i class="bi bi-calendar3 me-2"></i>
+                <span>Turtahun</span>
+              </div>
+              <div class="jd-filter-list custom-scrollbar">
+                <div
+                  v-for="(opt, idx) in turtahunOptions"
+                  :key="'tt-' + idx + '-' + opt"
+                  class="jd-check-item"
+                >
+                  <input
+                    :id="'jd-turtahun-' + idx"
+                    type="checkbox"
+                    class="jd-check-input"
+                    :checked="selectedTurtahun.includes(opt)"
+                    @change="toggleTurtahun(opt, $event.target.checked)"
+                  />
+                  <label class="jd-check-label" :for="'jd-turtahun-' + idx">
+                    {{ opt }}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="false && hiddenInfo.isAggregateKey" class="jd-filter-section mb-0">
               <div class="jd-filter-label-header">
                 <i class="bi bi-calculator me-2"></i>
                 <span>Agregat</span>
@@ -229,6 +266,8 @@ const filteredData = computed(() => tableData.value)
 const selectedVerval = ref([])
 /** @type {import('vue').Ref<string>} */
 const selectedTurvar = ref('')
+/** @type {import('vue').Ref<string[]>} */
+const selectedTurtahun = ref([])
 /** 'all' | 'without' | 'only' — default exclude aggregate rows */
 const isAggregateFilter = ref('without')
 
@@ -263,6 +302,9 @@ const vervalOptions = computed(() => {
   }
   return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
 })
+const allVervalSelected = computed(
+  () => !!vervalOptions.value.length && selectedVerval.value.length === vervalOptions.value.length
+)
 
 const showTurvarFilter = computed(() => {
   const key = hiddenInfo.value.turvarKey
@@ -284,6 +326,31 @@ const turvarOptions = computed(() => {
   for (const row of tableData.value) {
     const s = cellStr(row[key])
     if (s !== '') uniq.add(s)
+  }
+  return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
+})
+
+const showTurtahunFilter = computed(() => {
+  const key = hiddenInfo.value.turtahunKey
+  if (!key || !tableData.value.length) return false
+  const meaningful = new Set()
+  for (const row of tableData.value) {
+    const s = cellStr(row[key])
+    if (!s) continue
+    if (s.toLowerCase() === 'tahunan') continue
+    meaningful.add(s)
+  }
+  return meaningful.size > 1
+})
+
+const turtahunOptions = computed(() => {
+  const key = hiddenInfo.value.turtahunKey
+  if (!key || !tableData.value.length) return []
+  const uniq = new Set()
+  for (const row of tableData.value) {
+    const s = cellStr(row[key])
+    if (!s) continue
+    uniq.add(s)
   }
   return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
 })
@@ -312,12 +379,19 @@ const chartFilteredData = computed(() => {
     rows = rows.filter((r) => cellStr(r[tk]) === selectedTurvar.value)
   }
 
+  const ttk = hi.turtahunKey
+  if (ttk && selectedTurtahun.value.length) {
+    const allow = new Set(selectedTurtahun.value)
+    rows = rows.filter((r) => allow.has(cellStr(r[ttk])))
+  }
+
   return rows
 })
 
 function initChartFilterSelections() {
   selectedVerval.value = [...vervalOptions.value]
-  selectedTurvar.value = turvarOptions.value.at(-1) ?? ''
+  selectedTurvar.value = turvarOptions.value[0] ?? ''
+  selectedTurtahun.value = [...turtahunOptions.value]
 }
 
 function toggleVerval(opt, checked) {
@@ -328,8 +402,26 @@ function toggleVerval(opt, checked) {
   }
 }
 
+function toggleAllVerval(checked) {
+  if (checked) {
+    selectedVerval.value = [...vervalOptions.value]
+  } else {
+    selectedVerval.value = []
+  }
+}
+
 function toggleTurvar(opt) {
   selectedTurvar.value = opt
+}
+
+function toggleTurtahun(opt, checked) {
+  if (checked) {
+    if (!selectedTurtahun.value.includes(opt)) {
+      selectedTurtahun.value = [...selectedTurtahun.value, opt]
+    }
+  } else {
+    selectedTurtahun.value = selectedTurtahun.value.filter((x) => x !== opt)
+  }
 }
 
 watch(turvarOptions, (nextOptions) => {
@@ -338,7 +430,19 @@ watch(turvarOptions, (nextOptions) => {
     return
   }
   if (!nextOptions.includes(selectedTurvar.value)) {
-    selectedTurvar.value = nextOptions.at(-1) ?? ''
+    selectedTurvar.value = nextOptions[0] ?? ''
+  }
+})
+
+watch(turtahunOptions, (nextOptions) => {
+  if (!nextOptions.length) {
+    selectedTurtahun.value = []
+    return
+  }
+  const allowed = new Set(nextOptions)
+  selectedTurtahun.value = selectedTurtahun.value.filter((v) => allowed.has(v))
+  if (!selectedTurtahun.value.length) {
+    selectedTurtahun.value = [...nextOptions]
   }
 })
 
