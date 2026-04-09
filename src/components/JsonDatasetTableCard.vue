@@ -45,9 +45,9 @@
       </div>
       <div
         v-if="totalPages > 1"
-        class="jd-table-footer d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3 px-1"
+        class="jd-table-footer"
       >
-        <span class="text-muted small">Halaman {{ currentPage }} dari {{ totalPages }}</span>
+        <span class="jd-page-info">Halaman {{ currentPage }} dari {{ totalPages }}</span>
         <PaginationControl :current-page="currentPage" :total-pages="totalPages" @change="setPage" />
       </div>
     </div>
@@ -218,9 +218,32 @@ function isAggregateRow(row) {
 }
 
 .jd-table-footer {
-  padding: 0 0.25rem;
-  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.5rem;
   flex-wrap: wrap;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
 }
 
+.jd-page-info {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .jd-table-footer {
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .jd-page-info {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+}
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="pagination-bar mt-5" v-if="totalPages > 1">
+  <div class="pagination-bar" v-if="totalPages > 1">
     <button
       class="page-btn"
       :disabled="currentPage === 1"
@@ -52,7 +52,6 @@ const emit = defineEmits(['change'])
 const emitPage = (p) => {
   if (p >= 1 && p <= props.totalPages) {
     emit('change', p)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
 

@@ -66,18 +66,13 @@
         </button>
       </div>
 
-      <JsonDatasetTableCard
-        v-if="activeTab === 'table'"
-        :table-data="filteredData"
-        :columns="visibleCols"
-      />
-
-      <div v-else-if="activeTab === 'chart'" class="jd-chart-layout row g-3 align-items-start">
-        <aside class="col-12 col-lg-4 col-xl-3 jd-chart-filters">
+      <div class="jd-view-layout row g-3 align-items-start">
+        
+        <aside class="col-12 col-lg-4 col-xl-3 jd-view-filters">
           <div class="jd-filter-container">
             <div class="jd-filter-header-main">
               <i class="bi bi-sliders2-vertical me-2"></i>
-              <h6 class="jd-sidebar-main-title">Filter visualisasi</h6>
+              <h6 class="jd-sidebar-main-title">Filter Data</h6>
             </div>
 
             <div v-if="vervalFilterKey" class="jd-filter-section mb-4">
@@ -155,9 +150,16 @@
             </div>
           </div>
         </aside>
-        <div class="col-12 col-lg col-xl jd-chart-main">
+        <div class="col-12 col-lg col-xl jd-view-main">
+          <JsonDatasetTableCard
+            v-if="activeTab === 'table'"
+            :table-data="displayData"
+            :columns="visibleCols"
+          />
+
           <JsonDatasetChartCard
-            :table-data="chartFilteredData"
+            v-else-if="activeTab === 'chart'"
+            :table-data="displayData"
             :columns="visibleCols"
           />
         </div>
@@ -189,8 +191,6 @@ const error = ref(null)
 const activeTab = ref('table')
 
 const firstCol = computed(() => (allColumns.value.length ? allColumns.value[0] : ''))
-
-const filteredData = computed(() => tableData.value)
 
 const formatHeader = (col) =>
   String(col).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -258,9 +258,9 @@ const turvarOptions = computed(() => {
   return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
 })
 
-const chartFilteredData = computed(() => {
+const displayData = computed(() => {
   const hi = hiddenInfo.value
-  let rows = filteredData.value
+  let rows = tableData.value
 
   const aggKey = hi.isAggregateKey
   if (aggKey) {
@@ -389,17 +389,15 @@ watch(
   margin-top: 0;
 }
 .jip-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #d97706;
+  width: 48px;
+  height: 48px;
+  border: 3.5px solid rgba(217, 119, 6, 0.1);
   border-radius: 50%;
-  animation: jip-spin 0.8s linear infinite;
+  border-top-color: #d97706;
+  animation: jip-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 @keyframes jip-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .jd-toolbar {
@@ -497,19 +495,23 @@ watch(
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-.jd-chart-layout {
+.jd-view-layout {
   margin-left: 0;
   margin-right: 0;
 }
 
-.jd-chart-filters {
+.jd-view-filters {
   min-width: 0;
 }
 
 @media (min-width: 992px) {
-  .jd-chart-filters {
+  .jd-view-filters {
     max-width: 360px;
   }
+}
+
+.jd-view-main {
+  min-width: 0;
 }
 
 .jd-filter-container {
@@ -684,9 +686,5 @@ watch(
 
 .jd-radio-option.active .option-text {
   color: #d97706;
-}
-
-.jd-chart-main {
-  min-width: 0;
 }
 </style>

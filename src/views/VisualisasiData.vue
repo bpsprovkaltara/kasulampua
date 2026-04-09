@@ -98,7 +98,7 @@
 
           <div class="chart-body">
             <div v-if="loading" class="chart-loading-overlay">
-              <div class="loading-spinner"></div>
+              <div class="ds-loading-spinner"></div>
               <p class="mt-3 text-muted fw-medium">Menyiapkan visualisasi...</p>
             </div>
             <div class="chart-canvas-wrapper" :class="{ faded: loading }">
