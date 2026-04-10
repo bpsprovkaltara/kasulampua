@@ -230,12 +230,15 @@ import { Chart } from 'chart.js/auto'
 import { DUMMY_BERITA } from '../utils/dummyBerita'
 import { formatLongDate } from '../utils/dates'
 import { Modal, Carousel } from 'bootstrap'
+import { CKAN_FILE_BASE_URL, CKAN_ACTION_API } from '@/config/api'
 
 const selectedRegion = ref('kasulampua')
 const selectedData = ref('')
 const dataOptions = ref([])
 const chartRef = ref(null)
 let chartInstance = null
+import { parseJsonResource } from '@/utils/parseCkanResourceJson'
+
 const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
@@ -386,156 +389,184 @@ const state = reactive({
 
 const fetchDataset = async () => {
   try {
-    /*
-    const res = await fetch(API_ENDPOINTS.LISTDATASET)
+    // Fetch top datasets that have high likelihood of having visualization data
+    const params = new URLSearchParams()
+    params.set('rows', '50')
+    params.set('q', '*:*')
+    params.set('fq', 'res_format:JSON') // Prioritize JSON datasets for visualization
+    
+    const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
     const data = await res.json()
-    dataOptions.value = data.filter(item => item.visualisasi === "1").map(item => ({
-      value: item.ckan_resource_id,
-      label: item.judul
-    }))
-    */
-
-    // DUMMY DATA 
-    dataOptions.value = [
-      { value: 'pdrb-kab-2023', label: 'PDRB Menurut Kabupaten/Kota 2023' },
-      { value: 'ipm-regional-2023', label: 'Indeks Pembangunan Manusia Regional' },
-      { value: 'inflasi-bulanan', label: 'Tingkat Inflasi Bulanan' },
-    ]
-
-
-    if (!route.query.data && !selectedData.value) {
-      selectedData.value = dataOptions.value[0]?.value || ''
+    
+    if (data.success && data.result?.results) {
+      dataOptions.value = data.result.results.map(pkg => {
+        // Find the JSON resource ID
+        const jsonRes = pkg.resources.find(r => r.format.toLowerCase() === 'json')
+        return {
+          value: jsonRes ? jsonRes.id : pkg.id,
+          label: pkg.title || pkg.name
+        }
+      })
+    }
+    
+    if (!route.query.data && !selectedData.value && dataOptions.value.length > 0) {
+      selectedData.value = dataOptions.value[0].value
     }
   } catch (error) {
-    console.error('Gagal mengambil dataset:', error)
+    console.error('Gagal mengambil dataset real-time:', error)
+    // Minimal fallback to prevent crash
+    dataOptions.value = [{ value: '428b1294-8fff-42ea-8cf7-9b552e6d85ca', label: '[Seri 2010] PDRB Triwulanan' }]
   }
 }
 
 const fetchData = async () => {
   if (!selectedData.value) return
 
+  loading.value = true
   try {
-    /*
-    const res = await fetch(`${DATAHUB_ENDPOINTS.RESBPS}/${selectedData.value}`)
-    const json = await res.json()
-    dataResponse.value = json
-    */
+    const resourceId = selectedData.value
+    let url = `${CKAN_FILE_BASE_URL}/resource/${resourceId}/download/data.json`
 
-    // MOCK RESPONSES FOR DIFFERENT DATASETS
-    const baseData = {
-      'pdrb-kab-2023': {
-        title: 'PDRB Menurut Kabupaten/Kota',
-        unit: 'Miliar Rupiah',
-        values: {
-          6100: 15000,
-          6200: 18000,
-          6300: 16500,
-          6400: 45000,
-          6500: 12000,
-          7100: 14000,
-          7200: 22000,
-          7300: 35000,
-          7400: 19000,
-          7500: 9000,
-          7600: 11000,
-          8100: 13000,
-          8200: 15500,
-          9100: 10500,
-          9200: 11200,
-          9400: 12800,
-          9500: 8500,
-          9600: 9800,
-          9700: 10100,
-        },
-      },
-      'ipm-regional-2023': {
-        title: 'Indeks Pembangunan Manusia',
-        unit: 'Poin',
-        values: {
-          6100: 69.5,
-          6200: 72.1,
-          6300: 71.8,
-          6400: 77.2,
-          6500: 71.4,
-          7100: 73.5,
-          7200: 70.1,
-          7300: 72.9,
-          7400: 71.2,
-          7500: 69.3,
-          7600: 68.0,
-          8100: 71.3,
-          8200: 69.5,
-          9100: 65.9,
-          9200: 66.2,
-          9400: 61.8,
-          9500: 50.5,
-          9600: 55.8,
-          9700: 60.1,
-        },
-      },
-      'inflasi-bulanan': {
-        title: 'Tingkat Inflasi Bulanan',
-        unit: 'Persen (%)',
-        values: {
-          6100: 2.5,
-          6200: 3.1,
-          6300: 2.8,
-          6400: 3.2,
-          6500: 2.4,
-          7100: 3.5,
-          7200: 2.1,
-          7300: 2.9,
-          7400: 3.2,
-          7500: 2.3,
-          7600: 3.0,
-          8100: 3.3,
-          8200: 4.5,
-          9100: 2.9,
-          9200: 3.2,
-          9400: 3.8,
-          9500: 2.5,
-          9600: 2.8,
-          9700: 3.1,
-        },
-      },
+    // Try to get actual URL from CKAN API if not already a direct link
+    try {
+      const resInfo = await fetch(`${CKAN_ACTION_API.RESOURCE_SHOW}?id=${resourceId}`).then(r => r.json())
+      if (resInfo.success && resInfo.result?.url) {
+        url = resInfo.result.url
+        if (url.includes('data.kasulampua.id')) {
+          url = url.replace(/https?:\/\/data\.kasulampua\.id/g, CKAN_FILE_BASE_URL)
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal mengambil info resource, menggunakan fallback URL', e)
     }
 
-    const currentMock = baseData[selectedData.value] || baseData['pdrb-kab-2023']
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Gagal mengunduh data dataset')
+    
+    const json = await res.json()
+
+    // Use robust tabular parser (same as Dataset Detail)
+    const { cols, rows } = parseJsonResource(json)
+    
+    if (!rows.length || !cols.length) {
+      throw new Error('Format dataset tidak didukung atau data kosong')
+    }
+
+    // 1. Identify Columns
+    const regionCol = cols[0] // Usually first column is Wilayah/Provinsi
+    const valueCol = cols.find(c => {
+      const low = c.toLowerCase()
+      return low === 'nilai' || low === 'value' || low === 'jumlah' || low.includes('produksi') || low.includes('persentase')
+    }) || cols[cols.length - 1] // Fallback to last column
+    
+    const periodCol = cols.find(c => {
+      const low = c.toLowerCase()
+      return low === 'tahun' || low === 'periode' || low === 'turtahun' || low === 'th'
+    })
+
+    // 2. Map of Kasulampua Provinces (Name -> ID)
+    const KASULAMPUA_MAP = {
+      "KALIMANTAN BARAT": 6100,
+      "KALIMANTAN TENGAH": 6200,
+      "KALIMANTAN SELATAN": 6300,
+      "KALIMANTAN TIMUR": 6400,
+      "KALIMANTAN UTARA": 6500,
+      "SULAWESI UTARA": 7100,
+      "SULAWESI TENGAH": 7200,
+      "SULAWESI SELATAN": 7300,
+      "SULAWESI TENGGARA": 7400,
+      "GORONTALO": 7500,
+      "SULAWESI BARAT": 7600,
+      "MALUKU": 8100,
+      "MALUKU UTARA": 8200,
+      "PAPUA BARAT": 9100,
+      "PAPUA": 9200,
+      "PAPUA TENGAH": 9300,
+      "PAPUA PEGUNUNGAN": 9400,
+      "PAPUA SELATAN": 9500,
+      "PAPUA BARAT DAYA": 9600,
+      "PAPUA SELATAN": 9700 // Some variants might use 97 for Papua Selatan
+    }
+    
+    const KASULAMPUA_IDS = Object.values(KASULAMPUA_MAP)
+    
+    // 3. Filter for Kasulampua
+    let filteredRows = rows.filter(row => {
+      const regionVal = String(row[regionCol] || '').trim().toUpperCase()
+      const regionId = parseInt(regionVal)
+      
+      // Match by ID
+      if (!isNaN(regionId)) {
+        if (KASULAMPUA_IDS.includes(regionId)) return true
+        if (KASULAMPUA_IDS.includes(regionId * 100)) return true
+        if (KASULAMPUA_IDS.includes(Math.floor(regionId / 100) * 100)) return true
+      }
+      
+      // Match by Name
+      if (KASULAMPUA_MAP[regionVal]) return true
+      
+      // Partial match fallback
+      return Object.keys(KASULAMPUA_MAP).some(pName => pName.includes(regionVal) || regionVal.includes(pName))
+    })
+
+    if (!filteredRows.length) {
+      throw new Error('Data wilayah Kasulampua tidak ditemukan di dataset ini')
+    }
+
+    // 4. Handle Temporal (Pick latest period if multi-period)
+    let latestPeriod = ''
+    if (periodCol) {
+      const periods = [...new Set(filteredRows.map(r => String(r[periodCol])))].sort()
+      latestPeriod = periods[periods.length - 1]
+      filteredRows = filteredRows.filter(r => String(r[periodCol]) === latestPeriod)
+    }
+
+    // 5. Map to Dashboard Format
+    const dataValues = []
+    const normalizedVervars = []
+
+    const processedProvs = new Set()
+    filteredRows.forEach(row => {
+      const regionVal = String(row[regionCol]).trim().toUpperCase()
+      let regionId = parseInt(regionVal)
+      
+      // Resolve ID from name if numeric ID is missing
+      if (isNaN(regionId) || !KASULAMPUA_IDS.includes(regionId * (regionId < 100 ? 100 : 1))) {
+        regionId = KASULAMPUA_MAP[regionVal] || Object.keys(KASULAMPUA_MAP).find(k => regionVal.includes(k) || k.includes(regionVal))
+        if (typeof regionId === 'string') regionId = KASULAMPUA_MAP[regionId]
+      } else {
+        if (regionId < 100) regionId *= 100
+        else if (regionId > 10000) regionId = Math.floor(regionId / 100) * 100
+      }
+
+      if (regionId && !processedProvs.has(regionId)) {
+        processedProvs.add(regionId)
+        normalizedVervars.push({ val: regionId, label: row[regionCol] })
+        dataValues.push(parseFloat(row[valueCol]) || 0)
+      }
+    })
 
     dataResponse.value = {
-      vervar: [
-        // Kalimantan
-        { val: 6100, label: 'Provinsi Kalimantan Barat' },
-        { val: 6200, label: 'Provinsi Kalimantan Tengah' },
-        { val: 6300, label: 'Provinsi Kalimantan Selatan' },
-        { val: 6400, label: 'Provinsi Kalimantan Timur' },
-        { val: 6500, label: 'Provinsi Kalimantan Utara' },
-        // Sulawesi
-        { val: 7100, label: 'Provinsi Sulawesi Utara' },
-        { val: 7200, label: 'Provinsi Sulawesi Tengah' },
-        { val: 7300, label: 'Provinsi Sulawesi Selatan' },
-        { val: 7400, label: 'Provinsi Sulawesi Tenggara' },
-        { val: 7500, label: 'Provinsi Gorontalo' },
-        { val: 7600, label: 'Provinsi Sulawesi Barat' },
-        // Maluku
-        { val: 8100, label: 'Provinsi Maluku' },
-        { val: 8200, label: 'Provinsi Maluku Utara' },
-        // Papua
-        { val: 9100, label: 'Provinsi Papua Barat' },
-        { val: 9200, label: 'Provinsi Papua Barat Daya' },
-        { val: 9400, label: 'Provinsi Papua' },
-        { val: 9500, label: 'Provinsi Papua Pegunungan' },
-        { val: 9600, label: 'Provinsi Papua Tengah' },
-        { val: 9700, label: 'Provinsi Papua Selatan' },
-      ],
-      var: [{ label: currentMock.title, unit: currentMock.unit }],
-      tahun: [{ val: 2023, label: '2023' }],
-      datacontent: currentMock.values,
+      vervar: normalizedVervars,
+      var: [{ 
+        label: json.variable?.title || json.metadata?.label || 'Visualisasi Data', 
+        subLabel: `${valueCol}${latestPeriod ? ' - ' + latestPeriod : ''}`,
+        unit: json.variable?.unit || json.metadata?.unit || 'Satuan' 
+      }],
+      tahun: [{ val: latestPeriod, label: latestPeriod || 'Semua' }],
+      datacontent: {}
     }
+    
+    normalizedVervars.forEach((v, idx) => {
+      dataResponse.value.datacontent[v.val] = dataValues[idx]
+    })
 
-    updateData()
+    await updateData()
   } catch (err) {
-    console.error(`Gagal mengambil data: ${err}`)
+    console.error(`Gagal mengambil data real: ${err}`)
+    state.judul = "Dataset tidak kompatibel atau Wilayah tidak cocok"
+    state.labels = []
+    state.dataValues = []
     loading.value = false
   }
 }
@@ -558,7 +589,7 @@ const updateData = async () => {
   state.labels = filteredVervar.map((v) => v.label)
   state.dataValues = filteredVervar.map((v) => mock.datacontent[v.val] || 0)
   state.satuan = mock.var[0].unit
-  state.judul = mock.var[0].label + ' Tahun ' + mock.tahun[0].label
+  state.judul = mock.var[0].label + (mock.var[0].subLabel ? ` - ${mock.var[0].subLabel}` : ` Tahun ${mock.tahun[0].label}`)
 
   loading.value = false
   await nextTick()
@@ -1063,6 +1094,7 @@ watch([selectedData], () => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1070,6 +1102,7 @@ watch([selectedData], () => {
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

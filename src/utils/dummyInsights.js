@@ -86,5 +86,22 @@ export const DUMMY_INSIGHTS = [
         }
       ]
     }
+  },
+  {
+    id: 4,
+    title: 'Analisis PDRB Triwulanan Kelompok Provinsi Kasulampua',
+    description: 'Analisis perkembangan Produk Domestik Regional Bruto (PDRB) triwulanan di wilayah Kalimantan, Sulawesi, Maluku, dan Papua. Data ini mencakup visualisasi pertumbuhan ekonomi menurut lapangan usaha untuk memantau dinamika ekonomi regional secara real-time dari portal data.',
+    image: 'https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?q=80&w=2606&auto=format&fit=crop',
+    region: 'kasulampua',
+    region_name: 'Seluruh Wilayah Kasulampua',
+    topic: 'Neraca Ekonomi',
+    badge: 'Real-Time Data',
+    created_at: new Date().toISOString(),
+    author: 'Tim Analis Portal Kasulampua',
+    slug: 'pdrb-triwulanan-kasulampua',
+    views: 150,
+    useRealData: true,
+    datasetId: '2ab4ca3b-443b-4394-98ee-10a64c324dfa',
+    resourceId: '428b1294-8fff-42ea-8cf7-9b552e6d85ca'
   }
 ]

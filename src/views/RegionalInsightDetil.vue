@@ -281,7 +281,6 @@ import { onMounted, reactive, ref, computed, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
-import { API_ENDPOINTS } from '@/config/api'
 import { formatLongDate } from '@/utils/dates'
 import { DUMMY_INSIGHTS } from '@/utils/dummyInsights'
 import { Chart } from 'chart.js/auto'
@@ -426,7 +425,7 @@ const updateChartType = (type) => {
 function imgUrl(image) {
   if (!image) return false
   if (image.startsWith('http')) return image
-  return `${API_ENDPOINTS.INSIGHT_IMAGE}/${image}`
+  return image 
 }
 
 async function copyLink() {
@@ -439,21 +438,18 @@ async function copyLink() {
   }
 }
 
+
+
 const fetchInsight = async () => {
   loading.value = true
   error.value = null
   try {
-    /*
-    const res = await fetch(API_ENDPOINTS.INSIGHT_SLUG(route.params.id))
-    if (!res.ok) throw new Error('Insight tidak ditemukan')
-    state.insight = await res.json()
-    */
-    
     // FIND IN DUMMY DATA
     const found = DUMMY_INSIGHTS.find(i => i.slug === route.params.id)
     if (found) {
-      state.insight = found
+      state.insight = JSON.parse(JSON.stringify(found)) 
       trackInsight(state.insight?.title)
+      
       initChart()
     } else {
       error.value = 'Insight tidak ditemukan'
@@ -474,7 +470,6 @@ const fetchRelatedDatasets = async () => {
     state.dataset = await res.json()
     */
 
-    // DUMMY DATA
     state.dataset = [
       { title: 'Tabel PDRB Perkapita 2023', url: '#' },
       { title: 'Indikator Makro Ekonomi Regional', url: '#' }
@@ -488,18 +483,11 @@ const trackInsight = (label) => {
   window._paq?.push(['trackEvent', 'Insight', 'ViewInsight', 'Insight-' + label])
 }
 
-const handleViews = async () => {
-  try {
-    await fetch(`${API_ENDPOINTS.INSIGHT}/${route.params.id}/increment-views`, { method: 'POST' })
-  } catch (err) {
-    console.error('View error', err)
-  }
-}
+
 
 onMounted(() => {
   fetchInsight()
   fetchRelatedDatasets()
-  handleViews()
 })
 </script>
 
