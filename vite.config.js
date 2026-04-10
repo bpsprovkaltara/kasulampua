@@ -37,12 +37,12 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: 'https://apikasulampua.datakaltara.my.id',
+          target: 'https://backend.kasulampua.id',
           changeOrigin: true,
           secure: true,
         },
         '/uploads': {
-          target: 'https://apikasulampua.datakaltara.my.id',
+          target: 'https://backend.kasulampua.id',
           changeOrigin: true,
           secure: true,
         },
