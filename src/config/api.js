@@ -1,5 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const DATAHUB_BASE_URL = import.meta.env.VITE_DATAHUB_BASE_URL
+/** API publikasi BPS (host terpisah dari datahub CKAN), mis. https://datahub-api.kasulampua.id */
+const PUBLICATION_API_BASE_URL =
+  import.meta.env.VITE_PUBLICATION_API_BASE_URL || DATAHUB_BASE_URL
 const CKAN_BASE_URL = import.meta.env.VITE_CKAN_BASE_URL
 const CKAN_FILE_BASE = import.meta.env.VITE_CKAN_FILE_BASE_URL
 const MATOMO_BASE_URL = import.meta.env.VITE_MATOMO_URL
@@ -72,8 +75,12 @@ export const DATAHUB_ENDPOINTS = {
   RESBPS:`${DATAHUB_BASE_URL}/api/ress-bps`,
   RESDB:`${DATAHUB_BASE_URL}/api/ress-db`,
 
-  CEK_URL_DATA_GO_ID:`${DATAHUB_BASE_URL}/ckan/cek-url`
+  CEK_URL_DATA_GO_ID:`${DATAHUB_BASE_URL}/ckan/cek-url`,
 
+  PUBLICATIONS: `${PUBLICATION_API_BASE_URL}/publications`,
+  PUBLICATION_DETAIL: (id) => `${PUBLICATION_API_BASE_URL}/publications/${id}`,
+  PUBLICATION_COVER: (id) => `${PUBLICATION_API_BASE_URL}/publications/${id}/cover`,
+  PUBLICATION_PDF: (id) => `${PUBLICATION_API_BASE_URL}/publications/${id}/pdf`,
 }
 
 export const CKAN_ACTION_API = {

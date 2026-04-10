@@ -48,24 +48,40 @@ const closeMobileMenu = () => {
 }
 
 const linkIcons = {
-  'Berita': 'bi bi-newspaper',
+  Berita: 'bi bi-newspaper',
   'Regional Insight': 'bi bi-lightbulb-fill',
-  'Data': 'bi bi-database-fill',
+  Data: 'bi bi-database-fill',
+  Publikasi: 'bi bi-journal-text',
   'Visualisasi Data': 'bi bi-bar-chart-line-fill',
-  'About': 'bi bi-info-circle-fill'
+  About: 'bi bi-info-circle-fill',
 }
 
 const getIcon = (text) => linkIcons[text] || 'bi bi-link-45deg'
 
-/** Nav underline: aktif di path tepat dan halaman turunan (sub-path). Beranda hanya /. Data mencakup /resource/:id. */
-function isNavSectionActive(href) {
+/** Nav underline: aktif di path tepat dan halaman turunan. Data vs Publikasi dibedakan lewat query `tab`. */
+function isNavSectionActive(link) {
   const path = route.path
+  const href = link.href
+  if (!href.startsWith('/')) return false
+
+  if (link.text === 'Publikasi') {
+    if (path === '/publication') return true
+    if (path.startsWith('/publikasi/')) return true
+    return false
+  }
+
+  if (link.text === 'Data') {
+    if (path === '/dataset') return true
+    if (path.startsWith('/dataset/')) return true
+    if (path.startsWith('/resource/')) return true
+    return false
+  }
+
   if (href === '/') {
     return path === '/' || path === ''
   }
   if (path === href) return true
   if (path.startsWith(`${href}/`)) return true
-  if (href === '/dataset' && path.startsWith('/resource/')) return true
   return false
 }
 </script>
@@ -93,7 +109,7 @@ function isNavSectionActive(href) {
                 <a
                   :href="href"
                   class="nav-link fw-semibold px-0 mx-2 position-relative h-100 d-flex align-items-center"
-                  :class="{ 'router-link-active': isNavSectionActive(link.href) }"
+                  :class="{ 'router-link-active': isNavSectionActive(link) }"
                   @click="navigate"
                 >
                   <span class="nav-link-text">{{ link.text }}</span>
@@ -152,7 +168,7 @@ function isNavSectionActive(href) {
                 <a
                   :href="href"
                   class="mobile-nav-link"
-                  :class="{ 'router-link-active': isNavSectionActive(link.href) }"
+                  :class="{ 'router-link-active': isNavSectionActive(link) }"
                   @click="
                     (e) => {
                       navigate(e)

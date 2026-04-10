@@ -28,6 +28,7 @@ export function useNavigation() {
     { text: 'Pusat Informasi', href: 'https://info.kasulampua.id' },
     { text: 'Regional Insight', href: '/regional_insight' },
     { text: 'Data', href: '/dataset' },
+    { text: 'Publikasi', href: '/publication' },
     // { text: 'Berita', href:'/berita'},
     { text: 'Tentang', href: '/about' },
   ])

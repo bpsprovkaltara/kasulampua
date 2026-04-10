@@ -49,7 +49,10 @@
             <!-- Search (mobile) -->
             <div class="d-lg-none mb-3">
               <div class="search-box">
-                <i class="bi bi-search search-icon"></i>
+                <span class="search-icon" aria-hidden="true">
+                  <span v-if="loading" class="search-spinner"></span>
+                  <i v-else class="bi bi-search"></i>
+                </span>
                 <input
                   ref="mobileSearchInput"
                   class="search-input"
@@ -179,10 +182,14 @@
         </div>
 
         <div class="col-lg-9 order-2 order-lg-2">
-          <div class="topbar mb-4">
-            <div class="d-none d-lg-block">
+          <div class="topbar mb-3">
+            <!-- Baris 1: Search input (desktop only) -->
+            <div class="d-none d-lg-block topbar-search-row">
               <div class="search-box">
-                <i class="bi bi-search search-icon"></i>
+                <span class="search-icon" aria-hidden="true">
+                  <span v-if="loading" class="search-spinner"></span>
+                  <i v-else class="bi bi-search"></i>
+                </span>
                 <input
                   ref="desktopSearchInput"
                   class="search-input"
@@ -201,19 +208,51 @@
                 >
                   <i class="bi bi-x" aria-hidden="true"></i>
                 </button>
-                <span v-if="!search" class="search-shortcut-badge">/</span>
+                <span v-if="!search && !loading" class="search-shortcut-badge">/</span>
               </div>
             </div>
-            <div class="result-info d-flex align-items-center">
-              <span class="result-count me-auto" v-if="!loading">
+
+            <!-- Baris 2: Meta bar — result count + reset -->
+            <div class="topbar-meta-row">
+              <span class="result-count" v-if="!loading">
                 <i class="bi bi-database-fill text-amber me-2"></i>
-                Menampilkan <strong>{{ datasets.length }}</strong> dari <strong>{{ total }}</strong> dataset
+                <span class="text-muted small mx-1">Menampilkan</span> <strong>{{ datasets.length }}</strong> <span class="text-muted small mx-1">dari</span> <strong>{{ total }}</strong> <span class="text-muted small mx-1">dataset</span>
+              </span>
+              <span class="result-count result-count--skeleton" v-else aria-hidden="true">&nbsp;</span>
+              <button
+                v-if="hasActiveFilters"
+                class="reset-all-btn"
+                @click="resetFilters"
+                aria-label="Reset semua filter"
+              >
+                <i class="bi bi-x-circle me-1"></i>Reset semua
+              </button>
+            </div>
+
+            <!-- Baris 3: Filter chips aktif -->
+            <div v-if="hasActiveFilters && !loading" class="filter-chips-row" role="list" aria-label="Filter aktif">
+              <span v-if="search" class="filter-chip filter-chip--search" role="listitem">
+                <i class="bi bi-search me-1" aria-hidden="true"></i>
+                <span class="chip-label">"{{ search }}"</span>
+                <button class="chip-dismiss" @click="clearSearch" aria-label="Hapus pencarian">
+                  <i class="bi bi-x" aria-hidden="true"></i>
+                </button>
+              </span>
+              <span v-if="activeCategoryLabel" class="filter-chip filter-chip--category" role="listitem">
+                <i class="bi bi-grid-3x3-gap-fill me-1" aria-hidden="true"></i>
+                <span class="chip-label">{{ activeCategoryLabel }}</span>
+                <button class="chip-dismiss" @click="selectCategory(null)" aria-label="Hapus filter subjek">
+                  <i class="bi bi-x" aria-hidden="true"></i>
+                </button>
+              </span>
+              <span v-if="activeWilayahLabel" class="filter-chip filter-chip--wilayah" role="listitem">
+                <i class="bi bi-geo-alt-fill me-1" aria-hidden="true"></i>
+                <span class="chip-label">{{ activeWilayahLabel }}</span>
+                <button class="chip-dismiss" @click="selectWilayah(null)" aria-label="Hapus filter wilayah">
+                  <i class="bi bi-x" aria-hidden="true"></i>
+                </button>
               </span>
             </div>
-          </div>
-          <div v-if="search && !loading" class="search-state mb-3">
-            <i class="bi bi-search me-2"></i>
-            Menampilkan hasil untuk: <strong>"{{ search }}"</strong>
           </div>
 
           <transition name="fade" mode="out-in">
@@ -315,6 +354,7 @@ import PaginationControl from '../components/PaginationControl.vue'
 
 const route = useRoute()
 const router = useRouter()
+
 const store = useDatasetStore()
 const { categories, wilayahRegions } = store
 
@@ -409,6 +449,22 @@ const readRouteIntoState = () => {
 }
 
 const totalPages = computed(() => Math.ceil(total.value / limit))
+
+const activeCategoryLabel = computed(() => {
+  if (!selectedCategory.value) return null
+  const cat = categories.value.find((c) => c.id === selectedCategory.value)
+  return cat ? cat.name : null
+})
+
+const activeWilayahLabel = computed(() => {
+  if (!selectedWilayah.value) return null
+  const w = wilayahRegions.value.find((r) => r.id === selectedWilayah.value)
+  return w ? w.label : null
+})
+
+const hasActiveFilters = computed(() =>
+  !!(search.value || selectedCategory.value || selectedWilayah.value)
+)
 
 const toggleCategory = () => (categoryExpanded.value = !categoryExpanded.value)
 const toggleWilayah = () => (wilayahExpanded.value = !wilayahExpanded.value)
@@ -529,6 +585,12 @@ const resetFilters = () => {
 watch(
   () => route.query,
   async () => {
+    if (pickQueryStr(route.query.tab) === 'publikasi') {
+      const next = { ...route.query }
+      delete next.tab
+      router.replace({ path: '/publication', query: cleanQuery(next) })
+      return
+    }
     readRouteIntoState()
     await fetchDatasets()
   },
@@ -536,6 +598,12 @@ watch(
 )
 
 onMounted(async () => {
+  if (pickQueryStr(route.query.tab) === 'publikasi') {
+    const next = { ...route.query }
+    delete next.tab
+    router.replace({ path: '/publication', query: cleanQuery(next) })
+    return
+  }
   await store.fetchAllData()
   readRouteIntoState()
   await fetchDatasets()
@@ -867,23 +935,8 @@ onBeforeUnmount(() => {
 
 .topbar {
   display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.topbar > div:first-child {
-  flex: 1;
-  min-width: 240px;
-}
-.result-info {
-  flex-shrink: 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  background: white;
-  padding: 10px 20px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  flex: 1;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .search-box {
@@ -897,21 +950,27 @@ onBeforeUnmount(() => {
   color: var(--text-secondary);
   font-size: 1rem;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
 }
 .search-input {
   width: 100%;
-  padding: 12px 56px 12px 48px;
+  padding: 14px 56px 14px 48px;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 0.9375rem;
   color: var(--text-primary);
   background: white;
   outline: none;
   transition: var(--transition-smooth);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .search-input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.1);
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.12), 0 4px 12px rgba(217, 119, 6, 0.08);
 }
 .search-input::placeholder {
   color: #94a3b8;
@@ -953,15 +1012,140 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.search-state {
-  font-size: 0.8125rem;
+/* ---- Topbar vertical layout ---- */
+.topbar-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  background: #fffaf0;
-  border: 1px solid #fde68a;
-  border-radius: 10px;
-  padding: 8px 12px;
+  min-height: 42px;
+}
+
+.result-count {
   display: inline-flex;
   align-items: center;
+}
+
+.result-count--skeleton {
+  display: inline-block;
+  width: 200px;
+  height: 1em;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.reset-all-btn {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.reset-all-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--bg-accent);
+}
+
+/* ---- Filter chips row ---- */
+.filter-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.775rem;
+  font-weight: 600;
+  border-radius: 100px;
+  padding: 5px 10px 5px 12px;
+  border: 1px solid transparent;
+  transition: var(--transition-smooth);
+  user-select: none;
+}
+
+.filter-chip--search {
+  background: var(--bg-accent);
+  border-color: var(--border-amber-20);
+  color: var(--primary-color);
+}
+
+.filter-chip--category {
+  background: #fdf4e7;
+  border-color: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+}
+
+.filter-chip--wilayah {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #16a34a;
+}
+
+.chip-label {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  transition: var(--transition-smooth);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.chip-dismiss:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* ---- Loading spinner inside search box ---- */
+.search-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: search-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes search-spin {
+  to { transform: rotate(360deg); }
 }
 
 .dataset-list {
@@ -1184,15 +1368,6 @@ onBeforeUnmount(() => {
     border-radius: 16px;
     margin-bottom: 1rem;
   }
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-  .result-info {
-    justify-content: space-between;
-    width: 100%;
-  }
 }
 
   @media (max-width: 768px) {
@@ -1230,7 +1405,7 @@ onBeforeUnmount(() => {
   }
   .search-input {
     font-size: 0.95rem;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    padding: 12px 1rem 12px 2.75rem;
   }
   .item-content {
     width: 100%;

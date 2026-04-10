@@ -7,6 +7,8 @@ import About from '@/views/AboutView.vue'
 import RegionalInsightDetil from '@/views/RegionalInsightDetil.vue'
 import Dataset from '@/views/DatasetViewRoute.vue'
 import DatasetDetail from '@/views/DatasetDetail.vue'
+import PublikasiDetailView from '@/views/PublikasiDetailView.vue'
+import PublicationView from '@/views/PublicationView.vue'
 import ResourceDetail from '@/views/ResourceDetail.vue'
 import VisualisasiData from '@/views/VisualisasiData.vue'
 import NotFound from '@/views/NotFound.vue'
@@ -70,6 +72,18 @@ const router = createRouter({
       name: 'dataset-detail',
       component: DatasetDetail,
       meta: { title: 'Detail Dataset' }
+    },
+    {
+      path: '/publication',
+      name: 'publication',
+      component: PublicationView,
+      meta: { title: 'Publikasi' }
+    },
+    {
+      path: '/publikasi/:id',
+      name: 'publikasi-detail',
+      component: PublikasiDetailView,
+      meta: { title: 'Detail Publikasi' }
     },
      {
       path: '/resource/:id',
