@@ -44,14 +44,15 @@ services:
       - proxy_network
 
     labels:
-      # ---- Traefik reverse proxy labels (sama pola dengan stack datahub) ----
+      # ---- Traefik (nama router/service HARUS unik per container; jangan pakai
+      #     "kasulampua" jika kasulampua-pusat-informasi juga memakai nama itu) ----
       - "traefik.enable=true"
       - "traefik.docker.network=proxy_network"
-      - "traefik.http.routers.kasulampua.rule=Host(`${KASULAMPUA_DOMAIN:-kasulampua.id}`) || Host(`www.${KASULAMPUA_DOMAIN:-kasulampua.id}`)"
-      - "traefik.http.routers.kasulampua.entrypoints=web"
-      - "traefik.http.services.kasulampua.loadbalancer.server.port=8082"
+      - "traefik.http.routers.kasulampua-www.rule=Host(`${KASULAMPUA_DOMAIN:-kasulampua.id}`) || Host(`www.${KASULAMPUA_DOMAIN:-kasulampua.id}`)"
+      - "traefik.http.routers.kasulampua-www.entrypoints=web"
+      - "traefik.http.services.kasulampua-www.loadbalancer.server.port=8082"
       # Optional: middleware for Cloudflare Tunnel auth
-      # - "traefik.http.routers.kasulampua.middlewares=cf-auth@docker"
+      # - "traefik.http.routers.kasulampua-www.middlewares=cf-auth@docker"
 
     healthcheck:
       test: [ "CMD", "curl", "-fsS", "http://127.0.0.1:8082/health" ]
