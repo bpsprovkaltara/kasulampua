@@ -5,55 +5,32 @@
     <main>
       <DataRepository />
       <!-- <NewsSection :berita="berita" /> -->
-      <DataStory :dataSection="data_section" :dataset="dataset" />
+      <HomePublicationSection />
     </main>
     <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive,  onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 // import {API_ENDPOINTS, DATAHUB_ENDPOINTS} from '../config/api'
 
 
 import Navbar from '../components/NavSection.vue'
 import Header from '../components/HeadSection.vue'
 import DataRepository from '../components/DataRepository.vue'
-import NewsSection from '../components/NewsSection.vue'
-import DataStory from '../components/DataStory.vue'
+import HomePublicationSection from '../components/HomePublicationSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { DUMMY_BERITA } from '../utils/dummyBerita'
-import { DUMMY_INSIGHTS } from '../utils/dummyInsights'
 
 
 const pusatInformasi = ref({ href: '/dataset' })
 
-const fetchGroups = async () => {
-  try {
-    /* 
-    const res = await fetch(`${DATAHUB_ENDPOINTS.CKAN_ORGANIZATION_LIST}`)
-    let data = await res.json()
-
-    data = data.sort((a, b) => {
-      return a.name.localeCompare(b.name);
-    });
-    kategori.value = data
-    */
-
-    // DUMMY DATA 
-    kategori.value = [
-      { name: 'BPS Provinsi Kalimantan Utara' },
-      { name: 'BPS Provinsi Sulawesi Tengah' },
-      { name: 'BPS Provinsi Maluku Utara' },
-      { name: 'BPS Provinsi Papua Barat' }
-    ]
-    loading.value = false
-  } catch (error) {
-    console.error('Gagal mengambil data group:', error)
-  }
-}
-
-const updateItemsPerSlide = () => {  // Kept as no-op; layout now handled by CSS
+const regional = {
+  kalimantan: { icon: '/assets/images/icon_kalimantan.svg' },
+  sulawesi: { icon: '/assets/images/icon_sulawesi.svg' },
+  maluku: { icon: '/assets/images/icon_maluku.svg' },
+  papua: { icon: '/assets/images/icon_papua.svg' },
 }
 
 // const chunkedImages = computed(() => {
@@ -113,71 +90,8 @@ const fetchHeadlineBerita = async () => {
   }
 }
 
-const dataset = ref([])
-
-const data_section = reactive({
-  judul:'',
-  gambar:'',
-  topik:'',
-  wilayah:'',
-  region:'',
-  deskripsi: '',
-  link_lainnya: '',
-  text_lainnya: '(Baca selengkapnya)',
-})
-
-const fetchTopInsight = async () => {
-  try {
-    /* 
-    const res = await fetch(API_ENDPOINTS.INSIGHT_TOP)
-    const top = await res.json()
-
-    data_section.judul = top.title
-    data_section.deskripsi = top.description
-    data_section.wilayah = top.region_name || top.wilayah
-    data_section.region = top.region
-    data_section.topik = top.topic || top.topik
-    data_section.gambar = top.image
-        ? `${top.image}`
-        : '/assets/images/headline_image.png'
-    data_section.link_lainnya = `/regional_insight/${top.slug}`
-
-    fetchRelatedDatasets(top.id)
-    */
-
-    // FORCING DUMMY 
-    const top = DUMMY_INSIGHTS[0]
-    data_section.judul = top.title
-    data_section.deskripsi = top.description
-    data_section.wilayah = top.region_name
-    data_section.region = top.region
-    data_section.topik = top.topic
-    data_section.gambar = top.image
-    data_section.link_lainnya = `/regional_insight/${top.slug}`
-    
-    dataset.value = [
-      { title: 'Dataset PDRB Perkapita 2023', url: '#' },
-      { title: 'Laju Pertumbuhan Ekonomi Triwulan IV', url: '#' },
-      { title: 'Indeks Harga Konsumen Gabungan', url: '#' }
-    ]
-    
-    dataset.value = [
-      { title: 'Dataset PDRB Perkapita 2023', url: '#' },
-      { title: 'Laju Pertumbuhan Ekonomi Triwulan IV', url: '#' },
-      { title: 'Indeks Harga Konsumen Gabungan', url: '#' }
-    ]
-  } catch (err) {
-    console.error('Gagal ambil top insight:', err)
-  }
-}
-
-
-
-
 onMounted(() => {
   fetchHeadlineBerita()
-  fetchTopInsight()
-  fetchGroups()
 })
 
 onBeforeUnmount(() => {

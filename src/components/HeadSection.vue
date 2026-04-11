@@ -113,12 +113,13 @@
           Portal Data Terintegrasi Kalimantan, Sulawesi, Maluku &amp; Papua
         </p>
 
-        <div class="hero-actions d-flex flex-wrap justify-content-center gap-4 mb-5">
-          <router-link :to="link.href" class="btn btn-hero-primary-v2"> Masuk ke Portal Data </router-link>
+        <div class="hero-actions d-flex flex-wrap justify-content-center gap-4 mb-5 px-2">
+          <router-link :to="link.href" class="btn btn-hero-primary-v2">
+            Masuk ke Portal Data
+          </router-link>
         </div>
 
         <div class="hero-partners mt-3 pt-lg-3 pb-4">
-          <p class="partners-label mb-3">DIDUKUNG OLEH</p>
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 gap-md-5">
             <img
               src="/assets/images/bank-indonesia.png"
@@ -188,9 +189,24 @@
       </svg>
     </div>
 
-    <div class="regions-section-v2 py-5">
+    <section class="regions-section-v2 py-5" aria-labelledby="heading-cakupan-wilayah">
       <div class="container text-center py-4 position-relative z-index-10">
-        <p class="section-label text-center">CAKUPAN WILAYAH STRATEGIS</p>
+        <header class="regions-section-heading mx-auto text-center mb-4 mb-md-5">
+          <!-- <p class="regions-heading-eyebrow">
+            <span class="regions-heading-line" aria-hidden="true"></span>
+            <span class="regions-heading-badge">
+              <i class="bi bi-layers-fill" aria-hidden="true"></i>
+              Kasulampua
+            </span>
+            <span class="regions-heading-line" aria-hidden="true"></span>
+          </p> -->
+          <h2 class="regions-heading-title" id="heading-cakupan-wilayah">
+            Cakupan Wilayah <span class="regions-heading-accent">Strategis</span>
+          </h2>
+          <!-- <p class="regions-heading-desc mx-auto">
+            Pilih Wilayah Untuk Membuka Ringkasan Insight dan Dataset Terkait.
+          </p> -->
+        </header>
         <div class="row g-4 justify-content-center">
           <div class="col-6 col-md-3" v-for="(item, key) in regions" :key="key">
             <router-link
@@ -218,7 +234,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -417,25 +433,24 @@ function particleStyle() {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  padding-left: clamp(0.5rem, 3vw, 1.25rem);
+  padding-right: clamp(0.5rem, 3vw, 1.25rem);
+  box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
-  .hero-main-logo {
-    max-width: 280px; 
-  }
-}
 .hero-main-logo {
-  height: clamp(2.5rem, 8vw, 5.5rem);
-  width: auto;
+  display: block;
+  margin-inline: auto;
+  box-sizing: border-box;
+  width: min(100%, clamp(16rem, 52vw, 52rem));
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 480 / 88;
   object-fit: contain;
   filter: drop-shadow(0 15px 35px rgba(217, 119, 6, 0.4)) 
           invert(48%) sepia(79%) saturate(2476%) hue-rotate(15deg) brightness(95%) contrast(101%);
-  animation: float-logo 6s infinite ease-in-out;
-}
-
-@keyframes float-logo {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
 }
 
 .hero-main-subtitle {
@@ -454,11 +469,20 @@ function particleStyle() {
   border-radius: 16px;
   border: none;
   font-size: 1.1rem;
+  line-height: 1.35;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow:
     0 15px 30px -10px rgba(217, 119, 6, 0.45),
     inset 0 -4px 0 rgba(0, 0, 0, 0.12);
   letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  text-align: center;
 }
 .btn-hero-primary-v2:hover {
   background: var(--amber-700);
@@ -476,8 +500,15 @@ function particleStyle() {
   border-radius: 16px;
   border: 1.5px solid #e2e8f0;
   font-size: 1.1rem;
+  line-height: 1.35;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .btn-hero-outline-v2:hover {
   background: white;
@@ -596,12 +627,87 @@ function particleStyle() {
   z-index: 10;
   padding-bottom: 5rem !important;
 }
-.section-label {
-  font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.4em;
-  color: #94a3b8;
-  margin-bottom: 2.5rem !important;
+
+.regions-section-heading {
+  max-width: 38rem;
+  padding: 0 0.75rem;
+}
+
+.regions-heading-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.regions-heading-line {
+  flex: 1;
+  max-width: 3.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(217, 119, 6, 0.45), transparent);
+}
+
+.regions-heading-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b45309;
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.95), rgba(254, 243, 199, 0.5));
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.regions-heading-badge .bi {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.regions-heading-title {
+  font-size: clamp(1.35rem, 4vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0 0 0.75rem;
+}
+
+.regions-heading-accent {
+  background: linear-gradient(120deg, #b45309 0%, #d97706 45%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.regions-heading-desc {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #64748b;
+  margin: 0;
+  max-width: 34rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .regions-section-heading {
+    animation: regions-heading-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes regions-heading-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .region-card-premium-v2 {
   background: rgba(255, 255, 255, 0.4);
@@ -780,10 +886,6 @@ function particleStyle() {
     padding-top: 40px;
     padding-bottom: 20px;
   }
-  .hero-main-logo {
-    height: 2.4rem;
-    margin-bottom: 0.5rem;
-  }
   .hero-main-subtitle {
     font-size: 1rem;
     margin-bottom: 1.5rem !important;
@@ -793,13 +895,6 @@ function particleStyle() {
   .hero-actions {
     gap: 1rem;
     margin-bottom: 2rem !important;
-  }
-  .btn-hero-primary-v2,
-  .btn-hero-outline-v2 {
-    width: 100%;
-    padding: 0.85rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 12px;
   }
   .hero-event-banner {
     flex-wrap: wrap;
@@ -839,10 +934,17 @@ function particleStyle() {
   }
 }
 
-@media (max-width: 480px) {
-  .hero-main-logo {
-    height: 2.8rem;
+@media (max-width: 575.98px) {
+  .btn-hero-primary-v2,
+  .btn-hero-outline-v2 {
+    padding: 0.85rem 1.35rem;
+    font-size: 0.95rem;
+    border-radius: 14px;
+    min-height: 48px;
   }
+}
+
+@media (max-width: 480px) {
   .hero-main-subtitle {
     font-size: 0.9rem;
   }

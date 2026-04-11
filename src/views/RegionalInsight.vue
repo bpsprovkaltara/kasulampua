@@ -186,6 +186,7 @@
           </div>
         </div>
 
+        <!-- ANALISIS SECTION LAMA (DISEMBUNYIKAN — jangan hapus)
         <div class="insight-news-section mt-5 fade-in-up" style="animation-delay: 0.2s">
           <div class="section-header mb-4">
             <div class="d-flex align-items-center justify-content-between">
@@ -227,6 +228,125 @@
                     <span class="detail-label">Lihat Analisis <i class="bi bi-arrow-right ms-2 transition-smooth"></i></span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        -->
+
+        <div class="insight-news-section mt-5 fade-in-up" style="animation-delay: 0.2s">
+          <div class="section-header mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <h2 class="section-title">Analisis Terkait</h2>
+                <p class="text-muted small mb-0">
+                  Dokumen analisis PDRB Kasulampua dan infografis wilayah
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4 align-items-stretch analisis-terkait-split">
+            <div class="col-12 col-lg-7 analisis-pdf-column">
+              <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 analisis-pdf-card">
+                <div class="card-body p-4 d-flex flex-column flex-grow-1 analisis-pdf-card-body">
+                  <div class="d-flex align-items-center gap-2 mb-3 flex-shrink-0">
+                    <i class="bi bi-file-earmark-pdf text-danger fs-4" aria-hidden="true"></i>
+                    <h3 class="h5 mb-0 fw-bold">Dokumen Analisis</h3>
+                  </div>
+                  <p class="text-muted small mb-3 flex-shrink-0">
+                    Analisis PDRB KASULAMPUA (PDF). Gunakan pratinjau di bawah atau unduh untuk dibaca penuh.
+                  </p>
+                  <div class="analisis-pdf-frame mb-3">
+                    <iframe
+                      :src="analisisPdfEmbedSrc"
+                      class="analisis-pdf-iframe rounded-3 bg-light"
+                      title="Analisis PDRB KASULAMPUA"
+                    />
+                  </div>
+                  <a
+                    :href="analisisPdfUrl"
+                    class="btn btn-outline-primary rounded-pill align-self-start flex-shrink-0"
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <i class="bi bi-download me-2" aria-hidden="true"></i>
+                    Unduh dokumen
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-5">
+              <div class="d-flex flex-column h-100">
+                <div class="mb-3">
+                  <h3 class="h5 fw-bold mb-1">Infografis</h3>
+                  <p class="text-muted small mb-0">Klik kartu untuk memperbesar</p>
+                </div>
+                <div class="row g-3 flex-grow-1 analisis-infografis-grid">
+                  <div
+                    v-for="item in analisisInfografisItems"
+                    :key="item.id"
+                    class="col-12 col-sm-6"
+                  >
+                    <button
+                      type="button"
+                      class="btn p-0 border-0 bg-transparent w-100 text-start analisis-infografis-card"
+                      @click="openInfografisLightbox(item)"
+                    >
+                      <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <div class="ratio ratio-4x3 bg-light">
+                          <img
+                            :src="item.src"
+                            :alt="item.alt"
+                            class="object-fit-cover w-100 h-100"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <div class="card-body py-3 px-3">
+                          <span class="fw-semibold">{{ item.title }}</span>
+                          <span class="detail-label small d-block mt-1">
+                            Perbesar <i class="bi bi-arrows-fullscreen ms-1" aria-hidden="true"></i>
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="analisisInfografisModal"
+          tabindex="-1"
+          aria-labelledby="analisisInfografisModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+              <div class="modal-header border-0">
+                <h5 id="analisisInfografisModalLabel" class="modal-title fw-bold">
+                  {{ infografisLightbox.title }}
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Tutup"
+                ></button>
+              </div>
+              <div class="modal-body p-0 bg-dark">
+                <img
+                  v-if="infografisLightbox.src"
+                  :src="infografisLightbox.src"
+                  :alt="infografisLightbox.alt"
+                  class="img-fluid w-100 d-block"
+                />
               </div>
             </div>
           </div>
@@ -297,7 +417,7 @@ import MapVisualisasi from '../components/MapVisualisasi.vue'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Chart } from 'chart.js/auto'
-import { formatLongDate } from '../utils/dates'
+import { Modal } from 'bootstrap'
 import { CKAN_FILE_BASE_URL, CKAN_ACTION_API } from '@/config/api'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import { parseJsonResource } from '@/utils/parseCkanResourceJson'
@@ -324,6 +444,58 @@ const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
 
+/** URL statis PDF analisis (file di `public/assets/`) — tanpa hash, untuk unduh / tab baru */
+const analisisPdfUrl = encodeURI('/assets/Analisis PDRB KASULAMPUA.docx.pdf')
+
+/**
+ * Embed: toolbar/nav pane disembunyikan bila viewer mendukung PDF Open Parameters.
+ * `view=FitH,0` = zoom mengikuti lebar penuh iframe; koordinat atas0 = jendela tampilan
+ * mulai dari puncak halaman (scroll vertikal default ke atas).
+ */
+const analisisPdfEmbedSrc = `${analisisPdfUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH%2C0`
+
+/** Empat wilayah KASULAMPUA — ganti file MALUKU/PAPUA jika infografis final sudah ada */
+const analisisInfografisItems = [
+  {
+    id: 'kalimantan',
+    title: 'Kalimantan',
+    src: '/assets/images/insight/KALIMANTAN.png',
+    alt: 'Infografis analisis Kalimantan',
+  },
+  {
+    id: 'sulawesi',
+    title: 'Sulawesi',
+    src: '/assets/images/insight/SULAWESI.png',
+    alt: 'Infografis analisis Sulawesi',
+  },
+  {
+    id: 'maluku',
+    title: 'Maluku',
+    src: '/assets/images/insight/MALUKU.png',
+    alt: 'Infografis analisis Maluku',
+  },
+  {
+    id: 'papua',
+    title: 'Papua',
+    src: '/assets/images/insight/PAPUA.png',
+    alt: 'Infografis analisis Papua',
+  },
+]
+
+const infografisLightbox = ref({ title: '', src: '', alt: '' })
+let infografisBsModal = null
+
+async function openInfografisLightbox(item) {
+  infografisLightbox.value = { title: item.title, src: item.src, alt: item.alt }
+  await nextTick()
+  const el = document.getElementById('analisisInfografisModal')
+  if (!el) return
+  if (!infografisBsModal) infografisBsModal = Modal.getOrCreateInstance(el)
+  infografisBsModal.show()
+}
+
+/* Dipakai kembali saat section analisis card diaktifkan (template HTML di atas masih ada).
+ * Tambahkan kembali: import { formatLongDate } from '../utils/dates'
 const displayAnalisis = ref([
   {
     title: 'Tantangan Ekonomi di Wilayah Perbatasan Kalimantan',
@@ -347,6 +519,14 @@ const displayAnalisis = ref([
     created_at: '2024-02-05'
   }
 ])
+function stripHTMLText(htmlStr) {
+  if (!htmlStr) return ''
+  let text = htmlStr.replace(/<br\s*\/?>/gi, ' ').replace(/<\/p>/gi, ' ')
+  text = text.replace(/<[^>]*>?/gm, '')
+  text = text.replace(/&nbsp;/g, ' ')
+  return text.trim().replace(/\s+/g, ' ')
+}
+*/
 
 // const selectedAnalisis = ref(null)
 // const currentSlideIndex = ref(0)
@@ -384,14 +564,6 @@ const openAnalysisModal = async (item) => {
   if (analysisBsModal) analysisBsModal.show()
 }
 */
-
-function stripHTMLText(htmlStr) {
-  if (!htmlStr) return ''
-  let text = htmlStr.replace(/<br\s*\/?>/gi, ' ').replace(/<\/p>/gi, ' ')
-  text = text.replace(/<[^>]*>?/gm, '')
-  text = text.replace(/&nbsp;/g, ' ')
-  return text.trim().replace(/\s+/g, ' ')
-}
 
 function pickQueryStr(val) {
   if (val == null || val === '') return ''
@@ -1161,6 +1333,48 @@ onBeforeUnmount(() => {
 
 .viz-main {
   min-width: 0;
+}
+
+/* Dokumen PDF: tinggi mengisi sisa viewport hingga bawah; iframe mengisi kontainer */
+.analisis-pdf-card-body {
+  min-height: 0;
+}
+
+.analisis-pdf-frame {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 280px;
+  width: 100%;
+}
+
+.analisis-pdf-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@media (min-width: 992px) {
+  .analisis-terkait-split .analisis-pdf-card {
+    min-height: calc(100svh - 9rem);
+  }
+
+  .analisis-terkait-split .analisis-pdf-card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .analisis-terkait-split .analisis-pdf-frame {
+    min-height: 0;
+    flex: 1 1 0;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .analisis-pdf-frame {
+    min-height: 72vh;
+  }
 }
 
 .top-filter-container {

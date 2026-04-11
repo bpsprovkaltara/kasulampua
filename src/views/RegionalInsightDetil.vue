@@ -1,4 +1,6 @@
 <template>
+  <!-- HALAMAN DETAIL INSIGHT — isi asli disembunyikan (jangan hapus); route tetap aktif -->
+  <template v-if="false">
   <Navbar />
 
   <div
@@ -273,6 +275,16 @@
     </div>
   </section>
 
+  <Footer />
+  </template>
+
+  <Navbar />
+  <div
+    class="container py-5"
+    style="min-height: 60vh; display: flex; align-items: center; justify-content: center"
+  >
+    <p class="text-muted mb-0">Halaman ini tidak tersedia saat ini.</p>
+  </div>
   <Footer />
 </template>
 
