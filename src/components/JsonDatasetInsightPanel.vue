@@ -70,154 +70,212 @@
         </button>
       </div>
 
-      <div class="jd-view-layout row g-3 align-items-start">
-        <aside class="col-12 col-lg-4 col-xl-3 jd-view-filters">
-          <div class="jd-filter-container">
-            <div class="jd-filter-header-main">
-              <i class="bi bi-sliders2-vertical me-2"></i>
-              <h6 class="jd-sidebar-main-title">Filter Data</h6>
-            </div>
+      <div class="jdf-bar mb-4">
+        <div class="jdf-left">
+          <span class="jdf-label"><i class="bi bi-sliders2"></i></span>
 
-            <div v-if="vervalFilterKey" class="jd-filter-section mb-4">
-              <div class="jd-filter-label-header">
-                <i class="bi bi-patch-check me-2"></i>
-                <span>{{ vervalFilterLabel }}</span>
-              </div>
-              <div class="jd-check-item mb-2 border-bottom pb-2 mt-2">
+          <!-- Verval dropdown -->
+          <div v-if="vervalFilterKey" class="jdf-dropdown">
+            <button
+              type="button"
+              class="jdf-pill"
+              :class="{ 'jdf-pill--active': !allVervalSelected }"
+              @click.stop="toggleDropdown('verval')"
+            >
+              <i class="bi bi-patch-check jdf-pill-icon"></i>
+              <span class="jdf-pill-label">{{ vervalFilterLabel }}</span>
+              <span v-if="!allVervalSelected" class="jdf-pill-count">{{ selectedVerval.length }}</span>
+              <i class="bi bi-chevron-down jdf-pill-chevron" :class="{ 'jdf-pill-chevron--open': openDropdown === 'verval' }"></i>
+            </button>
+            <div v-if="openDropdown === 'verval'" class="jdf-panel">
+              <div class="jdf-panel-search">
+                <i class="bi bi-search jdf-search-icon"></i>
                 <input
-                  id="jd-verval-all"
-                  type="checkbox"
-                  class="jd-check-input"
-                  :checked="allVervalSelected"
-                  @change="toggleAllVerval($event.target.checked)"
+                  v-model="vervalSearch"
+                  type="text"
+                  class="jdf-search-input"
+                  placeholder="Cari..."
+                  @click.stop
                 />
-                <label class="jd-check-label fw-bold" for="jd-verval-all">Pilih semua</label>
               </div>
-              <div class="jd-filter-list custom-scrollbar">
-                <div
-                  v-for="(opt, idx) in vervalOptions"
-                  :key="'v-' + idx + '-' + opt"
-                  class="jd-check-item"
+              <div class="jdf-panel-actions">
+                <button type="button" class="jdf-action-link" @click.stop="toggleAllVerval(true)">Pilih semua</button>
+                <span class="jdf-action-sep">·</span>
+                <button type="button" class="jdf-action-link" @click.stop="toggleAllVerval(false)">Hapus semua</button>
+                <span class="jdf-action-count">{{ selectedVerval.length }}/{{ vervalOptions.length }}</span>
+              </div>
+              <div class="jdf-panel-list">
+                <p v-if="!filteredVervalOptions.length" class="jdf-no-result">Tidak ditemukan</p>
+                <label
+                  v-for="(opt, idx) in filteredVervalOptions"
+                  :key="'v-' + idx"
+                  class="jdf-list-item"
+                  @click.stop
                 >
                   <input
-                    :id="'jd-verval-' + idx"
                     type="checkbox"
-                    class="jd-check-input"
+                    class="jdf-checkbox"
                     :checked="selectedVerval.includes(opt)"
                     @change="toggleVerval(opt, $event.target.checked)"
                   />
-                  <label class="jd-check-label" :for="'jd-verval-' + idx">{{ opt }}</label>
-                </div>
+                  <span class="jdf-item-text">{{ opt }}</span>
+                </label>
               </div>
             </div>
+          </div>
 
-            <div v-if="showTurvarFilter" class="jd-filter-section mb-4">
-              <div class="jd-filter-label-header">
-                <i class="bi bi-layers me-2"></i>
-                <span>{{ turvarFilterLabel }}</span>
-              </div>
-              <div class="jd-filter-list custom-scrollbar">
-                <div
+          <!-- Turvar dropdown -->
+          <div v-if="showTurvarFilter" class="jdf-dropdown">
+            <button
+              type="button"
+              class="jdf-pill"
+              :class="{ 'jdf-pill--active': true }"
+              @click.stop="toggleDropdown('turvar')"
+            >
+              <i class="bi bi-layers jdf-pill-icon"></i>
+              <span class="jdf-pill-label">{{ turvarFilterLabel }}</span>
+              <span class="jdf-pill-value">{{ selectedTurvar }}</span>
+              <i class="bi bi-chevron-down jdf-pill-chevron" :class="{ 'jdf-pill-chevron--open': openDropdown === 'turvar' }"></i>
+            </button>
+            <div v-if="openDropdown === 'turvar'" class="jdf-panel">
+              <div class="jdf-panel-list">
+                <label
                   v-for="(opt, idx) in turvarOptions"
-                  :key="'t-' + idx + '-' + opt"
-                  class="jd-check-item"
-                  @click="toggleTurvar(opt)"
+                  :key="'t-' + idx"
+                  class="jdf-list-item"
+                  @click.stop
                 >
                   <input
-                    :id="'jd-turvar-' + idx"
                     type="radio"
-                    name="jd-turvar"
-                    class="jd-check-input"
+                    name="jdf-turvar"
+                    class="jdf-radio"
                     :checked="selectedTurvar === opt"
-                    @click.stop
                     @change="toggleTurvar(opt)"
                   />
-                  <label class="jd-check-label" :for="'jd-turvar-' + idx">{{ opt }}</label>
-                </div>
+                  <span class="jdf-item-text">{{ opt }}</span>
+                </label>
               </div>
             </div>
+          </div>
 
-            <div v-if="showTurtahunFilter" class="jd-filter-section mb-4">
-              <div class="jd-filter-label-header">
-                <i class="bi bi-calendar3 me-2"></i>
-                <span>Turtahun</span>
+          <!-- Turtahun dropdown -->
+          <div v-if="showTurtahunFilter" class="jdf-dropdown">
+            <button
+              type="button"
+              class="jdf-pill"
+              :class="{ 'jdf-pill--active': selectedTurtahun.length < turtahunOptions.length }"
+              @click.stop="toggleDropdown('turtahun')"
+            >
+              <i class="bi bi-calendar3 jdf-pill-icon"></i>
+              <span class="jdf-pill-label">Turtahun</span>
+              <!-- <span v-if="selectedTurtahun.length < turtahunOptions.length" class="jdf-pill-count">{{ selectedTurtahun.length }}</span> -->
+              <i class="bi bi-chevron-down jdf-pill-chevron" :class="{ 'jdf-pill-chevron--open': openDropdown === 'turtahun' }"></i>
+            </button>
+            <div v-if="openDropdown === 'turtahun'" class="jdf-panel">
+              <div v-if="turtahunOptions.length > 6" class="jdf-panel-search">
+                <i class="bi bi-search jdf-search-icon"></i>
+                <input
+                  v-model="turtahunSearch"
+                  type="text"
+                  class="jdf-search-input"
+                  placeholder="Cari tahun..."
+                  @click.stop
+                />
               </div>
-              <div class="jd-filter-list custom-scrollbar">
-                <div
-                  v-for="(opt, idx) in turtahunOptions"
-                  :key="'tt-' + idx + '-' + opt"
-                  class="jd-check-item"
+              <div class="jdf-panel-actions">
+                <button type="button" class="jdf-action-link" @click.stop="selectedTurtahun = [...turtahunOptions]">Pilih semua</button>
+                <span class="jdf-action-sep">·</span>
+                <button type="button" class="jdf-action-link" @click.stop="selectedTurtahun = []">Hapus semua</button>
+                <span class="jdf-action-count">{{ selectedTurtahun.length }}/{{ turtahunOptions.length }}</span>
+              </div>
+              <div class="jdf-panel-list">
+                <p v-if="!filteredTurtahunOptions.length" class="jdf-no-result">Tidak ditemukan</p>
+                <label
+                  v-for="(opt, idx) in filteredTurtahunOptions"
+                  :key="'tt-' + idx"
+                  class="jdf-list-item"
+                  @click.stop
                 >
                   <input
-                    :id="'jd-turtahun-' + idx"
                     type="checkbox"
-                    class="jd-check-input"
+                    class="jdf-checkbox"
                     :checked="selectedTurtahun.includes(opt)"
                     @change="toggleTurtahun(opt, $event.target.checked)"
                   />
-                  <label class="jd-check-label" :for="'jd-turtahun-' + idx">{{ opt }}</label>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="hiddenInfo.isAggregateKey" class="jd-filter-section mb-4">
-              <div class="jd-filter-label-header">
-                <i class="bi bi-calculator me-2"></i>
-                <span>Agregat</span>
-              </div>
-              <div class="jd-radio-group">
-                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'all' }">
-                  <input type="radio" v-model="isAggregateFilter" value="all" />
-                  <span class="option-dot"></span>
-                  <span class="option-text">Semua data</span>
-                </label>
-                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'without' }">
-                  <input type="radio" v-model="isAggregateFilter" value="without" />
-                  <span class="option-dot"></span>
-                  <span class="option-text">Tanpa agregat</span>
-                </label>
-                <label class="jd-radio-option" :class="{ active: isAggregateFilter === 'only' }">
-                  <input type="radio" v-model="isAggregateFilter" value="only" />
-                  <span class="option-dot"></span>
-                  <span class="option-text">Hanya agregat</span>
+                  <span class="jdf-item-text">{{ opt }}</span>
                 </label>
               </div>
             </div>
+          </div>
 
+          <!-- Aggregate dropdown -->
+          <div v-if="hiddenInfo.isAggregateKey" class="jdf-dropdown">
             <button
               type="button"
-              class="btn btn-sm btn-link text-decoration-none text-muted p-0"
-              @click="initChartFilterSelections"
+              class="jdf-pill"
+              :class="{ 'jdf-pill--active': isAggregateFilter !== 'all' }"
+              @click.stop="toggleDropdown('aggregate')"
             >
-              <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filter
+              <i class="bi bi-calculator jdf-pill-icon"></i>
+              <span class="jdf-pill-label">Agregat</span>
+              <i class="bi bi-chevron-down jdf-pill-chevron" :class="{ 'jdf-pill-chevron--open': openDropdown === 'aggregate' }"></i>
             </button>
-          </div>
-        </aside>
-
-        <div class="col-12 col-lg col-xl jd-view-main">
-          <div class="jd-view-panel">
-            <JsonDatasetTableCard
-              v-if="activeTab === 'table'"
-              :table-data="displayData"
-              :columns="visibleCols"
-              :column-labels="columnLabels"
-            />
-
-            <JsonDatasetChartCard
-              v-else-if="activeTab === 'chart'"
-              :table-data="displayData"
-              :columns="visibleCols"
-              :column-labels="columnLabels"
-            />
+            <div v-if="openDropdown === 'aggregate'" class="jdf-panel jdf-panel--sm">
+              <div class="jdf-panel-list">
+                <label class="jdf-list-item" @click.stop>
+                  <input type="radio" name="jdf-agg" class="jdf-radio" :checked="isAggregateFilter === 'all'" @change="isAggregateFilter = 'all'" />
+                  <span class="jdf-item-text">Semua data</span>
+                </label>
+                <label class="jdf-list-item" @click.stop>
+                  <input type="radio" name="jdf-agg" class="jdf-radio" :checked="isAggregateFilter === 'without'" @change="isAggregateFilter = 'without'" />
+                  <span class="jdf-item-text">Tanpa agregat</span>
+                </label>
+                <label class="jdf-list-item" @click.stop>
+                  <input type="radio" name="jdf-agg" class="jdf-radio" :checked="isAggregateFilter === 'only'" @change="isAggregateFilter = 'only'" />
+                  <span class="jdf-item-text">Hanya agregat</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
+
+        <div class="jdf-right">
+          <span class="jdf-summary">
+            <span class="jdf-summary-num">{{ displayData.length }}</span>
+            <span class="jdf-summary-total">/{{ tableData.length }} baris</span>
+          </span>
+          <button
+            v-if="activeFilterCount > 0"
+            type="button"
+            class="jdf-reset-btn"
+            @click="initChartFilterSelections"
+          >
+            <i class="bi bi-x-lg"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="jd-view-panel">
+        <JsonDatasetTableCard
+          v-if="activeTab === 'table'"
+          :table-data="displayData"
+          :columns="visibleCols"
+          :column-labels="columnLabels"
+        />
+
+        <JsonDatasetChartCard
+          v-else-if="activeTab === 'chart'"
+          :table-data="displayData"
+          :columns="visibleCols"
+          :column-labels="columnLabels"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 import { CKAN_FILE_BASE_URL } from '@/config/api'
@@ -239,6 +297,28 @@ const error = ref(null)
 const activeTab = ref('chart')
 /** Label kolom dari root JSON hasil fetch (column_labels / label_overrides) */
 const columnLabelsFromJson = ref({})
+
+/** Dropdown filter state */
+const openDropdown = ref(null)
+const vervalSearch = ref('')
+const turtahunSearch = ref('')
+
+function toggleDropdown(name) {
+  openDropdown.value = openDropdown.value === name ? null : name
+  if (openDropdown.value !== 'verval') vervalSearch.value = ''
+  if (openDropdown.value !== 'turtahun') turtahunSearch.value = ''
+}
+
+function handleDocumentClick(e) {
+  if (!e.target.closest('.jdf-dropdown')) {
+    openDropdown.value = null
+    vervalSearch.value = ''
+    turtahunSearch.value = ''
+  }
+}
+
+onMounted(() => document.addEventListener('mousedown', handleDocumentClick))
+onBeforeUnmount(() => document.removeEventListener('mousedown', handleDocumentClick))
 
 function columnLabelsFromCkanResource(resource) {
   if (!resource) return {}
@@ -271,8 +351,8 @@ const selectedVerval = ref([])
 const selectedTurvar = ref('')
 /** @type {import('vue').Ref<string[]>} */
 const selectedTurtahun = ref([])
-/** 'all' | 'without' | 'only' — default exclude aggregate rows */
-const isAggregateFilter = ref('without')
+/** 'all' | 'without' | 'only' — default show all rows */
+const isAggregateFilter = ref('all')
 
 const hiddenInfo = computed(() => computeHiddenColumns(tableData.value, allColumns.value))
 
@@ -369,6 +449,26 @@ function formatColumnLabel(key) {
 
 const vervalFilterLabel = computed(() => formatColumnLabel(hiddenInfo.value.vervalKey) || 'Verval')
 const turvarFilterLabel = computed(() => formatColumnLabel(hiddenInfo.value.turvarKey) || 'Turvar')
+
+const filteredVervalOptions = computed(() => {
+  const q = vervalSearch.value.trim().toLowerCase()
+  if (!q) return vervalOptions.value
+  return vervalOptions.value.filter((o) => o.toLowerCase().includes(q))
+})
+
+const filteredTurtahunOptions = computed(() => {
+  const q = turtahunSearch.value.trim().toLowerCase()
+  if (!q) return turtahunOptions.value
+  return turtahunOptions.value.filter((o) => o.toLowerCase().includes(q))
+})
+
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (vervalFilterKey.value && !allVervalSelected.value) count++
+  if (showTurtahunFilter.value && selectedTurtahun.value.length < turtahunOptions.value.length) count++
+  if (hiddenInfo.value.isAggregateKey && isAggregateFilter.value !== 'all') count++
+  return count
+})
 
 const displayData = computed(() => {
   const hi = hiddenInfo.value
@@ -561,7 +661,7 @@ watch(
   () => props.resource?.id,
   () => {
     activeTab.value = 'chart'
-    isAggregateFilter.value = 'without'
+    isAggregateFilter.value = 'all'
     fetchData()
   },
   { immediate: true }
@@ -569,9 +669,8 @@ watch(
 </script>
 
 <style scoped>
-.json-insight-panel {
-  margin-top: 0;
-}
+.json-insight-panel { margin-top: 0; }
+
 .jip-spinner {
   width: 40px;
   height: 40px;
@@ -580,17 +679,13 @@ watch(
   border-radius: 50%;
   animation: jip-spin 0.8s linear infinite;
 }
-@keyframes jip-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@keyframes jip-spin { to { transform: rotate(360deg); } }
 
+/* ── Toolbar ── */
 .jd-toolbar {
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
-
 .jd-badge {
   font-size: 0.75rem;
   font-weight: 700;
@@ -600,14 +695,12 @@ watch(
   color: #fff;
   border: 1px solid var(--primary-color, #d97706);
 }
-
 .jd-btn-json {
   background: #334155;
   color: #fff;
   border: 1px solid #334155;
   font-weight: 700;
 }
-
 .jd-btn-json:hover,
 .jd-btn-json:focus-visible {
   background: #475569;
@@ -615,6 +708,7 @@ watch(
   border-color: #475569;
 }
 
+/* ── Tabs ── */
 .rv-tabs {
   display: flex;
   gap: 4px;
@@ -634,213 +728,269 @@ watch(
   cursor: pointer;
   transition: all 0.2s ease;
 }
-.rv-tab:hover {
-  color: #1e293b;
-}
+.rv-tab:hover { color: #1e293b; }
 .rv-tab.active {
   background: white;
   color: #d97706;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.jd-view-layout {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.jd-view-filters {
-  min-width: 0;
-}
-
-@media (min-width: 992px) {
-  .jd-view-filters {
-    max-width: 360px;
-  }
-}
-
-.jd-view-main {
-  min-width: 0;
-}
-
-.jd-view-panel {
-  background: white;
+/* ════════════════════════════════
+   Filter Bar
+   ════════════════════════════════ */
+.jdf-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
 }
 
-.jd-filter-container {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-}
-
-.jd-filter-header-main {
+.jdf-left {
   display: flex;
   align-items: center;
-  margin-bottom: 1.5rem;
-  color: #1e293b;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.jd-sidebar-main-title {
-  font-size: 0.875rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin: 0;
-}
-
-.jd-filter-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.jd-filter-label-header {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+.jdf-right {
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.jd-filter-list {
-  max-height: 240px;
-  overflow-y: auto;
-  padding-right: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.75rem;
+.jdf-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  padding: 0 2px;
 }
 
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-
-.jd-check-item {
-  display: flex;
+/* ── Pill trigger button ── */
+.jdf-pill {
+  display: inline-flex;
   align-items: center;
-  padding: 8px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-  border: 1px solid transparent;
-}
-
-.jd-check-item:hover {
-  background-color: #f8fafc;
-  border-color: #f1f5f9;
-}
-
-.jd-check-input {
-  width: 18px;
-  height: 18px;
-  margin-right: 12px;
-  cursor: pointer;
-  accent-color: #d97706;
-}
-
-.jd-check-label {
-  font-size: 0.8125rem;
-  font-weight: 500;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
   color: #475569;
+  font-size: 0.775rem;
+  font-weight: 600;
   cursor: pointer;
-  margin: 0;
-  flex: 1;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
   white-space: nowrap;
+  line-height: 1;
+}
+.jdf-pill:hover {
+  border-color: #fbbf24;
+  background: #fffbf0;
+  color: #92400e;
+}
+.jdf-pill--active {
+  border-color: #f59e0b;
+  background: #fff7ed;
+  color: #b45309;
+}
+.jdf-pill--active:hover {
+  border-color: #d97706;
+  background: #fef3c7;
+}
+
+.jdf-pill-icon {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.jdf-pill-label {
+  font-weight: 700;
+}
+.jdf-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 100px;
+  background: #d97706;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.jdf-pill-value {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #92400e;
+  max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.jdf-pill-chevron {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  transition: transform 0.18s ease;
+}
+.jdf-pill-chevron--open {
+  transform: rotate(180deg);
 }
 
-.jd-check-item:hover .jd-check-label {
-  color: #1e293b;
-}
-
-.jd-radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.jd-radio-option {
-  display: flex;
-  align-items: center;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* ── Dropdown wrapper (relative anchor) ── */
+.jdf-dropdown {
   position: relative;
 }
 
-.jd-radio-option input {
+/* ── Floating panel ── */
+.jdf-panel {
   position: absolute;
-  opacity: 0;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  width: 240px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
+.jdf-panel--sm { width: 180px; }
 
-.option-dot {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #cbd5e1;
-  border-radius: 50%;
-  margin-right: 12px;
+/* Search row */
+.jdf-panel-search {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
 }
-
-.option-dot::after {
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: #fff;
-  border-radius: 50%;
-  transform: scale(0);
-  transition: transform 0.2s ease;
+.jdf-search-icon {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-shrink: 0;
 }
+.jdf-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.8rem;
+  color: #1e293b;
+}
+.jdf-search-input::placeholder { color: #cbd5e1; }
 
-.option-text {
-  font-size: 0.8125rem;
+/* Actions row */
+.jdf-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fafafa;
+}
+.jdf-action-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #64748b;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.jdf-action-link:hover { color: #d97706; }
+.jdf-action-sep { font-size: 0.72rem; color: #cbd5e1; }
+.jdf-action-count {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 600;
 }
 
-.jd-radio-option:hover {
-  background: #f1f5f9;
+/* List */
+.jdf-panel-list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.jdf-panel-list::-webkit-scrollbar { width: 4px; }
+.jdf-panel-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+.jdf-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  user-select: none;
+}
+.jdf-list-item:hover { background: #f8fafc; }
+
+.jdf-checkbox,
+.jdf-radio {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  accent-color: #d97706;
+  cursor: pointer;
+}
+.jdf-item-text {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #475569;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.jdf-list-item:hover .jdf-item-text { color: #1e293b; }
+
+.jdf-no-result {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-align: center;
 }
 
-.jd-radio-option.active {
-  background: #fff7ed;
-  border-color: #f59e0b;
+/* ── Right side summary + reset ── */
+.jdf-summary {
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
-
-.jd-radio-option.active .option-dot {
-  border-color: #f59e0b;
-  background: #f59e0b;
-}
-
-.jd-radio-option.active .option-dot::after {
-  transform: scale(1);
-}
-
-.jd-radio-option.active .option-text {
+.jdf-summary-num {
+  font-weight: 700;
   color: #d97706;
+}
+.jdf-summary-total {
+  color: #94a3b8;
+}
+
+.jdf-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  background: #fff;
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.jdf-reset-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
 }
 </style>

@@ -19,7 +19,7 @@
           </h1>
 
           <p class="hero-v2-subtitle">
-            Katalog publikasi statistik sektoral dari provinsi di wilayah
+            Katalog publikasi statistik dari provinsi di wilayah
             <strong>Kalimantan</strong>, <strong>Sulawesi</strong>, <strong>Maluku</strong>, dan
             <strong>Papua</strong>.
           </p>

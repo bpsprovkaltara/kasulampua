@@ -20,7 +20,7 @@
           
           <p class="hero-v2-subtitle">
             Forum konsultasi regional yang menjadi <span class="hero-v2-amp">jembatan data</span> antara
-            Kalimantan, Sulawesi, Maluku, dan Papua untuk pembangunan ekonomi yang terintegrasi.
+            Kalimantan, Sulawesi, Maluku, dan Papua.
           </p>
         </div>
         

@@ -1,0 +1,79 @@
+# =============================================================
+# Docker Compose — kasulampua.id
+# Traffic Schema: Cloudflare Tunnel → Traefik → App (Nginx)
+#
+# Services:
+#   - traefik   : Reverse proxy, menerima traffic dari CF Tunnel
+#   - kasulampua: Vue SPA served by Nginx
+#
+# Network:
+#   - proxy      : Shared network antara CF Tunnel, Traefik, & App
+# =============================================================
+
+services:
+
+  # ── Kasulampua Vue SPA ─────────────────────────────────────
+  kasulampua:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Cache target: image bisa di-cache per stage
+      target: production
+
+    image: kasulampua:latest
+    container_name: kasulampua-app
+    restart: unless-stopped
+
+    # Port TIDAK di-expose ke host — hanya Traefik yang bisa akses via network
+    expose:
+      - "8082"
+
+    environment:
+      # Runtime environment — semua variabel dari .env.production
+      # di-inject ke config.js oleh docker-entrypoint.sh
+      - API_BASE_URL=${API_BASE_URL:-https://backend.kasulampua.id}
+      - DATAHUB_BASE_URL=${DATAHUB_BASE_URL:-https://datahub.kasulampua.id}
+      - PUBLICATION_API_BASE_URL=${PUBLICATION_API_BASE_URL:-https://datahub-api.kasulampua.id}
+      - CKAN_BASE_URL=${CKAN_BASE_URL:-/ckan-api}
+      - CKAN_FILE_BASE_URL=${CKAN_FILE_BASE_URL:-/ckan-file}
+
+    networks:
+      - proxy
+
+    labels:
+      # ── Aktifkan Traefik untuk container ini ─────────────
+      - "traefik.enable=true"
+
+      # ── Router: kasulampua.id ─────────────────────────────
+      - "traefik.http.routers.kasulampua.rule=Host(`kasulampua.id`) || Host(`www.kasulampua.id`)"
+      - "traefik.http.routers.kasulampua.entrypoints=web"
+
+      # ── Service: direct ke port Nginx internal ────────────
+      - "traefik.http.services.kasulampua.loadbalancer.server.port=8082"
+
+      # ── Middleware: redirect www → non-www ────────────────
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^http://www\\.kasulampua\\.id/(.*)"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=http://kasulampua.id/$${1}"
+      - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
+      - "traefik.http.routers.kasulampua.middlewares=www-redirect"
+
+      # ── Health Check via Traefik ──────────────────────────
+      - "traefik.http.services.kasulampua.loadbalancer.healthcheck.path=/health"
+      - "traefik.http.services.kasulampua.loadbalancer.healthcheck.interval=30s"
+
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8082/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+# ── Networks ───────────────────────────────────────────────────
+networks:
+  proxy:
+    name: proxy
+    driver: bridge
+    # Gunakan "external: true" jika network sudah dibuat manual
+    # agar Cloudflare Tunnel bisa join ke network yang sama.
+    # external: true
+

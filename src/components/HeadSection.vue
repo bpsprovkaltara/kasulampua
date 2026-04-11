@@ -232,7 +232,7 @@ function particleStyle() {
   background: radial-gradient(circle at 50% 50%, #fffbeb 0%, #f7f9fc 100%);
   position: relative;
   overflow: hidden;
-  padding-top: 64px;
+  padding-top: 72px;
   display: flex;
   flex-direction: column;
 }
@@ -750,7 +750,7 @@ function particleStyle() {
 
 @media (max-width: 991px) {
   .hero-premium-v2 {
-    padding-top: 60px;
+    padding-top: 68px;
     min-height: auto;
   }
   .hero-container {

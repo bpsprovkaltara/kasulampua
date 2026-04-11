@@ -32,26 +32,37 @@
       <div class="viz-main">
         <div class="top-filter-container mb-4">
           <div class="glass-filter-card">
-            <div class="filter-fields">
-              <div class="filter-group region-filter">
-                <label class="filter-label"
-                  ><i class="bi bi-geo-alt-fill me-2"></i>Regional</label
-                >
-                <Multiselect
-                  v-model="selectedRegion"
-                  :options="regionOptions"
-                  track-by="value"
-                  :search="true"
-                  label="label"
-                  placeholder="Pilih Regional"
-                  class="custom-multiselect"
-                />
+            <!-- Row 1: Regional Filter -->
+            <div class="filter-row">
+              <div class="filter-row-label">
+                <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                <span>Wilayah</span>
               </div>
-
-              <div class="filter-group dataset-filter">
-                <label class="filter-label"
-                  ><i class="bi bi-database-fill me-2"></i>Dataset</label
+              <div class="region-tabs" role="group" aria-label="Pilih wilayah regional">
+                <button
+                  v-for="region in opsiWilayah"
+                  :key="region.val"
+                  type="button"
+                  :class="['region-tab', { active: selectedRegion === region.val }]"
+                  :style="{ '--region-color': region.color }"
+                  :aria-pressed="selectedRegion === region.val"
+                  @click="selectedRegion = region.val"
                 >
+                  <span class="tab-name">{{ region.label }}</span>
+                  <span class="tab-badge">{{ getDatasetCountByRegion(region.val) }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-divider"></div>
+
+            <!-- Row 2: Dataset + Chart Type -->
+            <div class="filter-row bottom-row">
+              <div class="bottom-field-label">
+                <i class="bi bi-database-fill" aria-hidden="true"></i>
+                <span>Dataset</span>
+              </div>
+              <div class="dataset-field">
                 <Multiselect
                   v-model="selectedData"
                   :options="dataOptions"
@@ -59,14 +70,20 @@
                   label="label"
                   track-by="value"
                   placeholder="Pilih Dataset"
+                  append-to-body
+                  close-on-scroll
+                  :classes="regionalInsightMultiselectClasses"
                   class="custom-multiselect"
                 />
               </div>
 
-              <div class="filter-group chart-type-filter">
-                <label class="filter-label"
-                  ><i class="bi bi-palette-fill me-2"></i>Tipe Grafik</label
-                >
+              <div class="bottom-field-sep" aria-hidden="true"></div>
+
+              <div class="bottom-field-label">
+                <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
+                <span>Tipe Grafik</span>
+              </div>
+              <div class="charttype-field">
                 <div class="chart-type-toggle">
                   <button
                     v-for="type in chartTypes"
@@ -78,6 +95,7 @@
                     :aria-pressed="selectedChartType === type.id"
                   >
                     <i :class="type.icon" aria-hidden="true"></i>
+                    <span class="type-btn-label">{{ type.label }}</span>
                   </button>
                 </div>
               </div>
@@ -228,12 +246,18 @@ import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Chart } from 'chart.js/auto'
 import { formatLongDate } from '../utils/dates'
-import { Modal, Carousel } from 'bootstrap'
 import { CKAN_FILE_BASE_URL, CKAN_ACTION_API } from '@/config/api'
+import { ckanOrgToWilayahLabel } from '@/utils/ckanOrganizationWilayah'
+
+/** Dropdown di-teleport ke `body`; kelas ini distyling lewat blok CSS non-scoped di bawah. */
+const regionalInsightMultiselectClasses = {
+  dropdown: 'multiselect-dropdown regional-insight-ms-dropdown',
+}
 
 const selectedRegion = ref('kasulampua')
 const selectedData = ref('')
 const dataOptions = ref([])
+const allDatasetOptions = ref([])
 const chartRef = ref(null)
 let chartInstance = null
 import { parseJsonResource } from '@/utils/parseCkanResourceJson'
@@ -365,18 +389,87 @@ const opsiWilayah = ref([
   {
     val: 'kasulampua',
     label: 'Kasulampua',
+    color: '#d97706',
     filter: [
       6100, 6200, 6300, 6400, 6500, 7100, 7200, 7300, 7400, 7500, 7600, 8100, 8200, 9100, 9200,
-      9400, 9500, 9600, 9700,
+      9300, 9400, 9500, 9600,
     ],
   },
-  { val: 'kalimantan', label: 'Kalimantan', filter: [6100, 6200, 6300, 6400, 6500] },
-  { val: 'sulawesi', label: 'Sulawesi', filter: [7100, 7200, 7300, 7400, 7500, 7600] },
-  { val: 'maluku', label: 'Maluku', filter: [8100, 8200] },
-  { val: 'papua', label: 'Papua', filter: [9100, 9200, 9400, 9500, 9600, 9700] },
+  { val: 'kalimantan', label: 'Kalimantan', color: '#16a34a', filter: [6100, 6200, 6300, 6400, 6500] },
+  { val: 'sulawesi', label: 'Sulawesi', color: '#dc2626', filter: [7100, 7200, 7300, 7400, 7500, 7600] },
+  { val: 'maluku', label: 'Maluku', color: '#2563eb', filter: [8100, 8200] },
+  { val: 'papua', label: 'Papua', color: '#ca8a04', filter: [9100, 9200, 9300, 9400, 9500, 9600] },
 ])
 
-const regionOptions = opsiWilayah.value.map((item) => ({ value: item.val, label: item.label }))
+function extractDatasetDomainCode(pkg) {
+  const mergedText = [
+    pkg?.name,
+    pkg?.title,
+    pkg?.notes,
+    pkg?.organization?.name,
+    pkg?.organization?.title,
+    pkg?.organization?.display_name,
+  ]
+    .filter(Boolean)
+    .join(' ')
+  const match = mergedText.match(/\b(0000|[6789]\d{3})\b/)
+  return match ? match[1] : ''
+}
+
+function getDatasetWilayahGroup(pkg) {
+  const wilayahLabel = ckanOrgToWilayahLabel(pkg?.organization || {}).toLowerCase()
+  if (!wilayahLabel) return ''
+  if (wilayahLabel.includes('kasulampua')) return 'kasulampua'
+  if (wilayahLabel.includes('kalimantan')) return 'kalimantan'
+  if (wilayahLabel.includes('sulawesi')) return 'sulawesi'
+  if (wilayahLabel.includes('maluku')) return 'maluku'
+  if (wilayahLabel.includes('papua')) return 'papua'
+  return ''
+}
+
+function isDatasetMatchSelectedRegion(dataset, region) {
+  const domainCode = dataset.domainCode || ''
+  const wilayahGroup = dataset.wilayahGroup || ''
+
+  if (region === 'kasulampua') {
+    return domainCode === '0000' || wilayahGroup === 'kasulampua'
+  }
+  if (region === 'kalimantan') {
+    return domainCode.startsWith('6') || wilayahGroup === 'kalimantan'
+  }
+  if (region === 'sulawesi') {
+    return domainCode.startsWith('7') || wilayahGroup === 'sulawesi'
+  }
+  if (region === 'maluku') {
+    return domainCode.startsWith('8') || wilayahGroup === 'maluku'
+  }
+  if (region === 'papua') {
+    return domainCode.startsWith('9') || wilayahGroup === 'kasulampua'
+  }
+  return true
+}
+
+function applyRegionDatasetOptions() {
+  const filtered = allDatasetOptions.value.filter((dataset) =>
+    isDatasetMatchSelectedRegion(dataset, selectedRegion.value)
+  )
+
+  dataOptions.value = filtered.map((dataset) => ({
+    value: dataset.value,
+    label: dataset.label,
+  }))
+
+  const stillValid = dataOptions.value.some((opt) => opt.value === selectedData.value)
+  if (!stillValid) {
+    selectedData.value = dataOptions.value[0]?.value || ''
+  }
+}
+
+function getDatasetCountByRegion(regionVal) {
+  return allDatasetOptions.value.filter((dataset) => isDatasetMatchSelectedRegion(dataset, regionVal)).length
+}
+
+
 const dataResponse = ref(null)
 
 const state = reactive({
@@ -398,23 +491,34 @@ const fetchDataset = async () => {
     const data = await res.json()
     
     if (data.success && data.result?.results) {
-      dataOptions.value = data.result.results.map(pkg => {
+      allDatasetOptions.value = data.result.results.map(pkg => {
         // Find the JSON resource ID
-        const jsonRes = pkg.resources.find(r => r.format.toLowerCase() === 'json')
+        const jsonRes = (pkg.resources || []).find(r => String(r.format || '').toLowerCase() === 'json')
         return {
           value: jsonRes ? jsonRes.id : pkg.id,
-          label: pkg.title || pkg.name
+          label: pkg.title || pkg.name || 'Dataset tanpa judul',
+          domainCode: extractDatasetDomainCode(pkg),
+          wilayahGroup: getDatasetWilayahGroup(pkg),
         }
       })
+      const seen = new Set()
+      allDatasetOptions.value = allDatasetOptions.value.filter((dataset) => {
+        if (!dataset.value || seen.has(dataset.value)) return false
+        seen.add(dataset.value)
+        return true
+      })
     }
-    
-    if (!route.query.data && !selectedData.value && dataOptions.value.length > 0) {
-      selectedData.value = dataOptions.value[0].value
-    }
+    applyRegionDatasetOptions()
   } catch (error) {
     console.error('Gagal mengambil dataset real-time:', error)
     // Minimal fallback to prevent crash
-    dataOptions.value = [{ value: '428b1294-8fff-42ea-8cf7-9b552e6d85ca', label: '[Seri 2010] PDRB Triwulanan' }]
+    allDatasetOptions.value = [{
+      value: '428b1294-8fff-42ea-8cf7-9b552e6d85ca',
+      label: '[Seri 2010] PDRB Triwulanan',
+      domainCode: '0000',
+      wilayahGroup: 'kasulampua',
+    }]
+    applyRegionDatasetOptions()
   }
 }
 
@@ -484,7 +588,6 @@ const fetchData = async () => {
       "PAPUA PEGUNUNGAN": 9400,
       "PAPUA SELATAN": 9500,
       "PAPUA BARAT DAYA": 9600,
-      "PAPUA SELATAN": 9700 // Some variants might use 97 for Papua Selatan
     }
     
     const KASULAMPUA_IDS = Object.values(KASULAMPUA_MAP)
@@ -580,10 +683,7 @@ const updateData = async () => {
   const currentRegion = opsiWilayah.value.find((o) => o.val === selectedRegion.value)
   const allowedIds = currentRegion ? currentRegion.filter : []
 
-  const filteredVervar =
-    selectedRegion.value === 'kasulampua'
-      ? mock.vervar
-      : mock.vervar.filter((v) => allowedIds.includes(v.val))
+  const filteredVervar = mock.vervar.filter((v) => allowedIds.includes(v.val))
 
   state.labels = filteredVervar.map((v) => v.label)
   state.dataValues = filteredVervar.map((v) => mock.datacontent[v.val] || 0)
@@ -705,8 +805,9 @@ const renderChart = () => {
 }
 
 onMounted(async () => {
-  await fetchDataset()
   syncFromRoute()
+  await fetchDataset()
+  applyRegionDatasetOptions()
   if (selectedData.value) {
     loading.value = true
     await fetchData()
@@ -723,6 +824,7 @@ watch(
       return
     }
     syncFromRoute()
+    applyRegionDatasetOptions()
     if (selectedData.value) {
       loading.value = true
       await fetchData()
@@ -731,7 +833,14 @@ watch(
   { deep: true }
 )
 
-watch([selectedRegion, selectedChartType], () => {
+watch(selectedRegion, () => {
+  if (isBootstrapping) return
+  applyRegionDatasetOptions()
+  updateData()
+  pushQueryFromState()
+})
+
+watch(selectedChartType, () => {
   if (isBootstrapping) return
   updateData()
   pushQueryFromState()
@@ -774,40 +883,177 @@ watch([selectedData], () => {
 }
 
 .glass-filter-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(217, 119, 6, 0.2);
+  border: 1px solid rgba(217, 119, 6, 0.18);
   border-radius: 20px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 8px 32px -4px rgba(217, 119, 6, 0.12);
+  overflow: hidden;
+  box-shadow: 0 8px 32px -4px rgba(217, 119, 6, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.filter-fields {
+/* ── Filter Rows ── */
+.filter-row {
   display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 1.5rem;
   flex-wrap: wrap;
 }
 
-.region-filter {
-  flex: 1;
-  min-width: 200px;
+.filter-row.bottom-row {
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
 }
 
-.dataset-filter {
-  flex: 2;
-  min-width: 300px;
-}
-
-.chart-type-filter {
+.bottom-field-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.63rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
-.filter-group {
+.bottom-field-sep {
+  width: 1px;
+  height: 28px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.filter-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(217, 119, 6, 0.12), transparent);
+  margin: 0 1.5rem;
+}
+
+.filter-row-label {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 5.5rem;
+}
+
+.dataset-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.charttype-field {
+  flex-shrink: 0;
+}
+
+/* ── Region Tabs ── */
+.region-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.region-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1;
+}
+
+.region-tab:hover:not(.active) {
+  background: color-mix(in srgb, var(--region-color) 10%, white);
+  border-color: color-mix(in srgb, var(--region-color) 40%, transparent);
+  color: var(--region-color);
+  transform: translateY(-1px);
+}
+
+.region-tab.active {
+  background: var(--region-color);
+  border-color: var(--region-color);
+  color: white;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--region-color) 30%, transparent);
+}
+
+.tab-name {
+  font-weight: 700;
+}
+
+.tab-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.08);
+  line-height: 1.5;
+}
+
+.region-tab.active .tab-badge {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── Chart Type Toggle ── */
+.chart-type-toggle {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+  padding: 4px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.type-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 1;
+}
+
+.type-btn-label {
+  font-size: 0.78rem;
+}
+
+.type-btn:hover:not(.active) {
+  background: white;
+  color: var(--primary-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.type-btn.active {
+  background: white;
+  color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
 }
 
 .hero-v2-sm {
@@ -882,41 +1128,6 @@ watch([selectedData], () => {
   transform: translateY(-1px);
 }
 
-.chart-type-toggle {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
-    padding: 6px;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    width: fit-content;
-}
-
-.type-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  min-height: 44px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  border-radius: 8px;
-  font-size: 1.1rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.type-btn:hover {
-  background: var(--bg-color);
-  color: var(--primary-color);
-}
-
-.type-btn.active {
-  background: var(--amber-600);
-  color: white;
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
-}
 
 .chart-container-card {
   background: white;
@@ -1192,6 +1403,7 @@ watch([selectedData], () => {
   --ms-dropdown-radius: 12px;
   --ms-py: 10px;
   --ms-font-size: 0.9rem;
+  --ms-max-height: min(55vh, 18rem);
   --ms-ring-color: rgba(217, 119, 6, 0.1);
   --ms-option-bg-selected: var(--primary-color);
   --ms-option-bg-selected-pointed: var(--primary-hover);
@@ -1202,28 +1414,51 @@ watch([selectedData], () => {
 }
 
 @media (max-width: 991px) {
-  .filter-fields {
-    gap: 1rem;
+  .filter-row {
+    padding: 1rem;
+    gap: 0.75rem;
   }
 
-  .region-filter, .dataset-filter {
-    flex: 1 1 100%;
-    min-width: 100%;
+  .filter-row.bottom-row {
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
-  .chart-type-filter {
+  .bottom-field-sep {
+    display: none;
+  }
+
+  .bottom-field-label {
+    flex-basis: 100%;
+    margin-bottom: -4px;
+  }
+
+  .region-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .region-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dataset-field {
     flex: 1 1 100%;
-    display: flex;
-    flex-direction: column;
+  }
+
+  .charttype-field {
+    flex: 1 1 100%;
   }
 
   .chart-type-toggle {
     width: 100%;
-    justify-content: space-between;
   }
 
   .type-btn {
     flex: 1;
+    justify-content: center;
   }
 }
 
@@ -1250,30 +1485,15 @@ watch([selectedData], () => {
     padding-right: 0.75rem;
     gap: 1rem;
   }
-  .filter-fields {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+  .filter-row {
+    padding: 0.875rem 1rem;
+    gap: 0.625rem;
   }
-  .filter-group:last-child {
-    grid-column: 1;
+  .region-tabs {
+    width: 100%;
   }
-  .chart-type-toggle {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 6px;
-    padding: 4px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    width: fit-content;
-  }
-  .type-btn {
-    width: 38px !important;
-    height: 38px !important;
-    flex: 0 0 38px !important;
-    min-height: 38px !important;
-    font-size: 0.95rem;
-    border-radius: 8px;
-    padding: 0 !important;
+  .type-btn-label {
+    display: none;
   }
   .chart-container-card {
     padding: 1.25rem 1rem;
@@ -1309,8 +1529,28 @@ watch([selectedData], () => {
   .hero-v2-title {
     font-size: 2rem;
   }
-  .glass-filter-card {
-    padding: 1.25rem 1rem;
-  }
+}
+</style>
+
+<style>
+/**
+ * Dataset Multiselect — daftar opsi di-teleport ke body (append-to-body).
+ * Scoped CSS tidak berlaku di sini; pertahankan token visual selaras dengan .custom-multiselect.
+ */
+.regional-insight-ms-dropdown.multiselect-dropdown:not(.is-hidden) {
+  z-index: 5000;
+  --ms-dropdown-bg: #fff;
+  --ms-dropdown-border-color: var(--border-color, #e2e8f0);
+  --ms-dropdown-radius: 12px;
+  --ms-max-height: min(55vh, 18rem);
+  --ms-font-size: 0.9rem;
+  --ms-option-bg-selected: var(--primary-color, #d97706);
+  --ms-option-bg-selected-pointed: var(--primary-hover, #b45309);
+  --ms-option-bg-pointed: #f8fafc;
+  --ms-empty-color: #64748b;
+  box-shadow:
+    0 18px 48px -12px rgba(15, 23, 42, 0.18),
+    0 8px 20px -8px rgba(217, 119, 6, 0.12);
+  border-color: rgba(217, 119, 6, 0.2);
 }
 </style>

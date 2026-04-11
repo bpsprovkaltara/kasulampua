@@ -271,7 +271,7 @@
                 <div class="item-action skeleton-action"></div>
               </div>
             </div>
-            <div v-else-if="!datasets.length" class="empty-card" key="empty">
+            <div v-else-if="!displayedDatasets.length" class="empty-card" key="empty">
               <i class="bi bi-inbox empty-icon"></i>
               <h5 class="fw-bold mt-3 mb-1">Tidak ada dataset</h5>
               <p class="text-muted small">Coba ubah filter atau kata kunci pencarian.</p>
@@ -285,7 +285,7 @@
 
             <div v-else class="dataset-list" key="list">
               <router-link
-                v-for="(dataset, index) in datasets"
+                v-for="(dataset, index) in displayedDatasets"
                 :key="dataset.id || index"
                 :to="{ path: `/dataset/${dataset.name || dataset.id}`, query: { from: $route.fullPath } }"
                 class="dataset-item text-decoration-none"
@@ -347,7 +347,7 @@ import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import { CKAN_ACTION_API } from '@/config/api'
-import { ckanOrgToWilayahLabel } from '@/utils/ckanOrganizationWilayah.js'
+import { ckanOrgToWilayahLabel, sortDatasetsByDomain } from '@/utils/ckanOrganizationWilayah.js'
 import { buildPackageSearchFilterQuery } from '@/utils/ckanPackageSearchFilters.js'
 import { formatLongDate } from '@/utils/dates'
 import PaginationControl from '../components/PaginationControl.vue'
@@ -393,8 +393,28 @@ const satuDataLinks = [
 ]
 
 const datasets = ref([])
+/** Semua dataset terurut domain (dipakai saat mode default tanpa filter/pencarian) */
+const allSortedDatasets = ref([])
 const total = ref(0)
 const loading = ref(true)
+
+/** True bila belum ada filter maupun pencarian teks yang aktif (tampilan default). */
+const isDefaultView = computed(
+  () => !search.value.trim() && !selectedCategory.value && !selectedWilayah.value
+)
+
+/**
+ * Dataset yang ditampilkan di halaman saat ini.
+ * - Mode default : slice dari allSortedDatasets yang sudah diurutkan by domain.
+ * - Mode filter/search : hasil langsung dari CKAN (sudah dipaginasi server-side).
+ */
+const displayedDatasets = computed(() => {
+  if (isDefaultView.value && allSortedDatasets.value.length > 0) {
+    const start = (currentPage.value - 1) * limit
+    return allSortedDatasets.value.slice(start, start + limit)
+  }
+  return datasets.value
+})
 const desktopSearchInput = ref(null)
 const mobileSearchInput = ref(null)
 
@@ -448,7 +468,12 @@ const readRouteIntoState = () => {
   }
 }
 
-const totalPages = computed(() => Math.ceil(total.value / limit))
+const totalPages = computed(() => {
+  if (isDefaultView.value && allSortedDatasets.value.length > 0) {
+    return Math.ceil(allSortedDatasets.value.length / limit)
+  }
+  return Math.ceil(total.value / limit)
+})
 
 const activeCategoryLabel = computed(() => {
   if (!selectedCategory.value) return null
@@ -473,36 +498,89 @@ const toggleSatuData = () => (satuDataExpanded.value = !satuDataExpanded.value)
 const fetchDatasets = async () => {
   loading.value = true
   try {
-    const params = new URLSearchParams()
-    params.set('rows', limit)
-    params.set('start', (currentPage.value - 1) * limit)
+    const hasFilters = search.value.trim() || selectedCategory.value || selectedWilayah.value
 
-    // Build Solr query
-    const qParts = []
-    if (search.value.trim()) qParts.push(search.value.trim())
-    params.set('q', qParts.length ? qParts.join(' ') : '*:*')
-    const fq = buildPackageSearchFilterQuery({
-      group: selectedCategory.value,
-      organization: selectedWilayah.value,
-    })
-    if (fq) params.set('fq', fq)
+    if (!hasFilters) {
+      // ─── MODE DEFAULT ─────────────────────────────────────────────────────────
+      // Strategi adaptif:
+      //  ≤ DOMAIN_SORT_THRESHOLD  → fetch semua sekaligus, sort client-side (akurat 100%)
+      //  >  DOMAIN_SORT_THRESHOLD → server-side sort=organization asc (ringan, ~akurat)
+      const DOMAIN_SORT_THRESHOLD = 500
 
-    const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
-    const data = await res.json()
+      // Langkah 1: cek jumlah total dulu (request ringan, rows=0)
+      const countRes = await fetch(
+        `${CKAN_ACTION_API.PACKAGE_SEARCH}?q=*:*&rows=0&start=0`
+      )
+      const countData = await countRes.json()
+      const totalCount = countData.success ? (countData.result?.count || 0) : 0
+      total.value = totalCount
 
-    if (data.success && data.result) {
-      datasets.value = data.result.results || []
-      total.value = data.result.count || 0
-    } else {
-      if (data && data.error) {
-        console.error('CKAN package_search error:', data.error)
+      if (totalCount <= DOMAIN_SORT_THRESHOLD) {
+        // ── Fetch semua → sort domain client-side (paginasi client-side) ──────
+        const allParams = new URLSearchParams()
+        allParams.set('q', '*:*')
+        allParams.set('rows', totalCount || DOMAIN_SORT_THRESHOLD)
+        allParams.set('start', 0)
+        const allRes = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${allParams.toString()}`)
+        const allData = await allRes.json()
+        if (allData.success && allData.result) {
+          allSortedDatasets.value = sortDatasetsByDomain(allData.result.results || [])
+        } else {
+          allSortedDatasets.value = []
+        }
+        datasets.value = []
+      } else {
+        // ── Dataset sangat banyak: sort server-side, paginate CKAN ───────────
+        // organization asc ≈ urutan domain BPS (K-alimantan < M-aluku < P-apua < S-ulawesi)
+        allSortedDatasets.value = []
+        const params = new URLSearchParams()
+        params.set('q', '*:*')
+        params.set('rows', limit)
+        params.set('start', (currentPage.value - 1) * limit)
+        params.set('sort', 'organization asc')
+        const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
+        const data = await res.json()
+        if (data.success && data.result) {
+          datasets.value = sortDatasetsByDomain(data.result.results || [])
+        } else {
+          datasets.value = []
+        }
       }
-      datasets.value = []
-      total.value = 0
+    } else {
+      // ─── MODE FILTER / PENCARIAN ──────────────────────────────────────────────
+      // Gunakan pagination server-side CKAN agar relevansi/filter tetap akurat.
+      allSortedDatasets.value = []
+
+      const params = new URLSearchParams()
+      params.set('rows', limit)
+      params.set('start', (currentPage.value - 1) * limit)
+
+      const qParts = []
+      if (search.value.trim()) qParts.push(search.value.trim())
+      params.set('q', qParts.length ? qParts.join(' ') : '*:*')
+
+      const fq = buildPackageSearchFilterQuery({
+        group: selectedCategory.value,
+        organization: selectedWilayah.value,
+      })
+      if (fq) params.set('fq', fq)
+
+      const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
+      const data = await res.json()
+
+      if (data.success && data.result) {
+        datasets.value = data.result.results || []
+        total.value = data.result.count || 0
+      } else {
+        if (data && data.error) console.error('CKAN package_search error:', data.error)
+        datasets.value = []
+        total.value = 0
+      }
     }
   } catch (err) {
     console.error('Gagal memuat dataset:', err)
     datasets.value = []
+    allSortedDatasets.value = []
     total.value = 0
   } finally {
     loading.value = false
@@ -578,8 +656,26 @@ const goToPage = (p) => {
   }
 }
 
+/**
+ * Membangun query default: wilayah=Kasulampua, subjek=Neraca Ekonomi.
+ * ID diambil dari store (sudah di-load) agar tidak hardcode slug CKAN.
+ */
+function getDefaultQuery() {
+  const q = {}
+  const kasulampua = wilayahRegions.value.find((r) => r.label === 'Kasulampua')
+  if (kasulampua) q.organization = kasulampua.id
+
+  const neracaEkonomi = categories.value.find((c) =>
+    c.name.toLowerCase().includes('neraca') && c.name.toLowerCase().includes('ekonomi')
+  )
+  if (neracaEkonomi) q.group = neracaEkonomi.id
+
+  return q
+}
+
 const resetFilters = () => {
-  router.replace({ path: '/dataset', query: {} })
+  // Kembali ke filter default (bukan halaman kosong)
+  router.replace({ path: '/dataset', query: cleanQuery(getDefaultQuery()) })
 }
 
 watch(
@@ -604,10 +700,23 @@ onMounted(async () => {
     router.replace({ path: '/publication', query: cleanQuery(next) })
     return
   }
+
   await store.fetchAllData()
+  window.addEventListener('keydown', handleGlobalSearchShortcut)
+
+  // Terapkan filter default hanya bila belum ada filter/pencarian di URL
+  const hasExistingFilters = route.query.q || route.query.group || route.query.organization
+  if (!hasExistingFilters) {
+    const defaultQuery = getDefaultQuery()
+    if (Object.keys(defaultQuery).length > 0) {
+      // router.replace akan memicu watch(route.query) → readRouteIntoState + fetchDatasets
+      router.replace({ path: '/dataset', query: cleanQuery(defaultQuery) })
+      return
+    }
+  }
+
   readRouteIntoState()
   await fetchDatasets()
-  window.addEventListener('keydown', handleGlobalSearchShortcut)
 })
 
 onBeforeUnmount(() => {
@@ -1346,7 +1455,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 991px) {
   .hero-v2 {
-    padding: 100px 0 60px;
+    padding: 108px 0 60px;
   }
   .hero-v2-title {
     font-size: 2.75rem;

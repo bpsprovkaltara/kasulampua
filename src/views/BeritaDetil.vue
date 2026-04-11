@@ -279,7 +279,7 @@ watch(
 .article-hero-content {
   position: relative;
   z-index: 10;
-  padding-top: 120px;
+  padding-top: 128px;
   padding-bottom: 3.5rem;
   max-width: 820px;
 }
@@ -649,7 +649,7 @@ watch(
 
 @media (max-width: 991px) {
   .article-hero-content {
-    padding-top: 80px;
+    padding-top: 88px;
     padding-bottom: 2.5rem;
   }
   .article-text {

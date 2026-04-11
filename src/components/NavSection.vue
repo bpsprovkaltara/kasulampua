@@ -89,7 +89,7 @@ function isNavSectionActive(link) {
 <template>
   <nav
     :class="['navbar navbar-expand-lg fixed-top transition-all', customNavClass, scrolledClass, { 'mobile-menu-active': isMobileMenuOpen }]"
-    style="height: 64px"
+    style="height: 72px"
   >
     <div class="container-fluid px-4 px-lg-5">
       <div class="container mx-auto d-flex align-items-center justify-content-between p-0">
@@ -234,7 +234,7 @@ function isNavSectionActive(link) {
   align-items: center;
   width: auto;
   transition: color 0.3s ease;
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .nav-link-text {
@@ -376,7 +376,7 @@ function isNavSectionActive(link) {
 }
 
 .mobile-menu-content {
-  padding-top: 100px;
+  padding-top: 108px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -457,7 +457,7 @@ function isNavSectionActive(link) {
 }
 
 .nav-logo {
-  height: 54px;
+  height: 58px;
   width: auto;
   max-width: 280px;
   object-fit: contain;
@@ -465,17 +465,17 @@ function isNavSectionActive(link) {
 
 @media (max-width: 991px) {
   .navbar {
-    height: 56px !important;
+    height: 62px !important;
   }
   .nav-logo {
-    height: 38px;
+    height: 42px;
     max-width: 180px;
   }
 }
 
 @media (max-width: 480px) {
   .nav-logo {
-    height: 32px;
+    height: 36px;
     max-width: 150px;
   }
   .container-fluid {

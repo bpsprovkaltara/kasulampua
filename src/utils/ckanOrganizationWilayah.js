@@ -63,10 +63,62 @@ export function ckanOrgToWilayahLabel(org) {
   return normalized
 }
 
+/**
+ * Urutan domain BPS: 000 (pusat/Kasulampua), lalu 6100, 6200, ..., sesuai kode wilayah BPS.
+ * Label di sini harus cocok dengan hasil ckanOrgToWilayahLabel().
+ */
+export const WILAYAH_DOMAIN_ORDER = [
+  'Kasulampua',         // 000  — BPS pusat / agregat
+  'Kalimantan Barat',   // 6100
+  'Kalimantan Tengah',  // 6200
+  'Kalimantan Selatan', // 6300
+  'Kalimantan Timur',   // 6400
+  'Kalimantan Utara',   // 6500
+  'Sulawesi Utara',     // 7100
+  'Sulawesi Tengah',    // 7200
+  'Sulawesi Selatan',   // 7300
+  'Sulawesi Tenggara',  // 7400
+  'Gorontalo',          // 7500
+  'Sulawesi Barat',     // 7600
+  'Maluku',             // 8100
+  'Maluku Utara',       // 8200
+  'Papua',              // 9100
+  'Papua Barat',        // 9600
+]
+
 export function sortWilayahRegions(regions) {
   return [...regions].sort((a, b) => {
-    if (a.label === 'Kasulampua') return -1
-    if (b.label === 'Kasulampua') return 1
+    const ia = WILAYAH_DOMAIN_ORDER.indexOf(a.label)
+    const ib = WILAYAH_DOMAIN_ORDER.indexOf(b.label)
+    // Jika keduanya ada di daftar urutan domain → gunakan urutan domain
+    if (ia !== -1 && ib !== -1) return ia - ib
+    // Jika hanya salah satu yang dikenali → yang dikenali duluan
+    if (ia !== -1) return -1
+    if (ib !== -1) return 1
+    // Keduanya tidak dikenali → urutkan alfabetis
     return a.label.localeCompare(b.label, 'id')
+  })
+}
+
+/**
+ * Mengurutkan hasil package_search CKAN berdasarkan urutan domain BPS.
+ * Digunakan pada tampilan default (tanpa filter pencarian teks) di DatasetView.
+ *
+ * @param {Array} datasets - Array dataset dari CKAN (masing-masing punya field `organization`).
+ * @returns {Array} Dataset yang sudah diurutkan.
+ */
+export function sortDatasetsByDomain(datasets) {
+  return [...datasets].sort((a, b) => {
+    const labelA = ckanOrgToWilayahLabel(a.organization)
+    const labelB = ckanOrgToWilayahLabel(b.organization)
+    const ia = WILAYAH_DOMAIN_ORDER.indexOf(labelA)
+    const ib = WILAYAH_DOMAIN_ORDER.indexOf(labelB)
+    // Keduanya dikenali → urutkan berdasarkan domain
+    if (ia !== -1 && ib !== -1) return ia - ib
+    // Hanya salah satu dikenali → yang dikenali duluan
+    if (ia !== -1) return -1
+    if (ib !== -1) return 1
+    // Keduanya tidak dikenali → alfabetis berdasarkan judul
+    return (a.title || '').localeCompare(b.title || '', 'id')
   })
 }

@@ -509,7 +509,7 @@ onMounted(() => {
 .insight-hero-content {
   position: relative;
   z-index: 10;
-  padding-top: 120px;
+  padding-top: 128px;
   padding-bottom: 3.5rem;
 }
 
@@ -1119,7 +1119,7 @@ onMounted(() => {
 
 @media (max-width: 991px) {
   .insight-hero-content {
-    padding-top: 90px;
+    padding-top: 98px;
     padding-bottom: 2.5rem;
   }
   .sidebar-sticky {
