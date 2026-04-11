@@ -33,7 +33,10 @@
     "eslint-plugin-vue": "~10.0.0",
     "globals": "^16.0.0",
     "prettier": "3.5.3",
+    "sharp": "^0.34.5",
+    "svgo": "^4.0.1",
     "vite": "^6.3.5",
+    "vite-plugin-image-optimizer": "^2.0.3",
     "vite-plugin-vue-devtools": "^7.7.2"
   },
   "packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937"

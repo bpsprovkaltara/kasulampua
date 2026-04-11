@@ -18,7 +18,15 @@
         <div class="row g-0 align-items-stretch">
           <div class="col-lg-5">
             <div class="headline-image-wrapper h-100">
-              <img :src="berita.headline_image" alt="headline" class="headline-img" />
+              <img
+                :src="berita.headline_image"
+                alt="headline"
+                class="headline-img"
+                loading="lazy"
+                decoding="async"
+                width="600"
+                height="360"
+              />
               <div class="image-overlay"></div>
               <div class="image-badge">
                 <span class="live-dot-sm"></span>

@@ -93,6 +93,9 @@
             src="/assets/images/kasulampua.png"
             alt="Kasulampua"
             class="hero-main-logo"
+            width="480"
+            height="88"
+            decoding="async"
           />
         </div>
 
@@ -122,24 +125,40 @@
               alt="BI"
               class="partner-logo"
               title="Bank Indonesia"
+              width="120"
+              height="68"
+              loading="lazy"
+              decoding="async"
             />
             <img
               src="/assets/images/pemda/kalimantan-utara.png"
               alt="Kaltara"
               class="partner-logo"
               title="Kalimantan Utara"
+              width="68"
+              height="68"
+              loading="lazy"
+              decoding="async"
             />
             <img
               src="/assets/images/bps.png"
               alt="BPS"
               class="partner-logo"
               title="Badan Pusat Statistik"
+              width="120"
+              height="68"
+              loading="lazy"
+              decoding="async"
             />
             <img
               src="/assets/images/djpb.png"
               alt="DJPb"
               class="partner-logo"
               title="Direktorat Jenderal Perbendaharaan"
+              width="120"
+              height="68"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>
@@ -184,7 +203,10 @@
                     :src="item.icon"
                     :alt="'icon_' + key"
                     class="img-fluid"
+                    width="180"
+                    height="180"
                     style="height: 180px; width: auto"
+                    decoding="async"
                   />
                 </div>
                 <h5 class="region-title-v4 text-capitalize">{{ key }}</h5>
@@ -480,6 +502,7 @@ function particleStyle() {
   object-fit: contain;
   transition: all 0.4s ease;
   opacity: 0.9;
+  aspect-ratio: auto;
 }
 .partner-logo:hover {
   opacity: 1;

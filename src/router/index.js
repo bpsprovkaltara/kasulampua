@@ -1,26 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import BeritaView from '@/views/BeritaView.vue'
-import DetilBerita from '@/views/BeritaDetil.vue'
-import RegionalInsight from '@/views/RegionalInsight.vue'
-import About from '@/views/AboutView.vue'
-import RegionalInsightDetil from '@/views/RegionalInsightDetil.vue'
-import Dataset from '@/views/DatasetViewRoute.vue'
-import DatasetDetail from '@/views/DatasetDetail.vue'
-import PublikasiDetailView from '@/views/PublikasiDetailView.vue'
-import PublicationView from '@/views/PublicationView.vue'
-import ResourceDetail from '@/views/ResourceDetail.vue'
-import VisualisasiData from '@/views/VisualisasiData.vue'
-import NotFound from '@/views/NotFound.vue'
 import { isAuthenticated } from '@/utils/auth.js'
-
-import AdminLayout from '@/views/admin/AdminLayout.vue'
-import LoginView from '@/views/admin/LoginView.vue'
-import DashboardView from '@/views/admin/DashboardView.vue'
-import ManageUsers from '@/views/admin/ManageUsers.vue'
-import ManageBerita from '@/views/admin/ManageBerita.vue'
-import ManageInsight from '@/views/admin/ManageInsight.vue'
-import ManageDataset from '@/views/admin/ManageDataset.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,84 +14,84 @@ const router = createRouter({
     {
       path: '/berita',
       name: 'berita',
-      component: BeritaView,
+      component: () => import('@/views/BeritaView.vue'),
       meta: { title: 'Berita' }
     },
     {
       path: '/berita/:id',
       name: 'berita-detail',
-      component: DetilBerita,
+      component: () => import('@/views/BeritaDetil.vue'),
       meta: { title: 'Detail Berita' }
     },
     {
       path: '/regional_insight',
       name: 'regional_insight',
-      component: RegionalInsight,
+      component: () => import('@/views/RegionalInsight.vue'),
       meta: { title: 'Regional Insight' }
     },
     {
       path: '/visualisasi_data',
       name: 'visualisasi_data',
-      component: VisualisasiData,
+      component: () => import('@/views/VisualisasiData.vue'),
       meta: { title: 'Visualisasi Data' }
     },
     {
       path: '/regional_insight/:id',
       name: 'regional_insight-detil',
-      component: RegionalInsightDetil,
+      component: () => import('@/views/RegionalInsightDetil.vue'),
       meta: { title: 'Detail Regional Insight' }
     },
     {
       path: '/dataset',
       name: 'dataset',
-      component: Dataset,
+      component: () => import('@/views/DatasetViewRoute.vue'),
       meta: { title: 'Subjek' }
     },
     {
       path: '/dataset/:id',
       name: 'dataset-detail',
-      component: DatasetDetail,
+      component: () => import('@/views/DatasetDetail.vue'),
       meta: { title: 'Detail Dataset' }
     },
     {
       path: '/publication',
       name: 'publication',
-      component: PublicationView,
+      component: () => import('@/views/PublicationView.vue'),
       meta: { title: 'Publikasi' }
     },
     {
       path: '/publikasi/:id',
       name: 'publikasi-detail',
-      component: PublikasiDetailView,
+      component: () => import('@/views/PublikasiDetailView.vue'),
       meta: { title: 'Detail Publikasi' }
     },
-     {
+    {
       path: '/resource/:id',
       name: 'resource-detail',
-      component: ResourceDetail,
+      component: () => import('@/views/ResourceDetail.vue'),
       meta: { title: 'Detail Resource' }
     },
     {
       path: '/about',
       name: 'about',
-      component: About,
+      component: () => import('@/views/AboutView.vue'),
       meta: { title: 'Tentang' }
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
-      component: NotFound,
+      component: () => import('@/views/NotFound.vue'),
       meta: { title: '404 - Halaman Tidak Ditemukan' }
     },
     {
       path: '/admin/login',
       name: 'admin-login',
-      component: LoginView,
+      component: () => import('@/views/admin/LoginView.vue'),
       meta: { title: 'Admin Login', guestOnly: true }
     },
     {
       path: '/admin',
-      component: AdminLayout,
+      component: () => import('@/views/admin/AdminLayout.vue'),
       meta: { requiresAuth: true },
       children: [
         {
@@ -121,31 +101,31 @@ const router = createRouter({
         {
           path: 'dashboard',
           name: 'admin-dashboard',
-          component: DashboardView,
+          component: () => import('@/views/admin/DashboardView.vue'),
           meta: { title: 'Dashboard' }
         },
         {
           path: 'users',
           name: 'admin-users',
-          component: ManageUsers,
+          component: () => import('@/views/admin/ManageUsers.vue'),
           meta: { title: 'Kelola Users' }
         },
         {
           path: 'berita',
           name: 'admin-berita',
-          component: ManageBerita,
+          component: () => import('@/views/admin/ManageBerita.vue'),
           meta: { title: 'Kelola Berita' }
         },
         {
           path: 'insight',
           name: 'admin-insight',
-          component: ManageInsight,
+          component: () => import('@/views/admin/ManageInsight.vue'),
           meta: { title: 'Kelola Insight' }
         },
         {
           path: 'dataset',
           name: 'admin-dataset',
-          component: ManageDataset,
+          component: () => import('@/views/admin/ManageDataset.vue'),
           meta: { title: 'Kelola Dataset' }
         }
       ]

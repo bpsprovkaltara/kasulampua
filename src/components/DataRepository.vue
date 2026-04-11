@@ -20,7 +20,15 @@
         </div>
       </div>
 
-      <div class="carousel-wrapper" ref="carouselRef" @scroll="handleScroll">
+      <div 
+        class="carousel-wrapper" 
+        ref="carouselRef" 
+        @scroll="handleScroll"
+        @mouseenter="isHovered = true"
+        @mouseleave="isHovered = false"
+        @touchstart="isHovered = true"
+        @touchend="isHovered = false"
+      >
         <div class="carousel-track-v2">
           <div class="carousel-spacer"></div>
 
@@ -68,7 +76,7 @@
         </div>
       </div>
 
-      <div class="container mt-5 pt-4">
+      <!-- <div class="container mt-5 pt-4">
         <div class="glass-banner p-4 p-md-5">
           <div class="row align-items-center">
             <div class="col-lg-8 mb-4 mb-lg-0">
@@ -85,13 +93,13 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useDatasetStore } from '@/composables/useDatasetStore'
 
 const carouselRef = ref(null)
@@ -102,6 +110,9 @@ const scrollProgress = ref(0)
 const isAtStart = ref(true)
 const isAtEnd = ref(false)
 const activeIndex = ref(0)
+const isHovered = ref(false)
+let ticking = false  // rAF throttle flag
+let autoPlayInterval = null
 
 const getCategoryIcon = (name) => {
   const n = String(name || '').toLowerCase()
@@ -164,25 +175,37 @@ const getDatasetCount = (cat) => {
 }
 
 const handleScroll = () => {
-  if (!carouselRef.value) return
-  const el = carouselRef.value
-  const scrollLeft = el.scrollLeft
-  const scrollWidth = el.scrollWidth - el.clientWidth
+  if (ticking) return
+  ticking = true
+  requestAnimationFrame(() => {
+    if (!carouselRef.value) {
+      ticking = false
+      return
+    }
+    const el = carouselRef.value
+    const scrollLeft = el.scrollLeft
+    const scrollWidth = el.scrollWidth - el.clientWidth
 
-  scrollProgress.value = (scrollLeft / (scrollWidth || 1)) * 100
-  
-  const center = scrollLeft + el.clientWidth / 2
-  const cardWidth = 290
-  const index = Math.floor((center - el.clientWidth / 2) / cardWidth)
-  activeIndex.value = Math.max(0, Math.min(kategoriList.value.length - 1, index))
+    scrollProgress.value = (scrollLeft / (scrollWidth || 1)) * 100
 
-  isAtStart.value = scrollLeft < 10
-  isAtEnd.value = scrollLeft > scrollWidth - 10
+    const center = scrollLeft + el.clientWidth / 2
+    const cardWidth = 290
+    const index = Math.floor((center - el.clientWidth / 2) / cardWidth)
+    activeIndex.value = Math.max(0, Math.min(kategoriList.value.length - 1, index))
+
+    isAtStart.value = scrollLeft < 10
+    isAtEnd.value = scrollLeft > scrollWidth - 10
+    ticking = false
+  })
 }
 
 const scrollNext = () => {
   if (carouselRef.value) {
-    carouselRef.value.scrollBy({ left: 290, behavior: 'smooth' })
+    if (isAtEnd.value) {
+      carouselRef.value.scrollTo({ left: 0, behavior: 'smooth' })
+    } else {
+      carouselRef.value.scrollBy({ left: 290, behavior: 'smooth' })
+    }
   }
 }
 
@@ -192,6 +215,39 @@ const scrollPrev = () => {
   }
 }
 
+const startAutoPlay = () => {
+  stopAutoPlay()
+  autoPlayInterval = setInterval(() => {
+    if (!isHovered.value && carouselRef.value) {
+      scrollNext()
+    }
+  }, 3500) // Animasi berganti setiap 3.5 detik
+}
+
+const stopAutoPlay = () => {
+  if (autoPlayInterval) {
+    clearInterval(autoPlayInterval)
+    autoPlayInterval = null
+  }
+}
+
+watch(() => kategoriList.value, async (newList) => {
+  if (newList && newList.length > 0) {
+    await nextTick()
+    if (carouselRef.value) {
+      // Posisi di tengah
+      const el = carouselRef.value
+      const middle = (el.scrollWidth - el.clientWidth) / 2
+      el.scrollTo({ left: middle, behavior: 'instant' })
+      
+      // Trigger update state awalan
+      handleScroll()
+
+      startAutoPlay()
+    }
+  }
+}, { immediate: true })
+
 onMounted(() => {
   store.fetchAllData()
   window.addEventListener('resize', handleScroll)
@@ -199,6 +255,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleScroll)
+  stopAutoPlay()
 })
 </script>
 
@@ -300,6 +357,7 @@ onUnmounted(() => {
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 1;
   transform: scale(0.95);
+  will-change: transform;
 }
 
 .carousel-card-wrapper.is-active {

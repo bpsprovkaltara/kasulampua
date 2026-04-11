@@ -4,7 +4,7 @@
     <Header :header="header" :link="pusatInformasi" :regions="regional" />
     <main>
       <DataRepository />
-      <NewsSection :berita="berita" />
+      <!-- <NewsSection :berita="berita" /> -->
       <DataStory :dataSection="data_section" :dataset="dataset" />
     </main>
     <Footer />
@@ -27,23 +27,6 @@ import { DUMMY_INSIGHTS } from '../utils/dummyInsights'
 
 
 const pusatInformasi = ref({ href: '/dataset' })
-
-const header = reactive({
-  logo: '/assets/images/logo-kasulampua-PUTIH.png',
-  title: 'Kasulampua',
-  description:''
-})
-
-const regional = reactive({
-  kalimantan: {icon: '/assets/images/icon_kalimantan.svg' },
-  sulawesi: { icon: '/assets/images/icon_sulawesi.svg' },
-  maluku: { icon: '/assets/images/icon_maluku.svg' },
-  papua: { icon: '/assets/images/icon_papua.svg' },
-})
-
-const itemsPerSlide = ref(5)
-const kategori = ref([])
-const loading = ref(true)
 
 const fetchGroups = async () => {
   try {
@@ -70,17 +53,7 @@ const fetchGroups = async () => {
   }
 }
 
-const updateItemsPerSlide = () => {
-  const width = window.innerWidth
-  if (width >= 1200) {
-    itemsPerSlide.value = 5
-  } else if (width >= 768) {
-    itemsPerSlide.value = 4
-  } else if (width >= 576) {
-    itemsPerSlide.value = 2
-  } else {
-    itemsPerSlide.value = 1
-  }
+const updateItemsPerSlide = () => {  // Kept as no-op; layout now handled by CSS
 }
 
 // const chunkedImages = computed(() => {
@@ -203,13 +176,10 @@ const fetchTopInsight = async () => {
 
 onMounted(() => {
   fetchHeadlineBerita()
-  updateItemsPerSlide()
   fetchTopInsight()
   fetchGroups()
-  window.addEventListener('resize', updateItemsPerSlide)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateItemsPerSlide)
 })
 </script>

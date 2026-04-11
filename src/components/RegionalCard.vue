@@ -1,7 +1,15 @@
 <template>
   <router-link :to="`/regional_insight/${props.slug}`" class="insight-card h-100 text-decoration-none">
     <div class="card-image-wrapper">
-      <img :src="urlImage(props.image)" class="card-img" alt="Insight cover" />
+      <img
+        :src="urlImage(props.image)"
+        class="card-img"
+        alt="Insight cover"
+        loading="lazy"
+        decoding="async"
+        width="600"
+        height="200"
+      />
       <div class="image-overlay"></div>
       <div
         class="region-badge"

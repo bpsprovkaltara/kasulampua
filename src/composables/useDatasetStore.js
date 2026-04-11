@@ -2,16 +2,20 @@ import { reactive, toRefs } from 'vue'
 import { CKAN_ACTION_API } from '@/config/api'
 import { ckanOrgToWilayahLabel, sortWilayahRegions } from '@/utils/ckanOrganizationWilayah.js'
 
+const CACHE_TTL_MS = 10 * 60 * 1000 // 10 menit
+
 const state = reactive({
   categories: [],
   wilayahRegions: [],
   isLoading: false,
-  hasLoaded: false
+  hasLoaded: false,
+  lastFetchedAt: null,
 })
 
 export function useDatasetStore() {
-  const fetchAllData = async () => {
-    if (state.hasLoaded) return
+  const fetchAllData = async (force = false) => {
+    const isStale = !state.lastFetchedAt || (Date.now() - state.lastFetchedAt > CACHE_TTL_MS)
+    if (state.hasLoaded && !isStale && !force) return
 
     state.isLoading = true
     try {
@@ -44,6 +48,7 @@ export function useDatasetStore() {
       }
 
       state.hasLoaded = true
+      state.lastFetchedAt = Date.now()
     } catch (err) {
       console.error('Gagal memuat dataset store:', err)
     } finally {
