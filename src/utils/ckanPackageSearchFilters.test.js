@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildPackageSearchFilterQuery } from './ckanPackageSearchFilters.js'
+import {
+  buildPackageSearchFilterQuery,
+  buildOrganizationFilterQuery,
+} from './ckanPackageSearchFilters.js'
 
 test('returns empty filter when no input is provided', () => {
   assert.equal(buildPackageSearchFilterQuery({}), '')
@@ -38,5 +41,24 @@ test('escapes quotes and backslashes in filter values', () => {
       organization: 'bps\\gorontalo',
     }),
     'groups:"budaya \\"kreatif\\"" AND organization:"bps\\\\gorontalo"'
+  )
+})
+
+test('buildOrganizationFilterQuery returns empty for empty list', () => {
+  assert.equal(buildOrganizationFilterQuery([]), '')
+  assert.equal(buildOrganizationFilterQuery(null), '')
+})
+
+test('buildOrganizationFilterQuery single organization', () => {
+  assert.equal(
+    buildOrganizationFilterQuery(['bps-kalimantan-barat']),
+    'organization:"bps-kalimantan-barat"'
+  )
+})
+
+test('buildOrganizationFilterQuery ORs multiple organizations with escaping', () => {
+  assert.equal(
+    buildOrganizationFilterQuery(['bps-provinsi-papua', 'bps\\x']),
+    'organization:("bps-provinsi-papua" OR "bps\\\\x")'
   )
 })

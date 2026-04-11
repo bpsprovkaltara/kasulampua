@@ -49,7 +49,6 @@
                   @click="selectedRegion = region.val"
                 >
                   <span class="tab-name">{{ region.label }}</span>
-                  <span class="tab-badge">{{ getDatasetCountByRegion(region.val) }}</span>
                 </button>
               </div>
             </div>
@@ -100,13 +99,67 @@
                 </div>
               </div>
             </div>
+
+            <template v-if="showTurvarFilter || periodOptions.length > 1">
+              <div class="filter-divider"></div>
+              <div class="filter-row bottom-row filter-row-dimensions">
+                <template v-if="showTurvarFilter">
+                  <div class="bottom-field-label">
+                    <i class="bi bi-layers-fill" aria-hidden="true"></i>
+                    <span>Turvar</span>
+                  </div>
+                  <div class="turvar-field">
+                    <select
+                      v-model="selectedTurvar"
+                      class="form-select form-select-sm turvar-select"
+                      aria-label="Pilih turvar"
+                    >
+                      <option v-for="opt in turvarOptions" :key="opt" :value="opt">{{ opt }}</option>
+                    </select>
+                  </div>
+                  <div class="bottom-field-sep" aria-hidden="true"></div>
+                </template>
+
+                <template v-if="periodOptions.length > 1">
+                  <div class="bottom-field-label">
+                    <i class="bi bi-calendar3-fill" aria-hidden="true"></i>
+                    <span>Periode</span>
+                  </div>
+                  <div class="tahun-slider-field">
+                    <button
+                      type="button"
+                      class="play-btn"
+                      :class="{ active: isPlaying }"
+                      :aria-label="isPlaying ? 'Jeda animasi periode' : 'Putar animasi periode'"
+                      :title="isPlaying ? 'Jeda' : 'Putar'"
+                      @click="togglePlay"
+                    >
+                      <i :class="isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'" aria-hidden="true"></i>
+                    </button>
+                    <input
+                      v-model.number="selectedPeriodIndex"
+                      type="range"
+                      class="tahun-range form-range"
+                      :min="0"
+                      :max="Math.max(0, periodOptions.length - 1)"
+                      :aria-valuemin="0"
+                      :aria-valuemax="Math.max(0, periodOptions.length - 1)"
+                      :aria-valuenow="selectedPeriodIndex"
+                      :aria-valuetext="selectedPeriod?.label || ''"
+                      aria-label="Pilih periode"
+                    />
+                    <span class="tahun-label text-truncate">{{ selectedPeriod?.label || '—' }}</span>
+                  </div>
+                </template>
+              </div>
+            </template>
           </div>
         </div>
 
         <div class="chart-container-card fade-in-up">
           <div class="chart-header-row">
             <div class="chart-header-text">
-              <h3 class="chart-title">{{ state.judul || 'Tidak tersedia' }}</h3>
+              <h3 class="chart-title">{{ chartTitleDisplay }}</h3>
               <div class="badge-satuan">Satuan: {{ state.satuan || 'Tidak tersedia' }}</div>
             </div>
             <button @click="downloadChart" class="btn-download-chart" aria-label="Unduh grafik sebagai gambar PNG">
@@ -126,7 +179,7 @@
                  :labels="state.labels"
                  :dataValues="state.dataValues"
                  :unit="state.satuan"
-                 :title="state.judul"
+                 :title="chartTitleDisplay"
                  :region="selectedRegion"
               />
             </div>
@@ -237,22 +290,27 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { onMounted, ref, reactive, watch, nextTick } from 'vue'
+import { onMounted, onBeforeUnmount, ref, reactive, watch, computed, nextTick } from 'vue'
 import Navbar from '../components/NavSection.vue'
 import Footer from '../components/FooterSection.vue'
 import MapVisualisasi from '../components/MapVisualisasi.vue'
-// import { DATAHUB_ENDPOINTS, API_ENDPOINTS } from '../config/api'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Chart } from 'chart.js/auto'
 import { formatLongDate } from '../utils/dates'
 import { CKAN_FILE_BASE_URL, CKAN_ACTION_API } from '@/config/api'
-import { ckanOrgToWilayahLabel } from '@/utils/ckanOrganizationWilayah'
+import { useDatasetStore } from '@/composables/useDatasetStore'
+import { parseJsonResource } from '@/utils/parseCkanResourceJson'
+import { buildOrganizationFilterQuery } from '@/utils/ckanPackageSearchFilters'
+import { parsePeriodSortKey } from '@/utils/jsonDatasetChart'
 
 /** Dropdown di-teleport ke `body`; kelas ini distyling lewat blok CSS non-scoped di bawah. */
 const regionalInsightMultiselectClasses = {
   dropdown: 'multiselect-dropdown regional-insight-ms-dropdown',
 }
+
+// ─── Dataset store (organisasi CKAN) ────────────────────────────────────────
+const store = useDatasetStore()
 
 const selectedRegion = ref('kasulampua')
 const selectedData = ref('')
@@ -260,7 +318,7 @@ const dataOptions = ref([])
 const allDatasetOptions = ref([])
 const chartRef = ref(null)
 let chartInstance = null
-import { parseJsonResource } from '@/utils/parseCkanResourceJson'
+let playTimer = null
 
 const route = useRoute()
 const router = useRouter()
@@ -380,97 +438,62 @@ const pushQueryFromState = () => {
 
 const chartTypes = [
   { id: 'bar', label: 'Batang', icon: 'bi bi-bar-chart-fill' },
-  { id: 'line', label: 'Garis', icon: 'bi bi-graph-up' },
+  // { id: 'line', label: 'Garis', icon: 'bi bi-graph-up' },
   { id: 'map', label: 'Peta', icon: 'bi bi-globe-asia-australia' },
   { id: 'doughnut', label: 'Lingkaran', icon: 'bi bi-pie-chart-fill' },
 ]
 
 const opsiWilayah = ref([
-  {
-    val: 'kasulampua',
-    label: 'Kasulampua',
-    color: '#d97706',
-    filter: [
-      6100, 6200, 6300, 6400, 6500, 7100, 7200, 7300, 7400, 7500, 7600, 8100, 8200, 9100, 9200,
-      9300, 9400, 9500, 9600,
-    ],
-  },
-  { val: 'kalimantan', label: 'Kalimantan', color: '#16a34a', filter: [6100, 6200, 6300, 6400, 6500] },
-  { val: 'sulawesi', label: 'Sulawesi', color: '#dc2626', filter: [7100, 7200, 7300, 7400, 7500, 7600] },
-  { val: 'maluku', label: 'Maluku', color: '#2563eb', filter: [8100, 8200] },
-  { val: 'papua', label: 'Papua', color: '#ca8a04', filter: [9100, 9200, 9300, 9400, 9500, 9600] },
+  { val: 'kasulampua', label: 'Kasulampua', color: '#d97706' },
+  { val: 'kalimantan',  label: 'Kalimantan',  color: '#16a34a' },
+  { val: 'sulawesi',   label: 'Sulawesi',    color: '#dc2626' },
+  { val: 'maluku',     label: 'Maluku',      color: '#2563eb' },
+  { val: 'papua',      label: 'Papua',       color: '#ca8a04' },
 ])
 
-function extractDatasetDomainCode(pkg) {
-  const mergedText = [
-    pkg?.name,
-    pkg?.title,
-    pkg?.notes,
-    pkg?.organization?.name,
-    pkg?.organization?.title,
-    pkg?.organization?.display_name,
-  ]
-    .filter(Boolean)
-    .join(' ')
-  const match = mergedText.match(/\b(0000|[6789]\d{3})\b/)
-  return match ? match[1] : ''
+/** Kode wilayah BPS provinsi per tab (filter klien pada vervar setelah data Kasulampua dimuat). */
+const PROVINCE_IDS_BY_REGION = {
+  kasulampua: [
+    6100, 6200, 6300, 6400, 6500, 7100, 7200, 7300, 7400, 7500, 7600, 8100, 8200, 9100, 9200, 9300, 9400, 9500,
+    9600,
+  ],
+  kalimantan: [6100, 6200, 6300, 6400, 6500],
+  sulawesi: [7100, 7200, 7300, 7400, 7500, 7600],
+  maluku: [8100, 8200],
+  papua: [9100, 9200, 9300, 9400, 9500, 9600],
 }
 
-function getDatasetWilayahGroup(pkg) {
-  const wilayahLabel = ckanOrgToWilayahLabel(pkg?.organization || {}).toLowerCase()
-  if (!wilayahLabel) return ''
-  if (wilayahLabel.includes('kasulampua')) return 'kasulampua'
-  if (wilayahLabel.includes('kalimantan')) return 'kalimantan'
-  if (wilayahLabel.includes('sulawesi')) return 'sulawesi'
-  if (wilayahLabel.includes('maluku')) return 'maluku'
-  if (wilayahLabel.includes('papua')) return 'papua'
+function getAllowedProvinceIdsForRegion(regionVal) {
+  return PROVINCE_IDS_BY_REGION[regionVal] || PROVINCE_IDS_BY_REGION.kasulampua
+}
+
+/**
+ * Petakan entri `wilayahRegions` ke tab agregat (hanya dipakai untuk mengenali org Kasulampua di CKAN).
+ */
+function regionalTabForWilayahEntry(w) {
+  const label = String(w.label || '').trim()
+  if (!label) return ''
+  if (label === 'Kasulampua') return 'kasulampua'
+  if (label.startsWith('Kalimantan')) return 'kalimantan'
+  if (label.startsWith('Sulawesi') || label === 'Gorontalo') return 'sulawesi'
+  if (label.startsWith('Maluku')) return 'maluku'
+  if (label.includes('Papua')) return 'papua'
   return ''
 }
 
-function isDatasetMatchSelectedRegion(dataset, region) {
-  const domainCode = dataset.domainCode || ''
-  const wilayahGroup = dataset.wilayahGroup || ''
-
-  if (region === 'kasulampua') {
-    return domainCode === '0000' || wilayahGroup === 'kasulampua'
-  }
-  if (region === 'kalimantan') {
-    return domainCode.startsWith('6') || wilayahGroup === 'kalimantan'
-  }
-  if (region === 'sulawesi') {
-    return domainCode.startsWith('7') || wilayahGroup === 'sulawesi'
-  }
-  if (region === 'maluku') {
-    return domainCode.startsWith('8') || wilayahGroup === 'maluku'
-  }
-  if (region === 'papua') {
-    return domainCode.startsWith('9') || wilayahGroup === 'kasulampua'
-  }
-  return true
+/** Slug organization CKAN untuk dataset pusat / agregat Kasulampua saja. */
+function getKasulampuaOrganizationSlugs() {
+  return (store.wilayahRegions.value || [])
+    .filter((w) => regionalTabForWilayahEntry(w) === 'kasulampua')
+    .map((w) => w.id)
 }
 
-function applyRegionDatasetOptions() {
-  const filtered = allDatasetOptions.value.filter((dataset) =>
-    isDatasetMatchSelectedRegion(dataset, selectedRegion.value)
-  )
+/** Dataset mentah setelah fetch (filter Kasulampua); dimensi turvar/periode diolah di updateData */
+const rawDataset = ref(null)
 
-  dataOptions.value = filtered.map((dataset) => ({
-    value: dataset.value,
-    label: dataset.label,
-  }))
-
-  const stillValid = dataOptions.value.some((opt) => opt.value === selectedData.value)
-  if (!stillValid) {
-    selectedData.value = dataOptions.value[0]?.value || ''
-  }
-}
-
-function getDatasetCountByRegion(regionVal) {
-  return allDatasetOptions.value.filter((dataset) => isDatasetMatchSelectedRegion(dataset, regionVal)).length
-}
-
-
-const dataResponse = ref(null)
+const selectedTurvar = ref('')
+const selectedPeriodIndex = ref(0)
+const isPlaying = ref(false)
 
 const state = reactive({
   satuan: '',
@@ -479,60 +502,233 @@ const state = reactive({
   judul: '',
 })
 
+/** Huruf pertama tiap kata (setelah awal string, spasi, atau tanda pemisah umum) jadi huruf besar. */
+function capitalizeChartTitle(text) {
+  if (text == null || text === '') return ''
+  return String(text).replace(/(^|[\s\u2013\u2014–—\-/()])(\S)/g, (_, sep, ch) => sep + ch.toLocaleUpperCase('id-ID'))
+}
+
+const chartTitleDisplay = computed(() => capitalizeChartTitle(state.judul || 'Tidak tersedia'))
+
+function buildCompositePeriodLabel(tahunVal, subYearVal) {
+  const tahun = String(tahunVal ?? '').trim()
+  const sub = String(subYearVal ?? '').trim()
+  if (!sub) return tahun
+  if (!tahun) return sub
+  if (/\d{4}/.test(sub)) return sub
+  return `${sub} ${tahun}`
+}
+
+const turvarOptions = computed(() => {
+  const ds = rawDataset.value
+  if (!ds?.turvarKey || !ds.allRows?.length) return []
+  const key = ds.turvarKey
+  const uniq = new Set()
+  for (const row of ds.allRows) {
+    const s = String(row[key] ?? '').trim()
+    if (s && s.toLowerCase() !== 'tidak ada') uniq.add(s)
+  }
+  return [...uniq].sort((a, b) => a.localeCompare(b, 'id'))
+})
+
+const showTurvarFilter = computed(() => turvarOptions.value.length > 1)
+
+const periodOptions = computed(() => {
+  const ds = rawDataset.value
+  if (!ds?.allRows?.length) return []
+
+  const { allRows, tahunKey, turtahunKey, periodSingleKey } = ds
+
+  if (tahunKey && turtahunKey) {
+    const uniq = new Map()
+    for (const row of allRows) {
+      const tv = String(row[tahunKey] ?? '').trim()
+      const tt = String(row[turtahunKey] ?? '').trim()
+      if (!tv && !tt) continue
+      const label = buildCompositePeriodLabel(tv, tt)
+      const key = `${tv}\t${tt}`
+      if (!uniq.has(key)) uniq.set(key, { tahunVal: tv, turtahunVal: tt, label })
+    }
+    const arr = [...uniq.values()]
+    arr.sort((a, b) => {
+      const skA = parsePeriodSortKey(a.label)
+      const skB = parsePeriodSortKey(b.label)
+      const fa = Number.isFinite(skA) && !Number.isNaN(skA)
+      const fb = Number.isFinite(skB) && !Number.isNaN(skB)
+      if (fa && fb && skA !== skB) return skA - skB
+      if (fa && !fb) return -1
+      if (!fa && fb) return 1
+      return a.label.localeCompare(b.label, 'id')
+    })
+    return arr
+  }
+
+  if (tahunKey) {
+    const uniq = new Set()
+    for (const row of allRows) {
+      const tv = String(row[tahunKey] ?? '').trim()
+      if (tv) uniq.add(tv)
+    }
+    return [...uniq]
+      .sort((a, b) => {
+        const skA = parsePeriodSortKey(a)
+        const skB = parsePeriodSortKey(b)
+        const fa = Number.isFinite(skA) && !Number.isNaN(skA)
+        const fb = Number.isFinite(skB) && !Number.isNaN(skB)
+        if (fa && fb && skA !== skB) return skA - skB
+        if (fa && !fb) return -1
+        if (!fa && fb) return 1
+        return a.localeCompare(b, 'id')
+      })
+      .map((tv) => ({ tahunVal: tv, turtahunVal: '', label: tv }))
+  }
+
+  if (turtahunKey) {
+    const uniq = new Set()
+    for (const row of allRows) {
+      const tt = String(row[turtahunKey] ?? '').trim()
+      if (tt) uniq.add(tt)
+    }
+    return [...uniq]
+      .sort((a, b) => a.localeCompare(b, 'id'))
+      .map((tt) => ({ tahunVal: '', turtahunVal: tt, label: tt }))
+  }
+
+  if (periodSingleKey) {
+    const uniq = new Set()
+    for (const row of allRows) {
+      const p = String(row[periodSingleKey] ?? '').trim()
+      if (p) uniq.add(p)
+    }
+    return [...uniq]
+      .sort((a, b) => {
+        const skA = parsePeriodSortKey(a)
+        const skB = parsePeriodSortKey(b)
+        const fa = Number.isFinite(skA) && !Number.isNaN(skA)
+        const fb = Number.isFinite(skB) && !Number.isNaN(skB)
+        if (fa && fb && skA !== skB) return skA - skB
+        if (fa && !fb) return -1
+        if (!fa && fb) return 1
+        return a.localeCompare(b, 'id')
+      })
+      .map((label) => ({ tahunVal: '', turtahunVal: '', label, singleVal: label }))
+  }
+
+  return []
+})
+
+const selectedPeriod = computed(() => {
+  const opts = periodOptions.value
+  const i = selectedPeriodIndex.value
+  if (!opts.length || i < 0 || i >= opts.length) return null
+  return opts[i]
+})
+
+function stopPlay() {
+  isPlaying.value = false
+  if (playTimer != null) {
+    clearInterval(playTimer)
+    playTimer = null
+  }
+}
+
+function togglePlay() {
+  if (periodOptions.value.length <= 1) return
+  if (isPlaying.value) {
+    stopPlay()
+    return
+  }
+  stopPlay()
+  isPlaying.value = true
+  playTimer = setInterval(() => {
+    const n = periodOptions.value.length
+    if (n <= 1) {
+      stopPlay()
+      return
+    }
+    if (selectedPeriodIndex.value < n - 1) {
+      selectedPeriodIndex.value++
+    } else {
+      selectedPeriodIndex.value = 0
+    }
+  }, 800)
+}
+
+/**
+ * Fetch dataset JSON dari CKAN — selalu organisasi Kasulampua (pusat), bukan per tab regional.
+ */
 const fetchDataset = async () => {
   try {
-    // Fetch top datasets that have high likelihood of having visualization data
     const params = new URLSearchParams()
-    params.set('rows', '50')
+    params.set('rows', '100')
     params.set('q', '*:*')
-    params.set('fq', 'res_format:JSON') // Prioritize JSON datasets for visualization
-    
+
+    const orgSlugs = getKasulampuaOrganizationSlugs()
+    const orgFq = buildOrganizationFilterQuery(orgSlugs)
+    if (!orgFq) {
+      console.warn('RegionalInsight: tidak ada organization CKAN untuk Kasulampua (pusat)')
+      allDatasetOptions.value = []
+      dataOptions.value = []
+      selectedData.value = ''
+      return
+    }
+
+    params.set('fq', ['res_format:JSON', orgFq].join(' AND '))
+
     const res = await fetch(`${CKAN_ACTION_API.PACKAGE_SEARCH}?${params.toString()}`)
     const data = await res.json()
-    
+
     if (data.success && data.result?.results) {
-      allDatasetOptions.value = data.result.results.map(pkg => {
-        // Find the JSON resource ID
-        const jsonRes = (pkg.resources || []).find(r => String(r.format || '').toLowerCase() === 'json')
-        return {
-          value: jsonRes ? jsonRes.id : pkg.id,
-          label: pkg.title || pkg.name || 'Dataset tanpa judul',
-          domainCode: extractDatasetDomainCode(pkg),
-          wilayahGroup: getDatasetWilayahGroup(pkg),
-        }
-      })
       const seen = new Set()
-      allDatasetOptions.value = allDatasetOptions.value.filter((dataset) => {
-        if (!dataset.value || seen.has(dataset.value)) return false
-        seen.add(dataset.value)
-        return true
-      })
+      allDatasetOptions.value = data.result.results
+        .map((pkg) => {
+          const jsonRes = (pkg.resources || []).find(
+            (r) => String(r.format || '').toLowerCase() === 'json'
+          )
+          return {
+            value: jsonRes ? jsonRes.id : pkg.id,
+            label: pkg.title || pkg.name || 'Dataset tanpa judul',
+            orgSlug: pkg.organization?.name || '',
+          }
+        })
+        .filter((d) => {
+          if (!d.value || seen.has(d.value)) return false
+          seen.add(d.value)
+          return true
+        })
+    } else {
+      allDatasetOptions.value = []
     }
-    applyRegionDatasetOptions()
+
+    // Isi dataOptions langsung dari allDatasetOptions (sudah terfilter server-side)
+    dataOptions.value = allDatasetOptions.value.map((d) => ({
+      value: d.value,
+      label: d.label,
+    }))
+
+    const stillValid = dataOptions.value.some((opt) => opt.value === selectedData.value)
+    if (!stillValid) {
+      selectedData.value = dataOptions.value[0]?.value || ''
+    }
   } catch (error) {
-    console.error('Gagal mengambil dataset real-time:', error)
-    // Minimal fallback to prevent crash
-    allDatasetOptions.value = [{
-      value: '428b1294-8fff-42ea-8cf7-9b552e6d85ca',
-      label: '[Seri 2010] PDRB Triwulanan',
-      domainCode: '0000',
-      wilayahGroup: 'kasulampua',
-    }]
-    applyRegionDatasetOptions()
+    console.error('Gagal mengambil dataset regional:', error)
+    allDatasetOptions.value = []
+    dataOptions.value = []
+    selectedData.value = ''
   }
 }
 
 const fetchData = async () => {
   if (!selectedData.value) return
 
+  stopPlay()
   loading.value = true
   try {
     const resourceId = selectedData.value
     let url = `${CKAN_FILE_BASE_URL}/resource/${resourceId}/download/data.json`
 
-    // Try to get actual URL from CKAN API if not already a direct link
     try {
-      const resInfo = await fetch(`${CKAN_ACTION_API.RESOURCE_SHOW}?id=${resourceId}`).then(r => r.json())
+      const resInfo = await fetch(`${CKAN_ACTION_API.RESOURCE_SHOW}?id=${resourceId}`).then((r) => r.json())
       if (resInfo.success && resInfo.result?.url) {
         url = resInfo.result.url
         if (url.includes('data.kasulampua.id')) {
@@ -545,128 +741,121 @@ const fetchData = async () => {
 
     const res = await fetch(url)
     if (!res.ok) throw new Error('Gagal mengunduh data dataset')
-    
-    const json = await res.json()
 
-    // Use robust tabular parser (same as Dataset Detail)
+    const json = await res.json()
     const { cols, rows } = parseJsonResource(json)
-    
+
     if (!rows.length || !cols.length) {
       throw new Error('Format dataset tidak didukung atau data kosong')
     }
 
-    // 1. Identify Columns
-    const regionCol = cols[0] // Usually first column is Wilayah/Provinsi
-    const valueCol = cols.find(c => {
-      const low = c.toLowerCase()
-      return low === 'nilai' || low === 'value' || low === 'jumlah' || low.includes('produksi') || low.includes('persentase')
-    }) || cols[cols.length - 1] // Fallback to last column
-    
-    const periodCol = cols.find(c => {
-      const low = c.toLowerCase()
-      return low === 'tahun' || low === 'periode' || low === 'turtahun' || low === 'th'
-    })
+    const regionCol =
+      cols.find((c) => String(c).toLowerCase() === 'vervar_label') || cols[0]
+    const valueCol =
+      cols.find((c) => {
+        const low = String(c).toLowerCase()
+        return (
+          low === 'nilai' ||
+          low === 'value' ||
+          low === 'jumlah' ||
+          low.includes('produksi') ||
+          low.includes('persentase')
+        )
+      }) || cols[cols.length - 1]
 
-    // 2. Map of Kasulampua Provinces (Name -> ID)
-    const KASULAMPUA_MAP = {
-      "KALIMANTAN BARAT": 6100,
-      "KALIMANTAN TENGAH": 6200,
-      "KALIMANTAN SELATAN": 6300,
-      "KALIMANTAN TIMUR": 6400,
-      "KALIMANTAN UTARA": 6500,
-      "SULAWESI UTARA": 7100,
-      "SULAWESI TENGAH": 7200,
-      "SULAWESI SELATAN": 7300,
-      "SULAWESI TENGGARA": 7400,
-      "GORONTALO": 7500,
-      "SULAWESI BARAT": 7600,
-      "MALUKU": 8100,
-      "MALUKU UTARA": 8200,
-      "PAPUA BARAT": 9100,
-      "PAPUA": 9200,
-      "PAPUA TENGAH": 9300,
-      "PAPUA PEGUNUNGAN": 9400,
-      "PAPUA SELATAN": 9500,
-      "PAPUA BARAT DAYA": 9600,
+    const turvarKey = cols.find((c) => String(c).toLowerCase() === 'turvar_label') || null
+    const tahunKey =
+      cols.find((c) => {
+        const l = String(c).toLowerCase()
+        return l === 'tahun' || l === 'th'
+      }) || null
+    const turtahunKey =
+      cols.find((c) => {
+        const l = String(c).toLowerCase()
+        return ['turtahun', 'bulan', 'triwulan', 'semester'].includes(l)
+      }) || null
+
+    let periodSingleKey = null
+    if (!tahunKey && !turtahunKey) {
+      periodSingleKey =
+        cols.find((c) => {
+          const l = String(c).toLowerCase()
+          return (l === 'periode' || l === 'turtahun') && c !== regionCol && c !== valueCol && c !== turvarKey
+        }) || null
     }
-    
+
+    const KASULAMPUA_MAP = {
+      'KALIMANTAN BARAT': 6100,
+      'KALIMANTAN TENGAH': 6200,
+      'KALIMANTAN SELATAN': 6300,
+      'KALIMANTAN TIMUR': 6400,
+      'KALIMANTAN UTARA': 6500,
+      'SULAWESI UTARA': 7100,
+      'SULAWESI TENGAH': 7200,
+      'SULAWESI SELATAN': 7300,
+      'SULAWESI TENGGARA': 7400,
+      GORONTALO: 7500,
+      'SULAWESI BARAT': 7600,
+      MALUKU: 8100,
+      'MALUKU UTARA': 8200,
+      'PAPUA BARAT': 9100,
+      PAPUA: 9200,
+      'PAPUA TENGAH': 9300,
+      'PAPUA PEGUNUNGAN': 9400,
+      'PAPUA SELATAN': 9500,
+      'PAPUA BARAT DAYA': 9600,
+    }
+
     const KASULAMPUA_IDS = Object.values(KASULAMPUA_MAP)
-    
-    // 3. Filter for Kasulampua
-    let filteredRows = rows.filter(row => {
-      const regionVal = String(row[regionCol] || '').trim().toUpperCase()
-      const regionId = parseInt(regionVal)
-      
-      // Match by ID
-      if (!isNaN(regionId)) {
+
+    const filteredRows = rows.filter((row) => {
+      const regionVal = String(row[regionCol] || '')
+        .trim()
+        .toUpperCase()
+      const regionId = parseInt(regionVal, 10)
+
+      if (!Number.isNaN(regionId)) {
         if (KASULAMPUA_IDS.includes(regionId)) return true
         if (KASULAMPUA_IDS.includes(regionId * 100)) return true
         if (KASULAMPUA_IDS.includes(Math.floor(regionId / 100) * 100)) return true
       }
-      
-      // Match by Name
+
       if (KASULAMPUA_MAP[regionVal]) return true
-      
-      // Partial match fallback
-      return Object.keys(KASULAMPUA_MAP).some(pName => pName.includes(regionVal) || regionVal.includes(pName))
+
+      return Object.keys(KASULAMPUA_MAP).some(
+        (pName) => pName.includes(regionVal) || regionVal.includes(pName)
+      )
     })
 
     if (!filteredRows.length) {
       throw new Error('Data wilayah Kasulampua tidak ditemukan di dataset ini')
     }
 
-    // 4. Handle Temporal (Pick latest period if multi-period)
-    let latestPeriod = ''
-    if (periodCol) {
-      const periods = [...new Set(filteredRows.map(r => String(r[periodCol])))].sort()
-      latestPeriod = periods[periods.length - 1]
-      filteredRows = filteredRows.filter(r => String(r[periodCol]) === latestPeriod)
+    const title = json.variable?.title || json.metadata?.label || 'Visualisasi Data'
+    const unit = json.variable?.unit || json.metadata?.unit || 'Satuan'
+
+    rawDataset.value = {
+      allRows: filteredRows,
+      regionCol,
+      valueCol,
+      turvarKey,
+      tahunKey,
+      turtahunKey,
+      periodSingleKey,
+      title,
+      unit,
+      KASULAMPUA_MAP,
     }
 
-    // 5. Map to Dashboard Format
-    const dataValues = []
-    const normalizedVervars = []
-
-    const processedProvs = new Set()
-    filteredRows.forEach(row => {
-      const regionVal = String(row[regionCol]).trim().toUpperCase()
-      let regionId = parseInt(regionVal)
-      
-      // Resolve ID from name if numeric ID is missing
-      if (isNaN(regionId) || !KASULAMPUA_IDS.includes(regionId * (regionId < 100 ? 100 : 1))) {
-        regionId = KASULAMPUA_MAP[regionVal] || Object.keys(KASULAMPUA_MAP).find(k => regionVal.includes(k) || k.includes(regionVal))
-        if (typeof regionId === 'string') regionId = KASULAMPUA_MAP[regionId]
-      } else {
-        if (regionId < 100) regionId *= 100
-        else if (regionId > 10000) regionId = Math.floor(regionId / 100) * 100
-      }
-
-      if (regionId && !processedProvs.has(regionId)) {
-        processedProvs.add(regionId)
-        normalizedVervars.push({ val: regionId, label: row[regionCol] })
-        dataValues.push(parseFloat(row[valueCol]) || 0)
-      }
-    })
-
-    dataResponse.value = {
-      vervar: normalizedVervars,
-      var: [{ 
-        label: json.variable?.title || json.metadata?.label || 'Visualisasi Data', 
-        subLabel: `${valueCol}${latestPeriod ? ' - ' + latestPeriod : ''}`,
-        unit: json.variable?.unit || json.metadata?.unit || 'Satuan' 
-      }],
-      tahun: [{ val: latestPeriod, label: latestPeriod || 'Semua' }],
-      datacontent: {}
-    }
-    
-    normalizedVervars.forEach((v, idx) => {
-      dataResponse.value.datacontent[v.val] = dataValues[idx]
-    })
+    await nextTick()
+    selectedTurvar.value = turvarOptions.value[0] ?? ''
+    selectedPeriodIndex.value = Math.max(0, periodOptions.value.length - 1)
 
     await updateData()
   } catch (err) {
     console.error(`Gagal mengambil data real: ${err}`)
-    state.judul = "Dataset tidak kompatibel atau Wilayah tidak cocok"
+    rawDataset.value = null
+    state.judul = 'Dataset tidak kompatibel atau Wilayah tidak cocok'
     state.labels = []
     state.dataValues = []
     loading.value = false
@@ -674,21 +863,103 @@ const fetchData = async () => {
 }
 
 const updateData = async () => {
-  if (!dataResponse.value) return
+  if (!rawDataset.value) return
 
-  loading.value = true
   await nextTick()
 
-  const mock = dataResponse.value
-  const currentRegion = opsiWilayah.value.find((o) => o.val === selectedRegion.value)
-  const allowedIds = currentRegion ? currentRegion.filter : []
+  const ds = rawDataset.value
+  const {
+    allRows,
+    regionCol,
+    valueCol,
+    turvarKey,
+    tahunKey,
+    turtahunKey,
+    periodSingleKey,
+    title,
+    unit,
+    KASULAMPUA_MAP,
+  } = ds
 
-  const filteredVervar = mock.vervar.filter((v) => allowedIds.includes(v.val))
+  let rows = allRows
 
-  state.labels = filteredVervar.map((v) => v.label)
-  state.dataValues = filteredVervar.map((v) => mock.datacontent[v.val] || 0)
-  state.satuan = mock.var[0].unit
-  state.judul = mock.var[0].label + (mock.var[0].subLabel ? ` - ${mock.var[0].subLabel}` : ` Tahun ${mock.tahun[0].label}`)
+  if (turvarKey && selectedTurvar.value) {
+    rows = rows.filter((r) => String(r[turvarKey] ?? '').trim() === selectedTurvar.value)
+  }
+
+  const period = selectedPeriod.value
+  if (period && tahunKey) {
+    if (turtahunKey) {
+      rows = rows.filter(
+        (r) =>
+          String(r[tahunKey] ?? '').trim() === period.tahunVal &&
+          String(r[turtahunKey] ?? '').trim() === period.turtahunVal
+      )
+    } else {
+      rows = rows.filter((r) => String(r[tahunKey] ?? '').trim() === period.tahunVal)
+    }
+  } else if (period && turtahunKey && !tahunKey) {
+    rows = rows.filter((r) => String(r[turtahunKey] ?? '').trim() === period.turtahunVal)
+  } else if (period && periodSingleKey) {
+    rows = rows.filter((r) => String(r[periodSingleKey] ?? '').trim() === period.label)
+  }
+
+  const KASULAMPUA_IDS = Object.values(KASULAMPUA_MAP)
+  const allowedIds = getAllowedProvinceIdsForRegion(selectedRegion.value)
+  const allowedSet = new Set(allowedIds)
+
+  const normalizedVervars = []
+  const dataValues = []
+  const processedProvs = new Set()
+
+  for (const row of rows) {
+    const regionVal = String(row[regionCol]).trim().toUpperCase()
+    let regionId = parseInt(regionVal, 10)
+
+    if (Number.isNaN(regionId) || !KASULAMPUA_IDS.includes(regionId * (regionId < 100 ? 100 : 1))) {
+      regionId =
+        KASULAMPUA_MAP[regionVal] ||
+        Object.keys(KASULAMPUA_MAP).find((k) => regionVal.includes(k) || k.includes(regionVal))
+      if (typeof regionId === 'string') regionId = KASULAMPUA_MAP[regionId]
+    } else {
+      if (regionId < 100) regionId *= 100
+      else if (regionId > 10000) regionId = Math.floor(regionId / 100) * 100
+    }
+
+    if (!regionId || !allowedSet.has(regionId)) continue
+
+    if (!processedProvs.has(regionId)) {
+      processedProvs.add(regionId)
+      normalizedVervars.push({ val: regionId, label: row[regionCol] })
+      const rawVal = row[valueCol]
+      let num = parseFloat(rawVal)
+      if (Number.isNaN(num) && rawVal != null && String(rawVal).includes(',')) {
+        num = parseFloat(String(rawVal).replace(/\./g, '').replace(',', '.')) || 0
+      }
+      dataValues.push(Number.isFinite(num) ? num : 0)
+    }
+  }
+
+  state.satuan = unit
+  const periodLabel = period?.label
+  const baseTitle = periodLabel ? `${title} — ${periodLabel}` : title
+
+  if (!normalizedVervars.length) {
+    if (chartInstance) {
+      chartInstance.destroy()
+      chartInstance = null
+    }
+    state.labels = []
+    state.dataValues = []
+    state.judul = `${baseTitle} — Tidak ada data provinsi untuk wilayah ini pada filter terpilih`
+    loading.value = false
+    await nextTick()
+    return
+  }
+
+  state.labels = normalizedVervars.map((v) => v.label)
+  state.dataValues = dataValues
+  state.judul = baseTitle
 
   loading.value = false
   await nextTick()
@@ -806,8 +1077,8 @@ const renderChart = () => {
 
 onMounted(async () => {
   syncFromRoute()
+  await store.fetchAllData()
   await fetchDataset()
-  applyRegionDatasetOptions()
   if (selectedData.value) {
     loading.value = true
     await fetchData()
@@ -824,7 +1095,7 @@ watch(
       return
     }
     syncFromRoute()
-    applyRegionDatasetOptions()
+    await fetchDataset()
     if (selectedData.value) {
       loading.value = true
       await fetchData()
@@ -833,9 +1104,19 @@ watch(
   { deep: true }
 )
 
+watch(periodOptions, (opts) => {
+  if (selectedPeriodIndex.value >= opts.length) {
+    selectedPeriodIndex.value = Math.max(0, opts.length - 1)
+  }
+})
+
+watch([selectedTurvar, selectedPeriodIndex], () => {
+  if (isBootstrapping) return
+  updateData()
+})
+
 watch(selectedRegion, () => {
   if (isBootstrapping) return
-  applyRegionDatasetOptions()
   updateData()
   pushQueryFromState()
 })
@@ -848,9 +1129,14 @@ watch(selectedChartType, () => {
 
 watch([selectedData], () => {
   if (isBootstrapping) return
+  stopPlay()
   loading.value = true
   fetchData()
   pushQueryFromState()
+})
+
+onBeforeUnmount(() => {
+  stopPlay()
 })
 </script>
 
@@ -955,6 +1241,68 @@ watch([selectedData], () => {
   flex-shrink: 0;
 }
 
+.filter-row-dimensions {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.turvar-field {
+  flex: 0 1 14rem;
+  min-width: 8rem;
+}
+
+.turvar-select {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  max-width: 100%;
+}
+
+.tahun-slider-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.play-btn:hover,
+.play-btn.active {
+  background: white;
+  color: var(--primary-color);
+  border-color: var(--amber-600, #d97706);
+}
+
+.tahun-range {
+  flex: 1 1 0;
+  min-width: 4rem;
+  accent-color: var(--primary-color, #d97706);
+}
+
+.tahun-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+  max-width: 12rem;
+  flex-shrink: 0;
+}
+
 /* ── Region Tabs ── */
 .region-tabs {
   display: flex;
@@ -997,19 +1345,6 @@ watch([selectedData], () => {
 
 .tab-name {
   font-weight: 700;
-}
-
-.tab-badge {
-  font-size: 0.68rem;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 100px;
-  background: rgba(0, 0, 0, 0.08);
-  line-height: 1.5;
-}
-
-.region-tab.active .tab-badge {
-  background: rgba(255, 255, 255, 0.28);
 }
 
 /* ── Chart Type Toggle ── */
@@ -1446,6 +1781,18 @@ watch([selectedData], () => {
 
   .dataset-field {
     flex: 1 1 100%;
+  }
+
+  .filter-row-dimensions .turvar-field {
+    flex: 1 1 100%;
+  }
+
+  .filter-row-dimensions .tahun-slider-field {
+    flex: 1 1 100%;
+  }
+
+  .tahun-label {
+    max-width: 100%;
   }
 
   .charttype-field {

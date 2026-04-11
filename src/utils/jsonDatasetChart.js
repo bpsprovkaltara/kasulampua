@@ -51,7 +51,7 @@ function romanQuarterToStartMonth(r) {
  * @param {string} label
  * @returns {number}
  */
-function parsePeriodSortKey(label) {
+export function parsePeriodSortKey(label) {
   const s = normalizeCell(label)
   if (!s) return Number.NaN
 
