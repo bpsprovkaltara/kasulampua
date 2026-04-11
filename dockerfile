@@ -44,6 +44,9 @@ RUN pnpm run build
 # =============================================================
 FROM nginx:1.27-alpine AS production
 
+# curl untuk healthcheck Docker (wget tidak selalu ada di image nginx:alpine)
+RUN apk add --no-cache curl
+
 # Hapus default config Nginx
 RUN rm -f /etc/nginx/conf.d/default.conf && rm -rf /usr/share/nginx/html/*
 
