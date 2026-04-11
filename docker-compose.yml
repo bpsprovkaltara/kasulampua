@@ -43,6 +43,8 @@ services:
     labels:
       # ── Aktifkan Traefik untuk container ini ─────────────
       - "traefik.enable=true"
+      # Wajib jika container punya >1 network: pakai network yang sama dengan Traefik
+      - "traefik.docker.network=proxy_network"
 
       # ── Router: kasulampua.id ─────────────────────────────
       - "traefik.http.routers.kasulampua.rule=Host(`kasulampua.id`) || Host(`www.kasulampua.id`)"
