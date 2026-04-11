@@ -268,6 +268,7 @@
           :table-data="displayData"
           :columns="visibleCols"
           :column-labels="columnLabels"
+          :all-entities="vervalOptions"
         />
       </div>
     </div>

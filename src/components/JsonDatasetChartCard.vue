@@ -62,14 +62,15 @@ Chart.register(...registerables, zoomPlugin)
 const props = defineProps({
   tableData: { type: Array, default: () => [] },
   columns: { type: Array, default: () => [] },
-  columnLabels: { type: Object, default: () => ({}) }
+  columnLabels: { type: Object, default: () => ({}) },
+  allEntities: { type: Array, default: () => [] }
 })
 
 const chartRef = ref(null)
 const chartType = ref('line')
 let chartInstance = null
 
-const chartPayload = computed(() => buildLineChartData(props.tableData, props.columns))
+const chartPayload = computed(() => buildLineChartData(props.tableData, props.columns, props.allEntities))
 
 const chartReady = computed(() => {
   const p = chartPayload.value

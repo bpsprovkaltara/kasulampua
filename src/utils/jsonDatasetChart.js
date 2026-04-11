@@ -173,12 +173,12 @@ function buildCompositePeriodLabel(tahunVal, subYearVal) {
  * label periode seperti "Triwulan I 2020", "Januari 2021", dst.
  * Seluruh titik data per periode unik tetap tampil dan diurutkan kronologis.
  */
-function buildLongFormatComposite(rows, entityCol, tahunCol, subYearCol, nilaiCol) {
+function buildLongFormatComposite(rows, entityCol, tahunCol, subYearCol, nilaiCol, allEntities = []) {
   const syntheticRows = rows.map((row) => ({
     ...row,
     __period__: buildCompositePeriodLabel(row[tahunCol], row[subYearCol]),
   }))
-  return buildLongFormat(syntheticRows, entityCol, '__period__', nilaiCol)
+  return buildLongFormat(syntheticRows, entityCol, '__period__', nilaiCol, allEntities)
 }
 
 /**
@@ -246,7 +246,7 @@ function makeDatasetStyle(i) {
 /**
  * Long format: entityCol, periodCol, nilaiCol
  */
-function buildLongFormat(rows, entityCol, periodCol, nilaiCol) {
+function buildLongFormat(rows, entityCol, periodCol, nilaiCol, allEntities = []) {
   /** @type {Map<string, Map<string, number|null>>} */
   const byEntity = new Map()
 
@@ -262,14 +262,21 @@ function buildLongFormat(rows, entityCol, periodCol, nilaiCol) {
   const sortedLabels = collectSortedPeriodLabels(rows, periodCol)
   if (!sortedLabels.length) return { labels: [], datasets: [] }
 
-  const datasets = [...byEntity.entries()].map(([entity, map], i) => ({
-    label: entity,
-    data: sortedLabels.map((lab) => {
-      const v = map.get(lab)
-      return v === undefined ? null : v
-    }),
-    ...makeDatasetStyle(i)
-  }))
+  const datasets = [...byEntity.entries()].map(([entity, map], i) => {
+    let colorIndex = i;
+    if (allEntities && allEntities.length > 0) {
+      const idx = allEntities.indexOf(entity);
+      if (idx !== -1) colorIndex = idx;
+    }
+    return {
+      label: entity,
+      data: sortedLabels.map((lab) => {
+        const v = map.get(lab)
+        return v === undefined ? null : v
+      }),
+      ...makeDatasetStyle(colorIndex)
+    };
+  })
 
   return { labels: sortedLabels, datasets }
 }
@@ -277,7 +284,7 @@ function buildLongFormat(rows, entityCol, periodCol, nilaiCol) {
 /**
  * Wide format: kolom pertama = entitas; kolom lain = periode (header bisa tahun, bulan, triwulan, dll).
  */
-function buildWideFormat(rows, visibleColumns) {
+function buildWideFormat(rows, visibleColumns, allEntities = []) {
   if (visibleColumns.length < 2) return null
   const entityCol = visibleColumns[0]
   /** Hanya header yang terbaca sebagai periode/tahun; jika tidak ada, pakai semua kolom sisanya (kompatibilitas). */
@@ -321,14 +328,21 @@ function buildWideFormat(rows, visibleColumns) {
     }
   }
 
-  const datasets = [...byEntity.entries()].map(([entity, map], i) => ({
-    label: entity,
-    data: periodCols.map((col) => {
-      const v = map.get(col)
-      return v === undefined ? null : v
-    }),
-    ...makeDatasetStyle(i)
-  }))
+  const datasets = [...byEntity.entries()].map(([entity, map], i) => {
+    let colorIndex = i;
+    if (allEntities && allEntities.length > 0) {
+      const idx = allEntities.indexOf(entity);
+      if (idx !== -1) colorIndex = idx;
+    }
+    return {
+      label: entity,
+      data: periodCols.map((col) => {
+        const v = map.get(col)
+        return v === undefined ? null : v
+      }),
+      ...makeDatasetStyle(colorIndex)
+    };
+  })
 
   return { labels, datasets }
 }
@@ -336,7 +350,7 @@ function buildWideFormat(rows, visibleColumns) {
 /**
  * Legacy: hanya kolom header numerik 4 digit (tahun).
  */
-function buildWideFormatYearOnly(rows, visibleColumns) {
+function buildWideFormatYearOnly(rows, visibleColumns, allEntities = []) {
   if (visibleColumns.length < 2) return null
   const entityCol = visibleColumns[0]
   const yearCols = visibleColumns.slice(1).filter((c) => parseYearLabel(c) !== null)
@@ -363,14 +377,21 @@ function buildWideFormatYearOnly(rows, visibleColumns) {
     }
   }
 
-  const datasets = [...byEntity.entries()].map(([entity, map], i) => ({
-    label: entity,
-    data: sortedYears.map((yr) => {
-      const v = map.get(yr)
-      return v === undefined ? null : v
-    }),
-    ...makeDatasetStyle(i)
-  }))
+  const datasets = [...byEntity.entries()].map(([entity, map], i) => {
+    let colorIndex = i;
+    if (allEntities && allEntities.length > 0) {
+      const idx = allEntities.indexOf(entity);
+      if (idx !== -1) colorIndex = idx;
+    }
+    return {
+      label: entity,
+      data: sortedYears.map((yr) => {
+        const v = map.get(yr)
+        return v === undefined ? null : v
+      }),
+      ...makeDatasetStyle(colorIndex)
+    };
+  })
 
   return { labels, datasets }
 }
@@ -380,7 +401,7 @@ function buildWideFormatYearOnly(rows, visibleColumns) {
  * @param {string[]} visibleColumns
  * @returns {{ labels: string[], datasets: object[] } | null}
  */
-export function buildLineChartData(rows, visibleColumns) {
+export function buildLineChartData(rows, visibleColumns, allEntities = []) {
   if (!rows?.length || !visibleColumns?.length) return null
 
   const entityCol = visibleColumns[0]
@@ -391,23 +412,23 @@ export function buildLineChartData(rows, visibleColumns) {
   // 1. Komposit: tahun + sub-tahun (turtahun/bulan/triwulan/semester) + nilai
   //    Semua titik data per periode unik tetap tampil di sumbu X (mis. "Triwulan I 2020").
   if (tahunCol && subYearCol && nilaiCol && entityCol) {
-    const composite = buildLongFormatComposite(rows, entityCol, tahunCol, subYearCol, nilaiCol)
+    const composite = buildLongFormatComposite(rows, entityCol, tahunCol, subYearCol, nilaiCol, allEntities)
     if (composite.labels.length && composite.datasets.length) return composite
   }
 
   // 2. Single-period long format (tahun, periode, atau kolom tunggal lainnya)
   const periodCol = findPeriodColumn(visibleColumns)
   if (periodCol && nilaiCol && entityCol) {
-    const long = buildLongFormat(rows, entityCol, periodCol, nilaiCol)
+    const long = buildLongFormat(rows, entityCol, periodCol, nilaiCol, allEntities)
     if (long.labels.length && long.datasets.length) return long
   }
 
   // 3. Wide format
-  const wide = buildWideFormat(rows, visibleColumns)
+  const wide = buildWideFormat(rows, visibleColumns, allEntities)
   if (wide && wide.labels.length && wide.datasets.length) return wide
 
   // 4. Legacy wide: header kolom = tahun 4 digit
-  const wideYear = buildWideFormatYearOnly(rows, visibleColumns)
+  const wideYear = buildWideFormatYearOnly(rows, visibleColumns, allEntities)
   if (wideYear && wideYear.labels.length && wideYear.datasets.length) return wideYear
 
   return null
