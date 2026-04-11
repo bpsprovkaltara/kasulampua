@@ -43,7 +43,28 @@
 
   <div class="dataset-content py-5">
     <div class="container-xl">
-      <div class="row g-4">
+      <div class="tabs-navigation-wrapper mb-5">
+        <div class="tabs-pill-bar">
+          <button 
+            class="tab-pill-item" 
+            :class="{ active: activeTab === 'statistik' }"
+            @click="activeTab = 'statistik'"
+          >
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Indikator Statistik</span>
+          </button>
+          <button 
+            class="tab-pill-item" 
+            :class="{ active: activeTab === 'portal' }"
+            @click="activeTab = 'portal'"
+          >
+            <i class="bi bi-globe-asia-australia"></i>
+            <span>Portal Data</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="row g-4" v-if="activeTab === 'statistik'">
         <div class="col-lg-3 order-1 order-lg-1">
           <div class="sidebar-wrapper">
             <!-- Search (mobile) -->
@@ -137,47 +158,6 @@
             </div>
 
 
-            <div class="sidebar-card mb-3 premium-sidebar-card">
-              <div class="sidebar-card-header clickable" @click="toggleSatuData">
-                <div class="d-flex align-items-center">
-                  <div class="header-icon-box me-2">
-                    <i class="bi bi-link-45deg"></i>
-                  </div>
-                  <span>Portal Satu Data</span>
-                </div>
-                <i class="bi bi-chevron-down ms-auto transition-smooth" :class="{ 'rotate-180': satuDataExpanded }"></i>
-              </div>
-              <div class="sidebar-card-body collapsible" :class="{ expanded: satuDataExpanded }">
-                <div v-for="region in satuDataLinks" :key="region.region" class="sd-region-group mb-3">
-                  <div class="sd-region-label">
-                    <span class="label-dot"></span>
-                    {{ region.region }}
-                  </div>
-                  <div class="sd-links-grid">
-                    <a
-                      v-for="portal in region.portals"
-                      :key="portal.name"
-                      :href="portal.url"
-                      target="_blank"
-                      class="sd-link-item ripple"
-                    >
-                      <span class="portal-initial">{{ portal.name.charAt(0) }}</span>
-                      <span class="portal-name">{{ portal.name }}</span>
-                      <i class="bi bi-arrow-up-right portal-arrow"></i>
-                    </a>
-                  </div>
-                </div>
-                <div class="sd-footer-link pt-3 border-top">
-                  <a href="https://data.go.id" target="_blank" class="sd-main-link">
-                    <div class="sdi-icon-bg">
-                      <i class="bi bi-database-fill"></i>
-                    </div>
-                    <span>Satu Data Indonesia</span>
-                    <i class="bi bi-chevron-right ms-auto"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -334,6 +314,78 @@
           />
         </div>
       </div>
+
+      <div v-else-if="activeTab === 'portal'" class="portal-tab-content fade-in">
+        <div class="portal-grid-header text-center mb-5">
+          <h2 class="portal-title">Portal Data Regional</h2>
+          <p class="portal-subtitle text-muted mx-auto" style="max-width: 600px;">
+            Akses langsung ke portal Satu Data masing-masing daerah di wilayah Kasulampua untuk informasi yang lebih spesifik.
+          </p>
+        </div>
+
+        <div class="row g-4">
+          <div v-for="region in satuDataLinks" :key="region.region" class="col-12">
+            <div class="portal-region-section mb-2">
+              <div class="region-divider">
+                <span class="divider-line"></span>
+                <span class="region-badge">{{ region.region }}</span>
+                <span class="divider-line"></span>
+              </div>
+              
+              <div class="row g-4 mt-2">
+                <div v-for="portal in region.portals" :key="portal.name" class="col-md-6 col-lg-3">
+                  <a :href="portal.url" target="_blank" class="portal-premium-card">
+                    <div class="card-glow"></div>
+                    <div class="card-inner">
+                      <div class="portal-icon">
+                        <img v-if="portal.logo" :src="portal.logo" :alt="portal.name" class="portal-logo-img" />
+                        <span v-else class="initial">{{ portal.name.charAt(0) }}</span>
+                      </div>
+                      <div class="portal-info">
+                        <h5 class="portal-name">{{ portal.name }}</h5>
+                        <p class="portal-desc">Portal Satu Data Daerah</p>
+                      </div>
+                      <div class="portal-arrow-circle">
+                        <i class="bi bi-arrow-up-right"></i>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="featured-portal-section mt-5 border-top pt-5">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <a href="https://data.go.id" target="_blank" class="main-portal-card text-decoration-none">
+                <div class="card-shimmer"></div>
+                <div class="main-portal-content">
+                  <div class="main-portal-icon-wrapper">
+                    <div class="main-portal-icon p-2">
+                      <img src="https://data.go.id/images/logo.png" alt="SDI Logo" class="w-100 h-100 object-fit-contain" />
+                    </div>
+                  </div>
+                  <div class="main-portal-text">
+                    <div class="official-badge mb-2">
+                      <span class="badge-dot"></span>
+                      PORTAL NASIONAL
+                    </div>
+                    <h3 class="mb-1 text-white fw-900">Satu Data Indonesia</h3>
+                    <p class="mb-0 text-white-50">Mengintegrasikan data pemerintah pusat dan daerah untuk mewujudkan tata kelola data yang akurat.</p>
+                  </div>
+                  <div class="main-portal-action">
+                    <div class="main-portal-btn">
+                      Eksplorasi Data <i class="bi bi-arrow-right-short ms-1"></i>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -365,29 +417,48 @@ const currentPage = ref(1)
 const limit = 12
 const categoryExpanded = ref(true)
 const wilayahExpanded = ref(true)
-const satuDataExpanded = ref(true)
+const activeTab = ref(localStorage.getItem('dataset_active_tab') || 'statistik') 
+
+watch(activeTab, (newTab) => {
+  localStorage.setItem('dataset_active_tab', newTab)
+})
 
 const satuDataLinks = [
   {
     region: 'Kalimantan',
     portals: [
-      { name: 'Kalbar', url: 'https://data.kalbarprov.go.id' },
-      { name: 'Kalteng', url: 'https://satudata.kalteng.go.id' },
-      { name: 'Kalsel', url: 'https://opendata.kalselprov.go.id' },
-      { name: 'Kaltim', url: 'https://satudata.kaltimprov.go.id' }
+      { name: 'Kalimanatan Utara', url: 'https://data.kaltaraprov.go.id', logo: 'https://data.kaltaraprov.go.id/assets/logo-edataku-D4YpE3B1.png' },
+      { name: 'Kalimantan Barat', url: 'https://data.kalbarprov.go.id', logo: 'https://data.kalbarprov.go.id/uploads/admin/2025-11-14-100030.632345satu-data-kalbar.png' },
+      { name: 'Kalimantan Tengah', url: 'https://satudata.kalteng.go.id', logo: 'https://satudata.kalteng.go.id/images/kalteng.png' },
+      { name: 'Kalimantan Selatan', url: 'https://opendata.kalselprov.go.id', logo: 'https://opendata.kalselprov.go.id/static/img/logo-kalimantan-selatan.png' },
+      { name: 'Kalimantan Timur', url: 'https://data.kaltimprov.go.id/home/', logo: 'https://data.kaltimprov.go.id/home/img/logo%20with%20text2.png' }
     ]
   },
   {
     region: 'Sulawesi',
     portals: [
-      { name: 'Sulut', url: 'https://data.go.id/dataset?q=sulawesi+utara' },
-      { name: 'Sulsel', url: 'https://satudata.sulselprov.go.id' }
+      { name: 'Sulawesi Utara', url: 'https://satudata.sulutprov.go.id', logo: 'https://satudata.sulutprov.go.id/satudata.png' },
+      { name: 'Sulawesi Tengah', url: 'https://satudata.sultengprov.go.id', logo: 'https://satudata.sultengprov.go.id/main-logo.png' },
+      { name: 'Sulawesi Selatan', url: 'https://satudata.sulselprov.go.id', logo: 'https://satudata.sulselprov.go.id/assets/media/logos/logo-opendata.png' },
+      { name: 'Sulawesi Tenggara', url: 'http://satudata.sultraprov.go.id', logo: 'https://simdata.sultraprov.go.id/image/logo-simdata.png' },
+      { name: 'Gorontalo', url: 'https://opendata.gorontaloprov.go.id', logo: 'https://opendata.gorontaloprov.go.id/frontend/images/logo/pentagon-inverse.png' },
+      { name: 'Sulawesi Barat', url: 'https://data.sulbarprov.go.id', logo: '/assets/images/pemda/sulawesi-barat.png' }
     ]
   },
   {
     region: 'Maluku',
     portals: [
-      { name: 'Malut', url: 'https://satudata.malutprov.go.id' }
+      { name: 'Maluku', url: 'https://malukuprov.go.id/statistik-sektoral-maluku/', logo: '/assets/images/pemda/maluku.png' },
+      { name: 'Maluku Utara', url: 'https://satudata.malutprov.go.id', logo: 'https://satudata.malutprov.go.id/images/logo.png' }
+    ]
+  },
+  {
+    region: 'Papua',
+    portals: [
+      { name: 'Papua', url: 'https://pusdalisbang.papua.go.id/papuapudata/beranda', logo: 'https://pusdalisbang.papua.go.id/papuapudata/files/images/logo_pusdalisbang.png' },
+      { name: 'Papua Barat', url: 'https://www.saikplus.papuabaratprov.go.id', logo: 'https://www.saikplus.papuabaratprov.go.id/img/logo.0b667408.png' },
+      { name: 'Papua Tengah', url: 'https://sadar.papuatengahprov.go.id', logo: 'https://sadar.papuatengahprov.go.id/assets/logo-NlLo_oHS.png' },
+      { name: 'Papua Barat Daya', url: 'https://satudata.papuabaratdayaprov.go.id', logo: 'https://satudata.papuabaratdayaprov.go.id/files/images/logo_opendata_mini.png'},
     ]
   }
 ]
@@ -493,7 +564,6 @@ const hasActiveFilters = computed(() =>
 
 const toggleCategory = () => (categoryExpanded.value = !categoryExpanded.value)
 const toggleWilayah = () => (wilayahExpanded.value = !wilayahExpanded.value)
-const toggleSatuData = () => (satuDataExpanded.value = !satuDataExpanded.value)
 
 const fetchDatasets = async () => {
   loading.value = true
@@ -892,154 +962,385 @@ onBeforeUnmount(() => {
   background: var(--primary-color);
   color: white;
 }
-
-/* Portal Satu Data Styles - PREMIUM UPGRADE */
-.premium-sidebar-card {
-  border: 1px solid rgba(217, 119, 6, 0.15) !important;
-  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.05) !important;
+.tabs-navigation-wrapper {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 20;
 }
 
-.header-icon-box {
-  width: 28px;
-  height: 28px;
-  background: var(--bg-accent);
-  color: var(--primary-color);
-  border-radius: 6px;
+.tabs-pill-bar {
+  display: flex;
+  background: rgba(241, 245, 249, 0.8);
+  backdrop-filter: blur(8px);
+  padding: 6px;
+  border-radius: 100px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+  gap: 4px;
+}
+
+.tab-pill-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  padding: 10px 24px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab-pill-item i {
   font-size: 1.1rem;
+  transition: transform 0.3s ease;
 }
 
-.sd-region-group {
-  padding: 0 2px;
+.tab-pill-item:hover {
+  color: var(--primary-color);
 }
 
-.sd-region-label {
-  font-size: 0.65rem;
+.tab-pill-item:hover i {
+  transform: translateY(-2px);
+}
+
+.tab-pill-item.active {
+  background: white;
+  color: var(--primary-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.portal-tab-content {
+  padding: 20px 0;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.portal-title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.region-divider {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 40px 0 20px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-color), transparent);
+}
+
+.region-badge {
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: #64748b;
-  letter-spacing: 0.1em;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.label-dot {
-  width: 4px;
-  height: 4px;
-  background: var(--primary-color);
-  border-radius: 50%;
-}
-
-.sd-links-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.sd-link-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(241, 245, 249, 0.5);
-  backdrop-filter: blur(4px);
+  letter-spacing: 0.2em;
   color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
+  background: var(--bg-color);
+  padding: 4px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--border-color);
 }
 
-.portal-initial {
-  width: 18px;
-  height: 18px;
+.portal-premium-card {
+  position: relative;
+  display: block;
+  text-decoration: none !important;
+  color: inherit;
+  border-radius: 22px;
   background: white;
-  color: var(--primary-color);
-  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.04);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  height: 100%;
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 100% 0%, rgba(251, 191, 36, 0.05), transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.card-inner {
+  position: relative;
+  z-index: 2;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.portal-icon {
+  width: 100%;
+  height: 90px;
+  background: #e2e8f0;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6rem;
+  margin-bottom: 20px;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  overflow: hidden;
+  border: 1.5px solid #cbd5e1;
+  position: relative;
+}
+
+.portal-logo-img {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.4s ease;
+}
+
+.portal-premium-card:hover .portal-logo-img {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.portal-icon .initial {
+  font-size: 1.5rem;
   font-weight: 900;
-  border: 1px solid rgba(217, 119, 6, 0.1);
-}
-
-.portal-arrow {
-  position: absolute;
-  right: -10px;
-  top: 10px;
-  font-size: 0.6rem;
-  opacity: 0;
-  transition: all 0.3s ease;
-  color: var(--primary-color);
-}
-
-.sd-link-item:hover {
-  background: white;
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.15);
-}
-
-.sd-link-item:hover .portal-arrow {
-  right: 10px;
-  opacity: 1;
-}
-
-.sd-link-item:hover .portal-name {
-  transform: translateX(-5px);
+  color: #64748b;
 }
 
 .portal-name {
-  transition: all 0.3s ease;
-}
-
-.sd-footer-link {
-  margin-top: 5px;
-}
-
-.sd-main-link {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  background: linear-gradient(135deg, var(--primary-color), var(--hero-orange));
-  color: white !important;
-  font-size: 0.75rem;
+  font-size: 1.125rem;
   font-weight: 800;
-  text-decoration: none;
-  padding: 12px 16px;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.25);
-  border: none;
+  color: #0f172a;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+  letter-spacing: -0.01em;
 }
 
-.sd-main-link:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 15px 30px -5px rgba(217, 119, 6, 0.4);
+.portal-desc {
+  font-size: 0.825rem;
+  color: #64748b;
+  margin-bottom: 0;
+  font-weight: 500;
 }
 
-.sdi-icon-bg {
-  width: 28px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+.portal-arrow-circle {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 32px;
+  height: 32px;
+  background: #f8fafc;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
-  font-size: 1rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  transform: scale(0.9);
+  opacity: 0.5;
+}
+
+.portal-premium-card:hover {
+  transform: translateY(-8px);
+  border-color: #cbd5e1;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.06);
+}
+
+.portal-premium-card:hover .card-glow {
+  opacity: 1;
+}
+
+.portal-premium-card:hover .portal-icon {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+.portal-premium-card:hover .portal-logo-img {
+  transform: scale(1.08) rotate(2deg);
+}
+
+.portal-premium-card:hover .portal-name {
+  color: var(--primary-color);
+}
+
+.portal-premium-card:hover .portal-arrow-circle {
+  transform: scale(1);
+  opacity: 1;
+  background: var(--primary-color);
+  color: white;
+}
+
+.main-portal-card {
+  display: block;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  border-radius: 28px;
+  padding: 40px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: 0 20px 50px -15px rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-shimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: 0.75s;
+}
+
+.main-portal-card:hover .card-shimmer {
+  left: 150%;
+}
+
+.main-portal-card::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.1) 0%, transparent 70%);
+  z-index: 1;
+}
+
+.main-portal-content {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.main-portal-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.main-portal-icon-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  background: rgba(245, 158, 11, 0.2);
+  filter: blur(15px);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.main-portal-card:hover .main-portal-icon-wrapper::after {
+  opacity: 1;
+}
+
+.main-portal-icon {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  transition: all 0.4s ease;
+}
+
+.official-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  background: #fbbf24;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.main-portal-text h3 {
+  letter-spacing: -0.02em;
+}
+
+.main-portal-btn {
+  background: white;
+  color: #0f172a;
+  padding: 12px 28px;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.main-portal-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.6);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.main-portal-card:hover .main-portal-icon {
+  transform: scale(1.1) rotate(-5deg);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.main-portal-card:hover .main-portal-btn {
+  background: var(--primary-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+@media (max-width: 991px) {
+  .main-portal-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
 }
 
 .topbar {
@@ -1503,6 +1804,45 @@ onBeforeUnmount(() => {
     .hm-num {
       font-size: 1.75rem;
     }
+
+    /* Portal Data Mobile Optimization */
+    .dataset-tabs .btn-group {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+    }
+    .main-portal-content {
+      flex-direction: column !important;
+      text-align: center;
+      gap: 1.5rem;
+    }
+    .main-portal-card {
+      padding: 2.5rem 1.25rem;
+    }
+    .main-portal-icon {
+      margin: 0 auto;
+      width: 80px;
+      height: 80px;
+    }
+    .main-portal-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .portal-title {
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .region-divider {
+      margin: 2rem 0 1rem;
+      gap: 10px;
+    }
+    .divider-line {
+      opacity: 0.3;
+    }
   }
 
 @media (max-width: 480px) {
@@ -1525,6 +1865,12 @@ onBeforeUnmount(() => {
     -webkit-box-orient: vertical;
     max-width: 100%;
     white-space: normal;
+  }
+  .portal-icon {
+    height: 75px;
+  }
+  .portal-name {
+    font-size: 1rem;
   }
 }
 </style>
