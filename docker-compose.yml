@@ -7,7 +7,7 @@
 #   - kasulampua: Vue SPA served by Nginx
 #
 # Network:
-#   - proxy      : Shared network antara CF Tunnel, Traefik, & App
+#   - proxy_network (external): Shared network antara CF Tunnel, Traefik, & App
 # =============================================================
 
 services:
@@ -38,7 +38,7 @@ services:
       - CKAN_FILE_BASE_URL=${CKAN_FILE_BASE_URL:-/ckan-file}
 
     networks:
-      - proxy
+      - proxy_network
 
     labels:
       # ── Aktifkan Traefik untuk container ini ─────────────
@@ -70,10 +70,7 @@ services:
 
 # ── Networks ───────────────────────────────────────────────────
 networks:
-  proxy:
-    name: proxy
-    driver: bridge
-    # Gunakan "external: true" jika network sudah dibuat manual
-    # agar Cloudflare Tunnel bisa join ke network yang sama.
-    # external: true
+  proxy_network:
+    external: true
+    name: proxy_network
 
