@@ -8,6 +8,9 @@
 #
 # Network:
 #   - proxy_network (external): Shared network antara CF Tunnel, Traefik, & App
+#
+# Opsional: di file .env sejajar compose, set KASULAMPUA_DOMAIN=kasulampua.id
+# untuk menyamakan pola dengan service datahub (PREFECT_DOMAIN, dll.).
 # =============================================================
 
 services:
@@ -41,27 +44,14 @@ services:
       - proxy_network
 
     labels:
-      # ── Aktifkan Traefik untuk container ini ─────────────
+      # ---- Traefik reverse proxy labels (sama pola dengan stack datahub) ----
       - "traefik.enable=true"
-      # Wajib jika container punya >1 network: pakai network yang sama dengan Traefik
       - "traefik.docker.network=proxy_network"
-
-      # ── Router: kasulampua.id ─────────────────────────────
-      - "traefik.http.routers.kasulampua.rule=Host(`kasulampua.id`) || Host(`www.kasulampua.id`)"
+      - "traefik.http.routers.kasulampua.rule=Host(`${KASULAMPUA_DOMAIN:-kasulampua.id}`) || Host(`www.${KASULAMPUA_DOMAIN:-kasulampua.id}`)"
       - "traefik.http.routers.kasulampua.entrypoints=web"
-
-      # ── Service: direct ke port Nginx internal ────────────
       - "traefik.http.services.kasulampua.loadbalancer.server.port=8082"
-
-      # ── Middleware: redirect www → non-www ────────────────
-      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^http://www\\.kasulampua\\.id/(.*)"
-      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=http://kasulampua.id/$${1}"
-      - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
-      - "traefik.http.routers.kasulampua.middlewares=www-redirect"
-
-      # ── Health Check via Traefik ──────────────────────────
-      - "traefik.http.services.kasulampua.loadbalancer.healthcheck.path=/health"
-      - "traefik.http.services.kasulampua.loadbalancer.healthcheck.interval=30s"
+      # Optional: middleware for Cloudflare Tunnel auth
+      # - "traefik.http.routers.kasulampua.middlewares=cf-auth@docker"
 
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:8082/health" ]
