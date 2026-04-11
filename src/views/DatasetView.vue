@@ -427,7 +427,7 @@ const satuDataLinks = [
   {
     region: 'Kalimantan',
     portals: [
-      { name: 'Kalimanatan Utara', url: 'https://data.kaltaraprov.go.id', logo: 'https://data.kaltaraprov.go.id/assets/logo-edataku-D4YpE3B1.png' },
+      { name: 'Kalimantan Utara', url: 'https://data.kaltaraprov.go.id', logo: 'https://data.kaltaraprov.go.id/assets/logo-edataku-D4YpE3B1.png' },
       { name: 'Kalimantan Barat', url: 'https://data.kalbarprov.go.id', logo: 'https://data.kalbarprov.go.id/uploads/admin/2025-11-14-100030.632345satu-data-kalbar.png' },
       { name: 'Kalimantan Tengah', url: 'https://satudata.kalteng.go.id', logo: 'https://satudata.kalteng.go.id/images/kalteng.png' },
       { name: 'Kalimantan Selatan', url: 'https://opendata.kalselprov.go.id', logo: 'https://opendata.kalselprov.go.id/static/img/logo-kalimantan-selatan.png' },
