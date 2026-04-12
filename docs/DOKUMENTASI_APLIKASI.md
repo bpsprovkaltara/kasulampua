@@ -171,7 +171,7 @@ fe_kasulampua/
 ├── vite.config.js
 ├── jsconfig.json
 ├── .prettierrc.json
-├── dockerfile
+├── Dockerfile
 ├── docker-entrypoint.sh
 └── nginx.conf
 ```
