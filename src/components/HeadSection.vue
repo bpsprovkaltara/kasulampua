@@ -213,20 +213,19 @@
               :to="{ path: '/regional_insight', query: { region: key } }"
               class="region-card-premium-v2 text-decoration-none"
             >
-              <div class="p-4 d-flex flex-column align-items-center text-center">
+              <div class="p-2 p-sm-3 p-md-4 d-flex flex-column align-items-center text-center">
                 <div class="region-icon-wrapper-v4">
                   <img
                     :src="item.icon"
                     :alt="'icon_' + key"
-                    class="img-fluid"
+                    class="img-fluid region-icon-img"
                     width="180"
                     height="180"
-                    style="height: 180px; width: auto"
                     decoding="async"
                   />
                 </div>
                 <h5 class="region-title-v4 text-capitalize">{{ key }}</h5>
-                <span class="btn-region-link-v2">
+                <span class="btn-region-link-v2 d-none d-sm-flex">
                   <span>Lihat Analisis</span>
                 </span>
               </div>
@@ -391,7 +390,7 @@ function particleStyle() {
 }
 
 .hero-container {
-  padding: 120px 1rem 40px;
+  padding: 80px 1rem 40px;
   z-index: 10;
   position: relative;
 }
@@ -740,11 +739,11 @@ function particleStyle() {
 }
 .region-icon-wrapper-v4 {
   width: auto;
-  height: 150px;
+  height: clamp(90px, 15vw, 150px);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 2;
   position: relative;
@@ -755,7 +754,7 @@ function particleStyle() {
 }
 .region-title-v4 {
   font-weight: 900;
-  font-size: 1.4rem;
+  font-size: clamp(0.95rem, 2.5vw, 1.4rem);
   color: #1e293b;
   margin-bottom: 0.5rem;
   z-index: 2;
@@ -877,14 +876,20 @@ function particleStyle() {
   align-items: center;
 }
 
+.region-icon-img {
+  height: clamp(70px, 12vw, 150px);
+  width: auto;
+  max-width: 100%;
+}
+
 @media (max-width: 991px) {
   .hero-premium-v2 {
-    padding-top: 68px;
+    padding-top: 62px;
     min-height: auto;
   }
   .hero-container {
-    padding-top: 40px;
-    padding-bottom: 20px;
+    padding-top: 32px;
+    padding-bottom: 16px;
   }
   .hero-main-subtitle {
     font-size: 1rem;

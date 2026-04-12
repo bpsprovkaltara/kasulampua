@@ -91,4 +91,15 @@ import PublikasiGrid from '../components/PublikasiGrid.vue'
   background: var(--bg-color);
   min-height: 50vh;
 }
+
+@media (max-width: 767.98px) {
+  .hero-meta-card {
+    padding: 0.875rem 1.25rem;
+    gap: 1.25rem;
+    width: auto;
+  }
+  .hero-publication .hm-num {
+    font-size: 1.5rem;
+  }
+}
 </style>

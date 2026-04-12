@@ -31,5 +31,3 @@ coverage
 
 # Docker runtime secrets (salin dari .env.docker ke .env di server)
 .env
-
-.

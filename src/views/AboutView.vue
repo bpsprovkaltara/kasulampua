@@ -76,7 +76,7 @@
         <h2 class="section-title">Tiga Pilar <span class="text-amber">Kasulampua</span></h2>
       </div>
       <div class="row g-4">
-        <div class="col-md-4" v-for="pillar in pillars" :key="pillar.title">
+        <div class="col-sm-6 col-md-4" v-for="pillar in pillars" :key="pillar.title">
           <div class="pillar-card h-100">
             <div class="pillar-icon-wrapper" :class="pillar.color">
               <i :class="pillar.icon" class="pillar-icon"></i>
@@ -227,7 +227,7 @@ const pillars = [
   text-transform: uppercase;
 }
 .section-title {
-  font-size: 2.2rem; font-weight: 900; color: #1c1917; line-height: 1.2;
+  font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 900; color: #1c1917; line-height: 1.2;
 }
 .section-subtitle { color: #78716c; font-size: 0.95rem; max-width: 500px; margin: 0 auto; }
 .section-body { color: #57534e; line-height: 1.8; font-size: 1.05rem; }
@@ -359,7 +359,7 @@ const pillars = [
 .text-white { color: white !important; }
 
 @media (max-width: 768px) {
-  .section-title { font-size: 1.75rem; }
+  /* section-title already uses clamp — no override needed */
   .hero-tagline { font-size: 1rem; }
   .min-vh-hero { min-height: auto; }
 }

@@ -47,6 +47,12 @@ body {
   width: 100%;
 }
 
+/* Global image fallback — pastikan semua gambar tidak overflow container */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 html {
   overflow-x: hidden;
 }
@@ -103,10 +109,21 @@ h1 {
   box-shadow: 0 8px 15px rgba(217, 119, 6, 0.2);
 }
 
-.text-primary { color: var(--primary-color) !important; }
-.bg-primary { background-color: var(--primary-color) !important; }
-.border-primary { border-color: var(--primary-color) !important; }
-.bg-primary-subtle { background-color: var(--secondary-color) !important; }
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.border-primary {
+  border-color: var(--primary-color) !important;
+}
+
+.bg-primary-subtle {
+  background-color: var(--secondary-color) !important;
+}
 
 .btn-outline-primary {
   color: var(--amber-600) !important;
@@ -267,15 +284,19 @@ h1 {
 .text-amber {
   color: var(--primary-color) !important;
 }
+
 .text-amber-hover {
   color: var(--primary-hover) !important;
 }
+
 .text-secondary-light {
   color: #d1d5db !important;
 }
+
 .bg-amber-light {
   background-color: var(--secondary-color) !important;
 }
+
 .bg-amber-50 {
   background-color: var(--bg-accent) !important;
 }
@@ -283,9 +304,11 @@ h1 {
 .gap-8 {
   gap: 0.5rem !important;
 }
+
 .gap-16 {
   gap: 1rem !important;
 }
+
 .gap-24 {
   gap: 1.5rem !important;
 }
@@ -294,13 +317,16 @@ h1 {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-color);
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
@@ -309,12 +335,12 @@ h1 {
   background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #d97706 100%);
   position: relative;
   overflow: hidden;
-  padding: 0;
+  padding: 4rem 0;
+  /* margin-top mengikuti tinggi navbar: 136px desktop */
   margin-top: 136px !important;
   color: white;
   display: flex;
   align-items: center;
-  height: 520px;
 }
 
 .hero-v2-glow {
@@ -392,26 +418,60 @@ h1 {
   opacity: 0.9;
 }
 
-@media (max-width: 768px) {
+/* ── Hero Responsive Breakpoints ── */
+@media (max-width: 991.98px) {
+
+  /* Tablet: navbar height = 62px */
   .hero-v2 {
-    padding: 0;
-    height: 450px;
-    text-align: center;
+    margin-top: 62px !important;
+    padding: 5rem 0;
   }
+}
+
+@media (max-width: 767.98px) {
+  .hero-v2 {
+    text-align: center;
+    padding: 4rem 0;
+  }
+
   .hero-v2 .col-lg-8 {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
+
   .hero-v2-title {
-    font-size: 3rem;
+    font-size: clamp(2rem, 8vw, 3rem);
     text-align: center;
+    margin-bottom: 0.75rem !important;
   }
+
   .hero-v2-title br {
     display: none;
   }
+
   .hero-v2-subtitle {
     text-align: center;
+    font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+  }
+
+  .hero-v2-badge {
+    margin-bottom: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hero-v2 {
+    padding: 3rem 0;
+  }
+
+  .hero-v2-title {
+    font-size: clamp(1.75rem, 7.5vw, 2.5rem);
+  }
+
+  .hero-v2-subtitle {
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
   }
 }
 
@@ -428,4 +488,13 @@ h1 {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Fix Bootstrap modal z-index vs Navbar (Navbar uses z-index 2000-2100) */
+.modal-backdrop {
+  z-index: 10500 !important;
+}
+
+.modal {
+  z-index: 10550 !important;
 }

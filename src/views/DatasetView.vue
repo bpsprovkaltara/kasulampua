@@ -65,10 +65,10 @@
       </div>
 
       <div class="row g-4" v-if="activeTab === 'statistik'">
-        <div class="col-lg-3 order-1 order-lg-1">
+        <div class="col-12 col-md-4 col-lg-3 order-2 order-md-1">
           <div class="sidebar-wrapper">
             <!-- Search (mobile) -->
-            <div class="d-lg-none mb-3">
+            <div class="d-md-none mb-3">
               <div class="search-box">
                 <span class="search-icon" aria-hidden="true">
                   <span v-if="loading" class="search-spinner"></span>
@@ -161,10 +161,10 @@
           </div>
         </div>
 
-        <div class="col-lg-9 order-2 order-lg-2">
+        <div class="col-12 col-md-8 col-lg-9 order-1 order-md-2">
           <div class="topbar mb-3">
-            <!-- Baris 1: Search input (desktop only) -->
-            <div class="d-none d-lg-block topbar-search-row">
+            <!-- Baris 1: Search input (md+ only) -->
+            <div class="d-none d-md-block topbar-search-row">
               <div class="search-box">
                 <span class="search-icon" aria-hidden="true">
                   <span v-if="loading" class="search-spinner"></span>
@@ -1768,7 +1768,7 @@ onBeforeUnmount(() => {
   }
   .sidebar-wrapper {
     position: static;
-    margin-top: 1rem;
+    margin-top: 0;
   }
   .sidebar-card {
     border-radius: 16px;
@@ -1777,6 +1777,27 @@ onBeforeUnmount(() => {
     padding: 1.25rem;
     border-radius: 16px;
     margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .hero-meta-card {
+    margin-top: 0;
+    padding: 0.875rem 1.25rem;
+    gap: 1.25rem;
+    width: auto;
+  }
+  .hm-num {
+    font-size: 2rem;
+  }
+  .tabs-pill-bar {
+    width: 100%;
+    justify-content: center;
+  }
+  .tab-pill-item {
+    flex: 1;
+    padding: 10px 12px;
+    justify-content: center;
   }
 }
 

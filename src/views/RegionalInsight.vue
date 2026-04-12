@@ -1,7 +1,7 @@
 <template>
   <Navbar />
 
-  <header class="hero-v2 hero-v2-sm">
+  <header class="hero-v2">
     <div class="hero-v2-glow" aria-hidden="true"></div>
     <div class="hero-v2-dots" aria-hidden="true"></div>
 
@@ -234,88 +234,99 @@
         </div>
         -->
 
+        <!-- Bagian Dokumen Analisis -->
         <div class="insight-news-section mt-5 fade-in-up" style="animation-delay: 0.2s">
           <div class="section-header mb-4">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div>
-                <h2 class="section-title">Analisis Terkait</h2>
+                <h2 class="section-title">Dokumen Analisis</h2>
                 <p class="text-muted small mb-0">
-                  Dokumen analisis PDRB Kasulampua dan infografis wilayah
+                  Kumpulan dokumen analisis seputar PDRB dan wilayah Kasulampua
                 </p>
               </div>
             </div>
           </div>
 
-          <div class="row g-4 align-items-stretch analisis-terkait-split">
-            <div class="col-12 col-lg-7 analisis-pdf-column">
-              <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 analisis-pdf-card">
-                <div class="card-body p-4 d-flex flex-column flex-grow-1 analisis-pdf-card-body">
-                  <div class="d-flex align-items-center gap-2 mb-3 flex-shrink-0">
-                    <i class="bi bi-file-earmark-pdf text-danger fs-4" aria-hidden="true"></i>
-                    <h3 class="h5 mb-0 fw-bold">Dokumen Analisis</h3>
+          <div class="row g-4">
+            <div v-for="doc in analisisDocuments" :key="doc.id" class="col-12 col-md-6 col-lg-4">
+              <div class="card border-0 shadow-sm rounded-4 h-100 doc-analisis-card transition-smooth">
+                <div class="card-body p-4 d-flex flex-column h-100">
+                  <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="doc-icon-wrapper rounded-circle shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; background-color: rgba(220, 38, 38, 0.1);">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger fs-4" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                      <h4 class="h6 fw-bold mb-1 line-clamp-2" :title="doc.title">{{ doc.title }}</h4>
+                      <p class="text-muted small mb-0" style="font-size: 0.75rem;">Format PDF</p>
+                    </div>
                   </div>
-                  <p class="text-muted small mb-3 flex-shrink-0">
-                    Analisis PDRB KASULAMPUA (PDF). Gunakan pratinjau di bawah atau unduh untuk dibaca penuh.
+                  <p class="text-muted small flex-grow-1 flex-shrink-0 doc-desc">
+                    {{ doc.desc }}
                   </p>
-                  <div class="analisis-pdf-frame mb-3">
-                    <iframe
-                      :src="analisisPdfEmbedSrc"
-                      class="analisis-pdf-iframe rounded-3 bg-light"
-                      title="Analisis PDRB KASULAMPUA"
-                    />
-                  </div>
-                  <a
-                    :href="analisisPdfUrl"
-                    class="btn btn-outline-primary rounded-pill align-self-start flex-shrink-0"
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <i class="bi bi-download me-2" aria-hidden="true"></i>
-                    Unduh dokumen
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-12 col-lg-5">
-              <div class="d-flex flex-column h-100">
-                <div class="mb-3">
-                  <h3 class="h5 fw-bold mb-1">Infografis</h3>
-                  <p class="text-muted small mb-0">Klik kartu untuk memperbesar</p>
-                </div>
-                <div class="row g-3 flex-grow-1 analisis-infografis-grid">
-                  <div
-                    v-for="item in analisisInfografisItems"
-                    :key="item.id"
-                    class="col-12 col-sm-6"
-                  >
+                  <div class="d-flex gap-2 mt-auto pt-3">
+                    <a
+                      :href="doc.file"
+                      class="btn btn-outline-primary btn-sm flex-grow-1 rounded-pill fw-medium"
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <i class="bi bi-download me-1" aria-hidden="true"></i> Unduh
+                    </a>
                     <button
                       type="button"
-                      class="btn p-0 border-0 bg-transparent w-100 text-start analisis-infografis-card"
-                      @click="openInfografisLightbox(item)"
+                      class="btn btn-primary btn-sm flex-grow-1 rounded-pill fw-medium"
+                      @click="openPdfLightbox(doc)"
                     >
-                      <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                        <div class="ratio ratio-4x3 bg-light">
-                          <img
-                            :src="item.src"
-                            :alt="item.alt"
-                            class="object-fit-cover w-100 h-100"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                        <div class="card-body py-3 px-3">
-                          <span class="fw-semibold">{{ item.title }}</span>
-                          <span class="detail-label small d-block mt-1">
-                            Perbesar <i class="bi bi-arrows-fullscreen ms-1" aria-hidden="true"></i>
-                          </span>
-                        </div>
-                      </div>
+                      <i class="bi bi-book me-1" aria-hidden="true"></i> Baca Langsung
                     </button>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bagian Infografis -->
+        <div class="insight-news-section mt-5 fade-in-up" style="animation-delay: 0.3s">
+          <div class="section-header mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <h2 class="section-title">Infografis Regional</h2>
+                <p class="text-muted small mb-0">
+                  Visualisasi ringkas kondisi wilayah terpilih (klik kartu untuk memperbesar)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <div
+              v-for="item in analisisInfografisItems"
+              :key="item.id"
+              class="col-12 col-sm-6 col-lg-3"
+            >
+              <button
+                type="button"
+                class="btn p-0 border-0 bg-transparent w-100 text-start analisis-infografis-card h-100"
+                @click="openInfografisLightbox(item)"
+              >
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 transition-smooth">
+                  <div class="ratio ratio-1x1 bg-light border-bottom">
+                    <img
+                      :src="item.src"
+                      :alt="item.alt"
+                      class="object-fit-cover w-100 h-100"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">{{ item.title }}</span>
+                    <i class="bi bi-arrows-fullscreen text-muted" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -327,11 +338,45 @@
           aria-labelledby="analisisInfografisModalLabel"
           aria-hidden="true"
         >
-          <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-              <div class="modal-header border-0">
-                <h5 id="analisisInfografisModalLabel" class="modal-title fw-bold">
+          <div class="modal-dialog modal-dialog-centered modal-fullscreen p-0 m-0 w-100 h-100">
+            <div class="modal-content border-0 bg-dark bg-opacity-75 rounded-0 h-100" style="backdrop-filter: blur(10px);">
+              <div class="modal-header border-0 pb-0 justify-content-between p-4 position-absolute top-0 w-100 z-3" style="pointer-events: none;">
+                <h5 id="analisisInfografisModalLabel" class="modal-title fw-bold text-white d-none d-md-block" style="pointer-events: auto; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
                   {{ infografisLightbox.title }}
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white fs-5 ms-auto"
+                  data-bs-dismiss="modal"
+                  aria-label="Tutup"
+                  style="pointer-events: auto;"
+                ></button>
+              </div>
+              <div class="modal-body d-flex align-items-center justify-content-center p-2 p-md-4 h-100 overflow-hidden">
+                <img
+                  v-if="infografisLightbox.src"
+                  :src="infografisLightbox.src"
+                  :alt="infografisLightbox.alt"
+                  class="img-fluid rounded shadow"
+                  style="height: 100%; max-height: 100%; max-width: 100%; object-fit: contain;"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="analisisPdfModal"
+          tabindex="-1"
+          aria-labelledby="analisisPdfModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+              <div class="modal-header border-bottom-0 pb-0">
+                <h5 id="analisisPdfModalLabel" class="modal-title fw-bold">
+                  {{ pdfLightbox.title }}
                 </h5>
                 <button
                   type="button"
@@ -340,12 +385,19 @@
                   aria-label="Tutup"
                 ></button>
               </div>
-              <div class="modal-body p-0 bg-dark">
-                <img
-                  v-if="infografisLightbox.src"
-                  :src="infografisLightbox.src"
-                  :alt="infografisLightbox.alt"
-                  class="img-fluid w-100 d-block"
+              <div class="modal-body p-0 bg-light position-relative" style="min-height: 70vh;">
+                <div v-if="pdfLoading" class="position-absolute top-50 start-50 translate-middle text-center">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Memuat...</span>
+                  </div>
+                  <div class="mt-2 text-muted small">Memuat dokumen PDF...</div>
+                </div>
+                <VuePdfEmbed
+                  v-if="pdfLightbox.src"
+                  :source="pdfLightbox.src"
+                  @rendered="pdfLoading = false"
+                  class="mx-auto my-3"
+                  style="max-width: 95%; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
                 />
               </div>
             </div>
@@ -418,7 +470,13 @@ import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Chart } from 'chart.js/auto'
 import { Modal } from 'bootstrap'
+import VuePdfEmbed from 'vue-pdf-embed'
+import * as pdfjsLib from 'pdfjs-dist'
 import { CKAN_FILE_BASE_URL, CKAN_ACTION_API } from '@/config/api'
+
+if (typeof window !== 'undefined' && 'Worker' in window) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+}
 import { useDatasetStore } from '@/composables/useDatasetStore'
 import { parseJsonResource } from '@/utils/parseCkanResourceJson'
 import { buildOrganizationFilterQuery } from '@/utils/ckanPackageSearchFilters'
@@ -444,15 +502,38 @@ const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
 
-/** URL statis PDF analisis (file di `public/assets/`) — tanpa hash, untuk unduh / tab baru */
-const analisisPdfUrl = encodeURI('/assets/Analisis PDRB KASULAMPUA.docx.pdf')
-
-/**
- * Embed: toolbar/nav pane disembunyikan bila viewer mendukung PDF Open Parameters.
- * `view=FitH,0` = zoom mengikuti lebar penuh iframe; koordinat atas0 = jendela tampilan
- * mulai dari puncak halaman (scroll vertikal default ke atas).
- */
-const analisisPdfEmbedSrc = `${analisisPdfUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH%2C0`
+const analisisDocuments = [
+  {
+    id: 'kasulampua',
+    title: 'Analisis PDRB KASULAMPUA',
+    file: '/assets/documents/Analisis PDRB KASULAMPUA.docx.pdf',
+    desc: 'Dokumen analisis komprehensif terkait PDRB se-Kasulampua.'
+  },
+  {
+    id: 'kalimantan',
+    title: 'Regional Kalimantan',
+    file: '/assets/documents/REGIONAL KALIMANTAN.pdf',
+    desc: 'Dokumen analisis sosial ekonomi regional Kalimantan.'
+  },
+  {
+    id: 'sulawesi',
+    title: 'Regional Sulawesi',
+    file: '/assets/documents/REGIONAL SULAWESI.pdf',
+    desc: 'Dokumen analisis sosial ekonomi regional Sulawesi.'
+  },
+  {
+    id: 'maluku',
+    title: 'Regional Maluku',
+    file: '/assets/documents/REGIONAL MALUKU.pdf',
+    desc: 'Dokumen analisis sosial ekonomi regional Maluku.'
+  },
+  {
+    id: 'papua',
+    title: 'Regional Papua',
+    file: '/assets/documents/REGIONAL PAPUA.pdf',
+    desc: 'Dokumen analisis sosial ekonomi regional Papua.'
+  }
+]
 
 /** Empat wilayah KASULAMPUA — ganti file MALUKU/PAPUA jika infografis final sudah ada */
 const analisisInfografisItems = [
@@ -471,16 +552,30 @@ const analisisInfografisItems = [
   {
     id: 'maluku',
     title: 'Maluku',
-    src: '/assets/images/insight/MALUKU.png',
+    src: '/assets/images/insight/MALUKU (1).png',
     alt: 'Infografis analisis Maluku',
   },
   {
     id: 'papua',
     title: 'Papua',
-    src: '/assets/images/insight/PAPUA.png',
+    src: '/assets/images/insight/PAPUA (1).png',
     alt: 'Infografis analisis Papua',
   },
 ]
+
+const pdfLightbox = ref({ title: '', src: '' })
+let pdfBsModal = null
+const pdfLoading = ref(true)
+
+async function openPdfLightbox(doc) {
+  pdfLightbox.value = { title: doc.title, src: doc.file }
+  pdfLoading.value = true
+  await nextTick()
+  const el = document.getElementById('analisisPdfModal')
+  if (!el) return
+  if (!pdfBsModal) pdfBsModal = Modal.getOrCreateInstance(el)
+  pdfBsModal.show()
+}
 
 const infografisLightbox = ref({ title: '', src: '', alt: '' })
 let infografisBsModal = null
@@ -597,6 +692,8 @@ const syncFromRoute = () => {
 }
 
 const pushQueryFromState = () => {
+  if (route.path !== '/regional_insight') return
+
   const next = cleanQuery({
     region: selectedRegion.value || undefined,
     data: selectedData.value || undefined,
@@ -1262,6 +1359,7 @@ onMounted(async () => {
 watch(
   () => route.query,
   async () => {
+    if (route.path !== '/regional_insight') return
     if (skipRouteQueryFetch) {
       skipRouteQueryFetch = false
       return
@@ -1335,46 +1433,15 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-/* Dokumen PDF: tinggi mengisi sisa viewport hingga bawah; iframe mengisi kontainer */
-.analisis-pdf-card-body {
-  min-height: 0;
+/* Card animasi hover */
+.doc-analisis-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
-.analisis-pdf-frame {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 280px;
-  width: 100%;
-}
-
-.analisis-pdf-iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-@media (min-width: 992px) {
-  .analisis-terkait-split .analisis-pdf-card {
-    min-height: calc(100svh - 9rem);
-  }
-
-  .analisis-terkait-split .analisis-pdf-card-body {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  .analisis-terkait-split .analisis-pdf-frame {
-    min-height: 0;
-    flex: 1 1 0;
-  }
-}
-
-@media (max-width: 991.98px) {
-  .analisis-pdf-frame {
-    min-height: 72vh;
-  }
+.analisis-infografis-card:hover .card {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
 .top-filter-container {
@@ -1403,7 +1470,8 @@ onBeforeUnmount(() => {
 .filter-row.bottom-row {
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: nowrap;
+  /* Mobile-first: biarkan wrap; di md ke atas force nowrap */
+  flex-wrap: wrap;
 }
 
 .bottom-field-label {
@@ -1523,6 +1591,9 @@ onBeforeUnmount(() => {
   gap: 6px;
   flex-wrap: wrap;
   flex: 1;
+  /* Pada breakpoint kecil bisa scroll horizontal */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
 }
 
 .region-tab {
@@ -1695,7 +1766,7 @@ onBeforeUnmount(() => {
 }
 
 .chart-canvas-wrapper {
-  height: 500px;
+  height: clamp(300px, 50vw, 500px);
   overflow: hidden;
   position: relative;
   transition: opacity 0.3s ease;
@@ -1968,9 +2039,9 @@ onBeforeUnmount(() => {
     gap: 0.75rem;
   }
 
+  /* md ke atas: bottom-row tidak wrap */
   .filter-row.bottom-row {
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-wrap: nowrap;
   }
 
   .bottom-field-sep {
