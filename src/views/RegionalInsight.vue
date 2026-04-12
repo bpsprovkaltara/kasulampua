@@ -126,29 +126,33 @@
                     <span>Periode</span>
                   </div>
                   <div class="tahun-slider-field">
-                    <button
-                      type="button"
-                      class="play-btn"
-                      :class="{ active: isPlaying }"
-                      :aria-label="isPlaying ? 'Jeda animasi periode' : 'Putar animasi periode'"
-                      :title="isPlaying ? 'Jeda' : 'Putar'"
-                      @click="togglePlay"
-                    >
-                      <i :class="isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'" aria-hidden="true"></i>
-                    </button>
-                    <input
-                      v-model.number="selectedPeriodIndex"
-                      type="range"
-                      class="tahun-range form-range"
-                      :min="0"
-                      :max="Math.max(0, periodOptions.length - 1)"
-                      :aria-valuemin="0"
-                      :aria-valuemax="Math.max(0, periodOptions.length - 1)"
-                      :aria-valuenow="selectedPeriodIndex"
-                      :aria-valuetext="selectedPeriod?.label || ''"
-                      aria-label="Pilih periode"
-                    />
-                    <span class="tahun-label text-truncate">{{ selectedPeriod?.label || '—' }}</span>
+                    <span class="tahun-label text-truncate ms-2 me-3 title-color fw-bold">{{ selectedPeriod?.label || '—' }}</span>
+                    <div class="slider-container flex-grow-1 position-relative me-3">
+                      <div class="slider-checkpoints">
+                        <div 
+                          v-for="(p, i) in periodOptions" 
+                          :key="'cp-'+i"
+                          class="slider-checkpoint"
+                          :class="{ active: i <= selectedPeriodIndex, current: i === selectedPeriodIndex }"
+                          :style="{ left: periodOptions.length > 1 ? `calc(0.5rem + ${i / (periodOptions.length - 1)} * (100% - 1rem))` : '50%' }"
+                          @click="selectedPeriodIndex = i"
+                          :title="p.label"
+                        ></div>
+                      </div>
+                      <input
+                        v-model.number="selectedPeriodIndex"
+                        type="range"
+                        class="tahun-range form-range position-relative z-2"
+                        :min="0"
+                        :max="Math.max(0, periodOptions.length - 1)"
+                        step="1"
+                        :aria-valuemin="0"
+                        :aria-valuemax="Math.max(0, periodOptions.length - 1)"
+                        :aria-valuenow="selectedPeriodIndex"
+                        :aria-valuetext="selectedPeriod?.label || ''"
+                        aria-label="Pilih periode"
+                      />
+                    </div>
                   </div>
                 </template>
               </div>
@@ -241,7 +245,7 @@
               <div>
                 <h2 class="section-title">Dokumen Analisis</h2>
                 <p class="text-muted small mb-0">
-                  Kumpulan dokumen analisis seputar PDRB dan wilayah Kasulampua
+                  Kumpulan dokumen analisis seputar PDRB wilayah Kasulampua
                 </p>
               </div>
             </div>
@@ -260,9 +264,9 @@
                       <p class="text-muted small mb-0" style="font-size: 0.75rem;">Format PDF</p>
                     </div>
                   </div>
-                  <p class="text-muted small flex-grow-1 flex-shrink-0 doc-desc">
+                  <!-- <p class="text-muted small flex-grow-1 flex-shrink-0 doc-desc">
                     {{ doc.desc }}
-                  </p>
+                  </p> -->
                   <div class="d-flex gap-2 mt-auto pt-3">
                     <a
                       :href="doc.file"
@@ -312,11 +316,11 @@
                 @click="openInfografisLightbox(item)"
               >
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 transition-smooth">
-                  <div class="ratio ratio-1x1 bg-light border-bottom">
+                  <div class="bg-light border-bottom">
                     <img
                       :src="item.src"
                       :alt="item.alt"
-                      class="object-fit-cover w-100 h-100"
+                      class="object-fit-contain w-100 h-100"
                       loading="lazy"
                       decoding="async"
                     />
@@ -394,7 +398,11 @@
                 </div>
                 <VuePdfEmbed
                   v-if="pdfLightbox.src"
-                  :source="pdfLightbox.src"
+                  :source="{ 
+                    url: pdfLightbox.src, 
+                    cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`, 
+                    cMapPacked: true 
+                  }"
                   @rendered="pdfLoading = false"
                   class="mx-auto my-3"
                   style="max-width: 95%; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
@@ -471,6 +479,8 @@ import '@vueform/multiselect/themes/default.css'
 import { Chart } from 'chart.js/auto'
 import { Modal } from 'bootstrap'
 import VuePdfEmbed from 'vue-pdf-embed'
+import 'vue-pdf-embed/dist/styles/annotationLayer.css'
+import 'vue-pdf-embed/dist/styles/textLayer.css'
 import * as pdfjsLib from 'pdfjs-dist'
 import { CKAN_FILE_BASE_URL, CKAN_ACTION_API } from '@/config/api'
 
@@ -496,7 +506,6 @@ const dataOptions = ref([])
 const allDatasetOptions = ref([])
 const chartRef = ref(null)
 let chartInstance = null
-let playTimer = null
 
 const route = useRoute()
 const router = useRouter()
@@ -762,7 +771,6 @@ const rawDataset = ref(null)
 
 const selectedTurvar = ref('')
 const selectedPeriodIndex = ref(0)
-const isPlaying = ref(false)
 
 const state = reactive({
   satuan: '',
@@ -893,35 +901,6 @@ const selectedPeriod = computed(() => {
   return opts[i]
 })
 
-function stopPlay() {
-  isPlaying.value = false
-  if (playTimer != null) {
-    clearInterval(playTimer)
-    playTimer = null
-  }
-}
-
-function togglePlay() {
-  if (periodOptions.value.length <= 1) return
-  if (isPlaying.value) {
-    stopPlay()
-    return
-  }
-  stopPlay()
-  isPlaying.value = true
-  playTimer = setInterval(() => {
-    const n = periodOptions.value.length
-    if (n <= 1) {
-      stopPlay()
-      return
-    }
-    if (selectedPeriodIndex.value < n - 1) {
-      selectedPeriodIndex.value++
-    } else {
-      selectedPeriodIndex.value = 0
-    }
-  }, 800)
-}
 
 /**
  * Fetch dataset JSON dari CKAN — selalu organisasi Kasulampua (pusat), bukan per tab regional.
@@ -990,7 +969,6 @@ const fetchDataset = async () => {
 const fetchData = async () => {
   if (!selectedData.value) return
 
-  stopPlay()
   loading.value = true
   try {
     const resourceId = selectedData.value
@@ -1399,14 +1377,12 @@ watch(selectedChartType, () => {
 
 watch([selectedData], () => {
   if (isBootstrapping) return
-  stopPlay()
   loading.value = true
   fetchData()
   pushQueryFromState()
 })
 
 onBeforeUnmount(() => {
-  stopPlay()
 })
 </script>
 
@@ -1549,31 +1525,50 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.play-btn {
-  display: inline-flex;
+.slider-container {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #64748b;
-  flex-shrink: 0;
+}
+.slider-checkpoints {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+.slider-checkpoint {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: #dee2e6;
+  pointer-events: auto;
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
-.play-btn:hover,
-.play-btn.active {
-  background: white;
-  color: var(--primary-color);
-  border-color: var(--amber-600, #d97706);
+.slider-checkpoint:hover {
+  transform: translate(-50%, -50%) scale(1.5);
+  background: #cbd5e1;
+  z-index: 4;
+}
+.slider-checkpoint.active {
+  background: #dee2e6;
+}
+.slider-checkpoint.current {
+  opacity: 0; /* Let the native thumb be shown cleanly */
 }
 
 .tahun-range {
   flex: 1 1 0;
   min-width: 4rem;
+  margin: 0;
+  cursor: pointer;
   accent-color: var(--primary-color, #d97706);
 }
 
@@ -2033,15 +2028,17 @@ onBeforeUnmount(() => {
   border-color: var(--primary-color);
 }
 
+@media (min-width: 992px) {
+  /* md ke atas: bottom-row tidak wrap */
+  .filter-row.bottom-row {
+    flex-wrap: nowrap;
+  }
+}
+
 @media (max-width: 991px) {
   .filter-row {
     padding: 1rem;
     gap: 0.75rem;
-  }
-
-  /* md ke atas: bottom-row tidak wrap */
-  .filter-row.bottom-row {
-    flex-wrap: nowrap;
   }
 
   .bottom-field-sep {
