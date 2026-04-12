@@ -1,5 +1,5 @@
 <template>
-  <section class="data-repo-premium py-5 position-relative overflow-hidden">
+  <section class="data-repo-premium py-5 position-relative">
     <div class="bg-accent-glow"></div>
 
     <div class="container-fluid px-0">
@@ -30,8 +30,6 @@
         @touchend="isHovered = false"
       >
         <div class="carousel-track-v2">
-          <div class="carousel-spacer"></div>
-
           <div
             v-for="(kat, idx) in kategoriList"
             :key="kat.id"
@@ -59,8 +57,6 @@
               <div class="card-reflection"></div>
             </router-link>
           </div>
-
-          <div class="carousel-spacer"></div>
         </div>
       </div>
       <div class="container mt-5">
@@ -174,6 +170,15 @@ const getDatasetCount = (cat) => {
   return cat.count || 0
 }
 
+/** Satu langkah geser = lebar kartu + gap (selaras dengan flex layout) */
+const getScrollStride = (root) => {
+  const track = root.querySelector('.carousel-track-v2')
+  const card = root.querySelector('.carousel-card-wrapper')
+  if (!track || !card) return 250
+  const gap = parseFloat(getComputedStyle(track).gap) || 0
+  return card.getBoundingClientRect().width + gap
+}
+
 const handleScroll = () => {
   if (ticking) return
   ticking = true
@@ -188,10 +193,20 @@ const handleScroll = () => {
 
     scrollProgress.value = (scrollLeft / (scrollWidth || 1)) * 100
 
-    const center = scrollLeft + el.clientWidth / 2
-    const cardWidth = 290
-    const index = Math.floor((center - el.clientWidth / 2) / cardWidth)
-    activeIndex.value = Math.max(0, Math.min(kategoriList.value.length - 1, index))
+    const track = el.querySelector('.carousel-track-v2')
+    const cards = track ? track.querySelectorAll('.carousel-card-wrapper') : []
+    const probe = scrollLeft + el.clientWidth / 2
+    let bestIdx = 0
+    let bestDist = Infinity
+    cards.forEach((c, i) => {
+      const cx = c.offsetLeft + c.offsetWidth / 2
+      const d = Math.abs(cx - probe)
+      if (d < bestDist) {
+        bestDist = d
+        bestIdx = i
+      }
+    })
+    activeIndex.value = Math.max(0, Math.min(kategoriList.value.length - 1, bestIdx))
 
     isAtStart.value = scrollLeft < 10
     isAtEnd.value = scrollLeft > scrollWidth - 10
@@ -201,17 +216,20 @@ const handleScroll = () => {
 
 const scrollNext = () => {
   if (carouselRef.value) {
+    const el = carouselRef.value
+    const stride = getScrollStride(el)
     if (isAtEnd.value) {
-      carouselRef.value.scrollTo({ left: 0, behavior: 'smooth' })
+      el.scrollTo({ left: 0, behavior: 'smooth' })
     } else {
-      carouselRef.value.scrollBy({ left: 290, behavior: 'smooth' })
+      el.scrollBy({ left: stride, behavior: 'smooth' })
     }
   }
 }
 
 const scrollPrev = () => {
   if (carouselRef.value) {
-    carouselRef.value.scrollBy({ left: -290, behavior: 'smooth' })
+    const el = carouselRef.value
+    el.scrollBy({ left: -getScrollStride(el), behavior: 'smooth' })
   }
 }
 
@@ -263,6 +281,8 @@ onUnmounted(() => {
 .data-repo-premium {
   background: white;
   padding: 80px 0;
+  /* clip horizontal bleed from .bg-accent-glow without clipping scaled carousel cards vertically */
+  overflow-x: clip;
 }
 
 .bg-accent-glow {
@@ -321,13 +341,17 @@ onUnmounted(() => {
 }
 
 .carousel-wrapper {
+  --carousel-h-gap: 30px;
   overflow-x: auto;
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
+  /* align snap with same inset as track padding-inline */
+  scroll-padding-inline: var(--carousel-h-gap);
   -ms-overflow-style: none;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  padding: 40px 0;
+  /* vertical room: overflow-x:auto implies overflow-y clips; padding keeps hover/active transforms visible */
+  padding: 8px 0;
 }
 
 .carousel-wrapper::-webkit-scrollbar {
@@ -336,19 +360,10 @@ onUnmounted(() => {
 
 .carousel-track-v2 {
   display: flex;
-  gap: 30px;
-  padding: 0 40px; 
-}
-
-@media (max-width: 768px) {
-  .carousel-track-v2 {
-    gap: 16px;
-    padding: 0 20px;
-  }
-}
-
-.carousel-spacer {
-  flex: 0 0 15%;
+  gap: var(--carousel-h-gap);
+  align-items: center;
+  /* horizontal: same value as gap so edge spacing matches space between cards */
+  padding: 44px var(--carousel-h-gap);
 }
 
 .carousel-card-wrapper {
@@ -356,13 +371,14 @@ onUnmounted(() => {
   scroll-snap-align: center;
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 1;
-  transform: scale(0.95);
+  /* no scale here — scale made visual gaps look uneven vs flex gap */
+  transform: none;
   will-change: transform;
 }
 
 .carousel-card-wrapper.is-active {
   opacity: 1;
-  transform: scale(1.05) translateY(-5px);
+  transform: translateY(-5px);
   z-index: 10;
 }
 
@@ -604,20 +620,18 @@ onUnmounted(() => {
     padding: 60px 0 40px;
   }
   .carousel-wrapper {
-    padding: 10px 0;
+    --carousel-h-gap: 12px;
+    padding: 4px 0;
     margin: 0 -15px;
   }
   .carousel-track-v2 {
-    gap: 12px;
-    padding: 0 15px;
+    gap: var(--carousel-h-gap);
+    padding: 44px var(--carousel-h-gap);
   }
   .carousel-card-wrapper {
     flex: 0 0 calc(85vw - 40px);
     min-width: 260px;
     max-width: 320px;
-  }
-  .carousel-spacer {
-    flex: 0 0 10px;
   }
   .section-title-premium {
     font-size: 1.5rem;
@@ -630,6 +644,10 @@ onUnmounted(() => {
   }
   .nav-controls {
     display: none !important;
+  }
+  /* less lift on small screens: stays inside horizontal scrollport vertical clip */
+  .dataset-card-premium:hover {
+    transform: translateY(-6px) scale(1.03);
   }
   .banner-title {
     font-size: 1.4rem;
