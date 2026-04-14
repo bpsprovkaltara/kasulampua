@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kasulampua.bps.go.id/sitemap.xml
+Sitemap: https://kasulampua.id/sitemap.xml
